@@ -3649,10 +3649,11 @@ class AgentBotHandlers:
             active_nowuids = [p['original_nowuid'] for p in agent_products]
             
             # 2. 在总部商品表中搜索匹配的商品
+            # ✅ 转义正则表达式特殊字符（特别是"+"号），避免MongoDB regex错误
             query = {
                 'nowuid': {'$in': active_nowuids},
                 '$or': [
-                    {'projectname': {'$regex': pattern, '$options': 'i'}}
+                    {'projectname': {'$regex': re.escape(pattern), '$options': 'i'}}
                     for pattern in all_patterns
                 ]
             }
