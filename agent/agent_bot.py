@@ -503,6 +503,87 @@ class AgentBotCore:
             btns.append(row)
         btns.append([InlineKeyboardButton("👤 联系用户", url=f"tg://user?id={user_id}")])
         return InlineKeyboardMarkup(btns)
+    
+    def _kb_purchase_notify(self, nowuid: str, user_id: int) -> InlineKeyboardMarkup:
+        """购买通知按钮布局（新版）"""
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("🧾 查看商品", callback_data=f"product_{nowuid}"),
+             InlineKeyboardButton("👤 联系用户", url=f"tg://user?id={user_id}")]
+        ])
+    
+    def build_purchase_notify_text(
+        self,
+        user_id: int,
+        product_name: str,
+        category: str,
+        nowuid: str,
+        quantity: int,
+        profit_per_unit: float,
+        origin_price: float,
+        agent_price: float,
+        total_value: float,
+        total_profit: float,
+        before_balance: float,
+        after_balance: float,
+        total_spent_after: float,
+        total_orders_after: int,
+        avg_order_value: float,
+        sale_time_beijing: str,
+        order_id: str,
+        bot_username: str = None
+    ) -> str:
+        """
+        构建购买成功群通知文本（新版格式）
+        
+        Args:
+            user_id: 用户ID
+            product_name: 商品名称
+            category: 商品分类
+            nowuid: 商品唯一ID
+            quantity: 购买数量
+            profit_per_unit: 单件利润（加价）
+            origin_price: 总部原价
+            agent_price: 代理单价
+            total_value: 订单总价值
+            total_profit: 本单利润
+            before_balance: 扣款前余额
+            after_balance: 扣款后余额
+            total_spent_after: 累计消费
+            total_orders_after: 总订单数
+            avg_order_value: 平均订单价值
+            sale_time_beijing: 销售时间（北京时间）
+            order_id: 订单号
+            bot_username: 机器人用户名（可选）
+        
+        Returns:
+            格式化的HTML文本（整体加粗）
+        """
+        # 如果没有提供bot_username，使用AGENT_NAME作为回退
+        username = bot_username if bot_username else self.config.AGENT_NAME
+        
+        text = (
+            "<b>🛒收到了一份 采购订单 🛍\n"
+            f"❇️用户名：@{self._h(username)}\n"
+            f"💵利润加价: {profit_per_unit:.2f}U\n"
+            f"🧾 订单号：</b><code>{self._h(order_id)}</code><b>\n"
+            f"🏢 代理ID：</b><code>{self._h(self.config.AGENT_BOT_ID)}</code><b>\n"
+            "➖➖➖➖➖➖\n"
+            f"🗓日期|时间： {self._h(sale_time_beijing)}\n"
+            f"❤️来自用户：</b><code>{user_id}</code><b>\n"
+            f"🗂 分类：{self._h(category)}\n"
+            f"📦 商品：{self._h(product_name)}\n"
+            f"☑️购买数量：{quantity}\n"
+            f"💰订单总价值：{total_value:.2f}U\n"
+            f"🌐总部原价: {origin_price:.2f}U\n"
+            f"💰 单价（代理）：{agent_price:.2f}U\n"
+            f"💵 本单利润：{total_profit:.2f}U\n"
+            f"💸用户旧余额 : {before_balance:.2f}U\n"
+            f"🟢用户当前余额：{after_balance:.2f}U\n"
+            f"📊 累计消费：{total_spent_after:.2f}U（共 {total_orders_after} 单，平均 {avg_order_value:.2f}U）\n"
+            "➖➖➖➖➖➖\n"
+            f"💎您从这笔交易中获得的利润({quantity} * {profit_per_unit:.2f})：{total_profit:.2f}U</b>"
+        )
+        return text
 
     # ---------- 用户与商品 ----------
     def register_user(self, user_id: int, username: str = "", first_name: str = "") -> bool:
@@ -1858,12 +1939,22 @@ class AgentBotCore:
             if balance < total_cost:
                 return False, "余额不足"
 
+            # ✅ 记录扣款前余额
+            before_balance = balance
+            
             new_balance = balance - total_cost
             coll_users.update_one(
                 {'user_id': user_id},
                 {'$set': {'USDT': new_balance, 'last_active': datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
                  '$inc': {'zgje': total_cost, 'zgsl': quantity}}
             )
+            
+            # ✅ 扣款后获取更新后的用户信息（用于统计）
+            user_after = coll_users.find_one({'user_id': user_id})
+            after_balance = float(user_after.get('USDT', 0))
+            total_spent_after = float(user_after.get('zgje', 0))
+            total_orders_after = int(user_after.get('zgsl', 0))
+            avg_order_value = round(total_spent_after / max(total_orders_after, 1), 2)
 
             ids = [i['_id'] for i in items]
             sale_time = self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')
@@ -1910,31 +2001,82 @@ class AgentBotCore:
                 'category': product.get('leixing', '')  # 商品分类
             })
 
-            # 群通知
+            # ✅ 群通知（新版格式）
             try:
                 if self.config.AGENT_NOTIFY_CHAT_ID:
-                    p_name = self._h(product.get('projectname', ''))
-                    nowuid = product.get('nowuid', '')
-                    text = (
-                        "🛒 <b>用户购买</b>\n\n"
-                        f"🏢 代理ID：<code>{self._h(self.config.AGENT_BOT_ID)}</code>\n"
-                        f"👤 用户：{self._link_user(user_id)}\n"
-                        f"📦 商品：<b>{p_name}</b>\n"
-                        f"🔢 数量：<b>{quantity}</b>\n"
-                        f"💴 单价：<b>{agent_price:.2f}U</b>\n"
-                        f"💰 总额：<b>{total_cost:.2f}U</b>\n"
-                        f"📈 利润：<b>{total_profit:.2f}U</b>\n"
-                        f"🧾 订单号：<code>{self._h(order_id)}</code>\n"
-                        f"⏰ 时间：{self._h(sale_time)}"
+                    # 计算所需变量
+                    profit_per_unit = agent_markup
+                    total_value = total_cost
+                    
+                    # 获取机器人用户名
+                    bot_username = None
+                    try:
+                        bot = Bot(self.config.BOT_TOKEN)
+                        bot_info = bot.get_me()
+                        bot_username = bot_info.username
+                    except Exception as e:
+                        logger.warning(f"⚠️ 获取机器人用户名失败: {e}")
+                    
+                    # 构建新版通知文本
+                    text = self.build_purchase_notify_text(
+                        user_id=user_id,
+                        product_name=product.get('projectname', ''),
+                        category=price_cfg.get('category') or product.get('leixing') or '未分类',
+                        nowuid=product_nowuid,
+                        quantity=quantity,
+                        profit_per_unit=profit_per_unit,
+                        origin_price=origin_price,
+                        agent_price=agent_price,
+                        total_value=total_value,
+                        total_profit=total_profit,
+                        before_balance=before_balance,
+                        after_balance=after_balance,
+                        total_spent_after=total_spent_after,
+                        total_orders_after=total_orders_after,
+                        avg_order_value=avg_order_value,
+                        sale_time_beijing=sale_time,
+                        order_id=order_id,
+                        bot_username=bot_username
                     )
-                    Bot(self.config.BOT_TOKEN).send_message(
-                        chat_id=self.config.AGENT_NOTIFY_CHAT_ID,  # ✅ 修复：使用实例配置
-                        text=text,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=self._kb_product_actions(nowuid, user_id)
-                    )
+                    
+                    # 发送群通知
+                    try:
+                        Bot(self.config.BOT_TOKEN).send_message(
+                            chat_id=self.config.AGENT_NOTIFY_CHAT_ID,
+                            text=text,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=self._kb_purchase_notify(product_nowuid, user_id)
+                        )
+                        logger.info(f"✅ 购买群通知发送成功: 订单 {order_id}")
+                    except Exception as send_err:
+                        logger.error(f"❌ 购买群通知发送失败: {send_err}")
+                        # 尝试不使用HTML格式重新发送（回退方案）
+                        try:
+                            simple_text = (
+                                f"🛒 用户购买通知\n\n"
+                                f"订单号: {order_id}\n"
+                                f"用户: {user_id}\n"
+                                f"商品: {product.get('projectname', '')}\n"
+                                f"数量: {quantity}\n"
+                                f"总额: {total_cost:.2f}U\n"
+                                f"利润: {total_profit:.2f}U"
+                            )
+                            Bot(self.config.BOT_TOKEN).send_message(
+                                chat_id=self.config.AGENT_NOTIFY_CHAT_ID,
+                                text=simple_text,
+                                reply_markup=self._kb_purchase_notify(product_nowuid, user_id)
+                            )
+                            logger.info(f"✅ 购买群通知（简化版）发送成功: 订单 {order_id}")
+                        except Exception as fallback_err:
+                            logger.error(f"❌ 购买群通知回退方案也失败: {fallback_err}")
+                            import traceback
+                            traceback.print_exc()
+                else:
+                    logger.warning(f"⚠️ AGENT_NOTIFY_CHAT_ID 未配置，跳过群通知发送")
             except Exception as ne:
-                logger.warning(f"购买群通知发送失败: {ne}")
+                logger.error(f"❌ 购买群通知处理异常: {ne}")
+                import traceback
+                traceback.print_exc()
 
             return True, {
                 'order_id': order_id,
