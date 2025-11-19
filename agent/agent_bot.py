@@ -2025,14 +2025,44 @@ class AgentBotCore:
                         order_id=order_id
                     )
                     
-                    Bot(self.config.BOT_TOKEN).send_message(
-                        chat_id=self.config.AGENT_NOTIFY_CHAT_ID,
-                        text=text,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=self._kb_purchase_notify(product_nowuid, user_id)
-                    )
+                    # 发送群通知
+                    try:
+                        Bot(self.config.BOT_TOKEN).send_message(
+                            chat_id=self.config.AGENT_NOTIFY_CHAT_ID,
+                            text=text,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=self._kb_purchase_notify(product_nowuid, user_id)
+                        )
+                        logger.info(f"✅ 购买群通知发送成功: 订单 {order_id}")
+                    except Exception as send_err:
+                        logger.error(f"❌ 购买群通知发送失败: {send_err}")
+                        # 尝试不使用HTML格式重新发送（回退方案）
+                        try:
+                            simple_text = (
+                                f"🛒 用户购买通知\n\n"
+                                f"订单号: {order_id}\n"
+                                f"用户: {user_id}\n"
+                                f"商品: {product.get('projectname', '')}\n"
+                                f"数量: {quantity}\n"
+                                f"总额: {total_cost:.2f}U\n"
+                                f"利润: {total_profit:.2f}U"
+                            )
+                            Bot(self.config.BOT_TOKEN).send_message(
+                                chat_id=self.config.AGENT_NOTIFY_CHAT_ID,
+                                text=simple_text,
+                                reply_markup=self._kb_purchase_notify(product_nowuid, user_id)
+                            )
+                            logger.info(f"✅ 购买群通知（简化版）发送成功: 订单 {order_id}")
+                        except Exception as fallback_err:
+                            logger.error(f"❌ 购买群通知回退方案也失败: {fallback_err}")
+                            import traceback
+                            traceback.print_exc()
+                else:
+                    logger.warning(f"⚠️ AGENT_NOTIFY_CHAT_ID 未配置，跳过群通知发送")
             except Exception as ne:
-                logger.warning(f"购买群通知发送失败: {ne}")
+                logger.error(f"❌ 购买群通知处理异常: {ne}")
+                import traceback
+                traceback.print_exc()
 
             return True, {
                 'order_id': order_id,
