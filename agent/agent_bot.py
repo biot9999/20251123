@@ -529,7 +529,8 @@ class AgentBotCore:
         total_orders_after: int,
         avg_order_value: float,
         sale_time_beijing: str,
-        order_id: str
+        order_id: str,
+        bot_username: str = None
     ) -> str:
         """
         构建购买成功群通知文本（新版格式）
@@ -552,31 +553,35 @@ class AgentBotCore:
             avg_order_value: 平均订单价值
             sale_time_beijing: 销售时间（北京时间）
             order_id: 订单号
+            bot_username: 机器人用户名（可选）
         
         Returns:
-            格式化的HTML文本
+            格式化的HTML文本（整体加粗）
         """
+        # 如果没有提供bot_username，使用AGENT_NAME作为回退
+        username = bot_username if bot_username else self.config.AGENT_NAME
+        
         text = (
-            "🛒收到了一份 采购订单 🛍\n"
-            f"❇️用户名：<b>@{self._h(self.config.AGENT_NAME)}</b>\n"
-            f"💵利润加价: <b>{profit_per_unit:.2f}U</b>\n"
-            f"🧾 订单号：<code>{self._h(order_id)}</code>\n"
-            f"🏢 代理ID：<code>{self._h(self.config.AGENT_BOT_ID)}</code>\n"
+            "<b>🛒收到了一份 采购订单 🛍\n"
+            f"❇️用户名：@{self._h(username)}\n"
+            f"💵利润加价: {profit_per_unit:.2f}U\n"
+            f"🧾 订单号：</b><code>{self._h(order_id)}</code><b>\n"
+            f"🏢 代理ID：</b><code>{self._h(self.config.AGENT_BOT_ID)}</code><b>\n"
             "➖➖➖➖➖➖\n"
             f"🗓日期|时间： {self._h(sale_time_beijing)}\n"
-            f"❤️来自用户：<code>{user_id}</code>\n"
+            f"❤️来自用户：</b><code>{user_id}</code><b>\n"
             f"🗂 分类：{self._h(category)}\n"
             f"📦 商品：{self._h(product_name)}\n"
             f"☑️购买数量：{quantity}\n"
-            f"💰订单总价值：<b>{total_value:.2f}U</b>\n"
+            f"💰订单总价值：{total_value:.2f}U\n"
             f"🌐总部原价: {origin_price:.2f}U\n"
             f"💰 单价（代理）：{agent_price:.2f}U\n"
-            f"💵 本单利润：<b>{total_profit:.2f}U</b>\n"
+            f"💵 本单利润：{total_profit:.2f}U\n"
             f"💸用户旧余额 : {before_balance:.2f}U\n"
             f"🟢用户当前余额：{after_balance:.2f}U\n"
             f"📊 累计消费：{total_spent_after:.2f}U（共 {total_orders_after} 单，平均 {avg_order_value:.2f}U）\n"
             "➖➖➖➖➖➖\n"
-            f"💎您从这笔交易中获得的利润(<b>{quantity} * {profit_per_unit:.2f}</b>)：<b>{total_profit:.2f}U</b>"
+            f"💎您从这笔交易中获得的利润({quantity} * {profit_per_unit:.2f})：{total_profit:.2f}U</b>"
         )
         return text
 
@@ -2003,6 +2008,15 @@ class AgentBotCore:
                     profit_per_unit = agent_markup
                     total_value = total_cost
                     
+                    # 获取机器人用户名
+                    bot_username = None
+                    try:
+                        bot = Bot(self.config.BOT_TOKEN)
+                        bot_info = bot.get_me()
+                        bot_username = bot_info.username
+                    except Exception as e:
+                        logger.warning(f"⚠️ 获取机器人用户名失败: {e}")
+                    
                     # 构建新版通知文本
                     text = self.build_purchase_notify_text(
                         user_id=user_id,
@@ -2021,7 +2035,8 @@ class AgentBotCore:
                         total_orders_after=total_orders_after,
                         avg_order_value=avg_order_value,
                         sale_time_beijing=sale_time,
-                        order_id=order_id
+                        order_id=order_id,
+                        bot_username=bot_username
                     )
                     
                     # 发送群通知
