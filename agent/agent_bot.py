@@ -208,11 +208,16 @@ class AgentBotConfig:
         self.AGENT_AD_DM_ACTIVE_DAYS = int(os.getenv("AGENT_AD_DM_ACTIVE_DAYS", "0"))
         self.AGENT_AD_DM_MAX_PER_RUN = int(os.getenv("AGENT_AD_DM_MAX_PER_RUN", "0"))
         
+        # ✅ 广告推送完成通知配置（独立于 AGENT_NOTIFY_CHAT_ID）
+        self.AGENT_AD_NOTIFY_CHAT_ID = os.getenv("AGENT_AD_NOTIFY_CHAT_ID")
+        
         if self.AGENT_AD_DM_ENABLED:
             if not self.AGENT_AD_CHANNEL_ID:
                 logger.warning("⚠️ AGENT_AD_DM_ENABLED=1 但未设置 AGENT_AD_CHANNEL_ID，广告推送功能无法工作")
             else:
                 logger.info(f"✅ 广告推送已启用: channel_id={self.AGENT_AD_CHANNEL_ID}, active_days={self.AGENT_AD_DM_ACTIVE_DAYS}, max_per_run={self.AGENT_AD_DM_MAX_PER_RUN}")
+                if self.AGENT_AD_NOTIFY_CHAT_ID:
+                    logger.info(f"✅ 广告推送完成通知已配置: notify_chat_id={self.AGENT_AD_NOTIFY_CHAT_ID}")
         else:
             # 显示配置状态，帮助用户了解如何启用
             if self.AGENT_AD_CHANNEL_ID:
@@ -4755,8 +4760,8 @@ class AgentBotHandlers:
             
             logger.info(f"✅ 广告推送完成: 成功通知 {success_count} 个用户")
             
-            # 发送广播完成通知到代理通知群
-            if self.core.config.AGENT_NOTIFY_CHAT_ID and success_count > 0:
+            # 发送广播完成通知到广告通知群（独立配置）
+            if self.core.config.AGENT_AD_NOTIFY_CHAT_ID and success_count > 0:
                 try:
                     from datetime import datetime
                     now_beijing = datetime.utcnow() + timedelta(hours=8)
@@ -4788,11 +4793,11 @@ class AgentBotHandlers:
                     )
                     
                     Bot(self.core.config.BOT_TOKEN).send_message(
-                        chat_id=self.core.config.AGENT_NOTIFY_CHAT_ID,
+                        chat_id=self.core.config.AGENT_AD_NOTIFY_CHAT_ID,
                         text=notification_text,
                         parse_mode=ParseMode.HTML
                     )
-                    logger.info(f"📤 已发送广播完成通知到代理通知群: {self.core.config.AGENT_NOTIFY_CHAT_ID}")
+                    logger.info(f"📤 已发送广播完成通知到广告通知群: {self.core.config.AGENT_AD_NOTIFY_CHAT_ID}")
                 except Exception as notify_err:
                     logger.warning(f"⚠️ 发送广播完成通知失败: {notify_err}")
             
