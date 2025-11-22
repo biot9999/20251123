@@ -214,7 +214,11 @@ class AgentBotConfig:
             else:
                 logger.info(f"✅ 广告推送已启用: channel_id={self.AGENT_AD_CHANNEL_ID}, active_days={self.AGENT_AD_DM_ACTIVE_DAYS}, max_per_run={self.AGENT_AD_DM_MAX_PER_RUN}")
         else:
-            logger.info("ℹ️ 广告推送功能已禁用（AGENT_AD_DM_ENABLED=0）")
+            # 显示配置状态，帮助用户了解如何启用
+            if self.AGENT_AD_CHANNEL_ID:
+                logger.info(f"ℹ️ 广告推送功能已禁用（AGENT_AD_DM_ENABLED=0），已配置频道: {self.AGENT_AD_CHANNEL_ID}")
+            else:
+                logger.info("ℹ️ 广告推送功能已禁用（AGENT_AD_DM_ENABLED=0），未配置 AGENT_AD_CHANNEL_ID")
 
         try:
             self.client = MongoClient(self.MONGODB_URI)
@@ -4702,14 +4706,6 @@ class AgentBotHandlers:
         5. 调用 broadcast_ad_to_agent_users 推送
         """
         try:
-            # 如果功能未启用，直接返回
-            if not self.core.config.AGENT_AD_DM_ENABLED:
-                return
-            
-            # 如果未配置广告频道ID，直接返回
-            if not self.core.config.AGENT_AD_CHANNEL_ID:
-                return
-            
             # 处理频道帖子和普通消息
             message = update.message or update.channel_post
             
@@ -4717,6 +4713,16 @@ class AgentBotHandlers:
                 return
             
             chat_id = message.chat.id
+            
+            # 如果功能未启用，直接返回
+            if not self.core.config.AGENT_AD_DM_ENABLED:
+                logger.debug(f"🔍 广告推送: 功能未启用 (chat_id={chat_id}, AGENT_AD_DM_ENABLED=0)")
+                return
+            
+            # 如果未配置广告频道ID，直接返回
+            if not self.core.config.AGENT_AD_CHANNEL_ID:
+                logger.debug(f"🔍 广告推送: 未配置广告频道ID (chat_id={chat_id}, AGENT_AD_CHANNEL_ID=未设置)")
+                return
             
             # 将配置中的 chat_id 转换为整数进行比较
             try:
@@ -4726,6 +4732,7 @@ class AgentBotHandlers:
                 return
             
             # 检查是否来自广告频道
+            logger.debug(f"🔍 广告推送: 比较 chat_id={chat_id}, ad_channel_id={ad_channel_id}, 匹配={chat_id == ad_channel_id}")
             if chat_id != ad_channel_id:
                 return
             
