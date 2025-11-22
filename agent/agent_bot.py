@@ -201,6 +201,20 @@ class AgentBotConfig:
         self.SUPPORT_CONTACT_USERNAME = os.getenv("SUPPORT_CONTACT_USERNAME", "9haokf")
         self.SUPPORT_CONTACT_URL = os.getenv("SUPPORT_CONTACT_URL") or f"https://t.me/{self.SUPPORT_CONTACT_USERNAME}"
         self.SUPPORT_CONTACT_DISPLAY = os.getenv("SUPPORT_CONTACT_DISPLAY")
+        
+        # ✅ 广告推送配置
+        self.AGENT_AD_CHANNEL_ID = os.getenv("AGENT_AD_CHANNEL_ID")
+        self.AGENT_AD_DM_ENABLED = os.getenv("AGENT_AD_DM_ENABLED", "0") in ("1", "true", "True")
+        self.AGENT_AD_DM_ACTIVE_DAYS = int(os.getenv("AGENT_AD_DM_ACTIVE_DAYS", "0"))
+        self.AGENT_AD_DM_MAX_PER_RUN = int(os.getenv("AGENT_AD_DM_MAX_PER_RUN", "0"))
+        
+        if self.AGENT_AD_DM_ENABLED:
+            if not self.AGENT_AD_CHANNEL_ID:
+                logger.warning("⚠️ AGENT_AD_DM_ENABLED=1 但未设置 AGENT_AD_CHANNEL_ID，广告推送功能无法工作")
+            else:
+                logger.info(f"✅ 广告推送已启用: channel_id={self.AGENT_AD_CHANNEL_ID}, active_days={self.AGENT_AD_DM_ACTIVE_DAYS}, max_per_run={self.AGENT_AD_DM_MAX_PER_RUN}")
+        else:
+            logger.info("ℹ️ 广告推送功能已禁用（AGENT_AD_DM_ENABLED=0）")
 
         try:
             self.client = MongoClient(self.MONGODB_URI)
@@ -623,6 +637,83 @@ class AgentBotCore:
         except Exception as e:
             logger.error(f"❌ 获取用户信息失败: {e}")
             return None
+
+    def broadcast_ad_to_agent_users(self, message_text: str, parse_mode: str = ParseMode.HTML) -> int:
+        """
+        广播广告消息到所有代理用户的私聊
+        
+        Args:
+            message_text: 要发送的消息文本
+            parse_mode: 消息解析模式（默认HTML）
+        
+        Returns:
+            成功发送的用户数量
+        """
+        try:
+            # 构建查询条件
+            query = {}
+            
+            # 根据活跃天数过滤
+            if self.config.AGENT_AD_DM_ACTIVE_DAYS > 0:
+                cutoff_date = datetime.now() - timedelta(days=self.config.AGENT_AD_DM_ACTIVE_DAYS)
+                cutoff_str = cutoff_date.strftime('%Y-%m-%d %H:%M:%S')
+                query['last_active'] = {'$gte': cutoff_str}
+                logger.info(f"📊 广告推送筛选条件: 最近 {self.config.AGENT_AD_DM_ACTIVE_DAYS} 天活跃用户（{cutoff_str} 之后）")
+            else:
+                logger.info("📊 广告推送筛选条件: 所有用户")
+            
+            # 获取用户列表
+            user_collection = self.config.get_agent_user_collection()
+            users = list(user_collection.find(query, {'user_id': 1}))
+            
+            total_users = len(users)
+            logger.info(f"📢 准备广播广告到 {total_users} 个用户")
+            
+            if total_users == 0:
+                logger.info("⚠️ 没有符合条件的用户，跳过广播")
+                return 0
+            
+            # 限制最大发送数量
+            max_recipients = self.config.AGENT_AD_DM_MAX_PER_RUN
+            if max_recipients > 0 and total_users > max_recipients:
+                users = users[:max_recipients]
+                logger.info(f"⚠️ 受 AGENT_AD_DM_MAX_PER_RUN 限制，只发送给前 {max_recipients} 个用户")
+            
+            # 逐个发送
+            success_count = 0
+            bot = Bot(self.config.BOT_TOKEN)
+            
+            for idx, user in enumerate(users, 1):
+                user_id = user.get('user_id')
+                if not user_id:
+                    continue
+                
+                try:
+                    bot.send_message(
+                        chat_id=user_id,
+                        text=message_text,
+                        parse_mode=parse_mode
+                    )
+                    success_count += 1
+                    
+                    if idx % 50 == 0:
+                        logger.info(f"📤 已发送 {idx}/{len(users)} 条广告消息")
+                    
+                    # 添加小延迟避免触发 Telegram 限流
+                    time.sleep(0.05)
+                    
+                except Exception as user_err:
+                    # 单个用户发送失败不影响其他用户
+                    logger.warning(f"⚠️ 向用户 {user_id} 发送广告失败: {user_err}")
+                    continue
+            
+            logger.info(f"✅ 广告推送完成: 成功 {success_count}/{len(users)} 个用户")
+            return success_count
+            
+        except Exception as e:
+            logger.error(f"❌ 广告推送失败: {e}")
+            traceback.print_exc()
+            return 0
 
     def auto_sync_new_products(self):
         """自动同步总部新增商品到代理（增强版：支持价格为0的商品预建记录 + 统一协议号分类）"""
@@ -4598,6 +4689,69 @@ class AgentBotHandlers:
             if uid in self.user_states:
                 self.user_states.pop(uid, None)
 
+    # ========== 广告频道消息处理 ==========
+    def handle_ad_channel_message(self, update: Update, context: CallbackContext):
+        """
+        监听广告频道的消息，自动推送广告到所有代理用户的私聊
+        
+        功能：
+        1. 监听 AGENT_AD_CHANNEL_ID 的消息
+        2. 检查 AGENT_AD_DM_ENABLED 是否启用
+        3. 提取消息文本/caption
+        4. 包装为私聊模板（📢 最新公告）
+        5. 调用 broadcast_ad_to_agent_users 推送
+        """
+        try:
+            # 如果功能未启用，直接返回
+            if not self.core.config.AGENT_AD_DM_ENABLED:
+                return
+            
+            # 如果未配置广告频道ID，直接返回
+            if not self.core.config.AGENT_AD_CHANNEL_ID:
+                return
+            
+            # 处理频道帖子和普通消息
+            message = update.message or update.channel_post
+            
+            if not message or not message.chat:
+                return
+            
+            chat_id = message.chat.id
+            
+            # 将配置中的 chat_id 转换为整数进行比较
+            try:
+                ad_channel_id = int(self.core.config.AGENT_AD_CHANNEL_ID)
+            except (ValueError, TypeError):
+                logger.warning(f"⚠️ AGENT_AD_CHANNEL_ID 格式错误: {self.core.config.AGENT_AD_CHANNEL_ID}")
+                return
+            
+            # 检查是否来自广告频道
+            if chat_id != ad_channel_id:
+                return
+            
+            logger.info(f"📢 检测到广告频道消息 (chat_id={chat_id})")
+            
+            # 提取消息内容
+            message_text = message.text or message.caption or ""
+            
+            if not message_text:
+                logger.warning("⚠️ 广告消息无文本内容，跳过推送")
+                return
+            
+            # 包装消息为私聊模板
+            wrapped_text = f"<b>📢 最新公告</b>\n\n{message_text}"
+            
+            logger.info(f"🚀 开始广播广告消息: {message_text[:50]}...")
+            
+            # 调用核心广播方法
+            success_count = self.core.broadcast_ad_to_agent_users(wrapped_text, parse_mode=ParseMode.HTML)
+            
+            logger.info(f"✅ 广告推送完成: 成功通知 {success_count} 个用户")
+            
+        except Exception as e:
+            logger.error(f"❌ 处理广告频道消息异常: {e}")
+            traceback.print_exc()
+
     # ========== 补货通知镜像功能 ==========
     def handle_headquarters_message(self, update: Update, context: CallbackContext):
         """
@@ -4956,13 +5110,21 @@ class AgentBot:
         self.dispatcher.add_handler(CommandHandler("reload_admins", self.handlers.reload_admins_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handlers.button_callback))
         
-        # ✅ 群组/频道消息处理（补货通知镜像）- 放在私聊处理器之前
+        # ✅ 创建组合处理器，同时处理总部通知和广告频道消息
+        def combined_channel_handler(update: Update, context: CallbackContext):
+            """组合处理器：同时处理补货通知镜像和广告推送"""
+            # 先尝试处理广告频道消息
+            self.handlers.handle_ad_channel_message(update, context)
+            # 再处理总部通知消息
+            self.handlers.handle_headquarters_message(update, context)
+        
+        # ✅ 群组/频道消息处理（补货通知镜像 + 广告推送）- 放在私聊处理器之前
         # 使用更宽松的过滤器，让handler内部进行chat_id检查
         # 处理普通消息（群组、超级群组）
         self.dispatcher.add_handler(MessageHandler(
             (Filters.text | Filters.photo | Filters.video | Filters.document) & 
             ~Filters.chat_type.private,  # 任何非私聊的消息（群组、超级群组、频道）
-            self.handlers.handle_headquarters_message
+            combined_channel_handler
         ))
         
         # ✅ 处理频道帖子（channel_post）
@@ -4971,7 +5133,7 @@ class AgentBot:
         self.dispatcher.add_handler(MessageHandler(
             (Filters.text | Filters.photo | Filters.video | Filters.document) & 
             Filters.update.channel_post,  # 频道帖子
-            self.handlers.handle_headquarters_message
+            combined_channel_handler
         ))
         
         # ✅ 私聊文本消息处理（用户输入处理）
