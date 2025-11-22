@@ -4755,6 +4755,47 @@ class AgentBotHandlers:
             
             logger.info(f"✅ 广告推送完成: 成功通知 {success_count} 个用户")
             
+            # 发送广播完成通知到代理通知群
+            if self.core.config.AGENT_NOTIFY_CHAT_ID and success_count > 0:
+                try:
+                    from datetime import datetime
+                    now_beijing = datetime.utcnow() + timedelta(hours=8)
+                    
+                    # 获取用户总数用于计算成功率
+                    user_collection = self.core.config.get_agent_user_collection()
+                    query = {}
+                    if self.core.config.AGENT_AD_DM_ACTIVE_DAYS > 0:
+                        cutoff_date = datetime.now() - timedelta(days=self.core.config.AGENT_AD_DM_ACTIVE_DAYS)
+                        cutoff_str = cutoff_date.strftime('%Y-%m-%d %H:%M:%S')
+                        query['last_active'] = {'$gte': cutoff_str}
+                    total_users = user_collection.count_documents(query)
+                    
+                    # 考虑最大发送限制
+                    max_per_run = self.core.config.AGENT_AD_DM_MAX_PER_RUN
+                    if max_per_run > 0 and total_users > max_per_run:
+                        total_users = max_per_run
+                    
+                    success_rate = (success_count / total_users * 100) if total_users > 0 else 0
+                    
+                    notification_text = (
+                        f"📢 <b>广告推送完成报告</b>\n\n"
+                        f"🏢 代理ID：<code>{self.core._h(self.core.config.AGENT_BOT_ID)}</code>\n"
+                        f"🤖 代理名称：{self.core._h(self.core.config.AGENT_NAME)}\n"
+                        f"✅ 成功发送：<b>{success_count}</b> / {total_users} 用户\n"
+                        f"📊 成功率：<b>{success_rate:.1f}%</b>\n"
+                        f"⏰ 完成时间：{now_beijing.strftime('%Y-%m-%d %H:%M:%S')} (北京时间)\n\n"
+                        f"📝 广告内容（前100字符）：\n<code>{self.core._h(message_text[:100])}...</code>"
+                    )
+                    
+                    Bot(self.core.config.BOT_TOKEN).send_message(
+                        chat_id=self.core.config.AGENT_NOTIFY_CHAT_ID,
+                        text=notification_text,
+                        parse_mode=ParseMode.HTML
+                    )
+                    logger.info(f"📤 已发送广播完成通知到代理通知群: {self.core.config.AGENT_NOTIFY_CHAT_ID}")
+                except Exception as notify_err:
+                    logger.warning(f"⚠️ 发送广播完成通知失败: {notify_err}")
+            
         except Exception as e:
             logger.error(f"❌ 处理广告频道消息异常: {e}")
             traceback.print_exc()
