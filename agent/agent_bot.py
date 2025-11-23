@@ -504,6 +504,55 @@ I18N = {
     }
 }
 
+# ================= 商品分类名称翻译映射 =================
+# 常见分类名称的中英文对照
+CATEGORY_TRANSLATIONS = {
+    "zh": {
+        "一级分类": "一级分类",
+        "二次协议号": "二次协议号",
+        "🔥二次协议号（session+json）": "🔥二次协议号（session+json）",
+        "二次协议号（session+json）": "二次协议号（session+json）",
+        "美国+1 有密码": "美国+1 有密码",
+        "美国+1无密码": "美国+1无密码",
+        "英国+44": "英国+44",
+        "印尼+62": "印尼+62",
+        "菲律宾+63": "菲律宾+63",
+        "越南+84": "越南+84",
+        "泰国+66": "泰国+66",
+        "马来西亚+60": "马来西亚+60",
+        "新加坡+65": "新加坡+65",
+        "日本+81": "日本+81",
+        "韩国+82": "韩国+82",
+        "巴西+55": "巴西+55",
+        "阿根廷+54": "阿根廷+54",
+        "墨西哥+52": "墨西哥+52",
+        "俄罗斯+7": "俄罗斯+7",
+        "土耳其+90": "土耳其+90"
+    },
+    "en": {
+        "一级分类": "Primary Category",
+        "二次协议号": "Secondary Protocol",
+        "🔥二次协议号（session+json）": "🔥Secondary Protocol (session+json)",
+        "二次协议号（session+json）": "Secondary Protocol (session+json)",
+        "美国+1 有密码": "USA+1 w/ Password",
+        "美国+1无密码": "USA+1 w/o Password",
+        "英国+44": "UK+44",
+        "印尼+62": "Indonesia+62",
+        "菲律宾+63": "Philippines+63",
+        "越南+84": "Vietnam+84",
+        "泰国+66": "Thailand+66",
+        "马来西亚+60": "Malaysia+60",
+        "新加坡+65": "Singapore+65",
+        "日本+81": "Japan+81",
+        "韩国+82": "South Korea+82",
+        "巴西+55": "Brazil+55",
+        "阿根廷+54": "Argentina+54",
+        "墨西哥+52": "Mexico+52",
+        "俄罗斯+7": "Russia+7",
+        "土耳其+90": "Turkey+90"
+    }
+}
+
 class AgentBotConfig:
     """代理机器人配置"""
     def __init__(self):
@@ -1146,6 +1195,26 @@ class AgentBotCore:
         except Exception as e:
             logger.error(f"❌ 翻译失败 key={key}: {e}")
             return key
+
+    def translate_category(self, user_id: int, category_name: str) -> str:
+        """
+        翻译商品分类名称
+        
+        Args:
+            user_id: 用户ID
+            category_name: 分类名称
+        
+        Returns:
+            翻译后的分类名称，如果没有翻译则返回原名称
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            if lang in CATEGORY_TRANSLATIONS and category_name in CATEGORY_TRANSLATIONS[lang]:
+                return CATEGORY_TRANSLATIONS[lang][category_name]
+            return category_name
+        except Exception as e:
+            logger.error(f"❌ 分类名称翻译失败: {e}")
+            return category_name
 
     def broadcast_ad_to_agent_users(self, message_text: str, parse_mode: str = ParseMode.HTML) -> int:
         """
@@ -3019,7 +3088,8 @@ class AgentBotHandlers:
                         kb = []
                         unit = self.core.t(uid, 'common.unit')
                         for cat in categories:
-                            button_text = f"{cat['_id']}  [{cat['stock']}{unit}]"
+                            category_name = self.core.translate_category(uid, cat['_id'])
+                            button_text = f"{category_name}  [{cat['stock']}{unit}]"
                             kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
                         
                         kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
@@ -3329,7 +3399,8 @@ Refresh Time: {refresh_time}
             kb = []
             unit = self.core.t(uid, 'common.unit')
             for cat in categories:
-                button_text = f"{cat['_id']}  [{cat['stock']}{unit}]"
+                category_name = self.core.translate_category(uid, cat['_id'])
+                button_text = f"{category_name}  [{cat['stock']}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
             
             kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
@@ -4656,7 +4727,7 @@ Refresh Time: {refresh_time}
             total_stock = sum(p['stock'] for p in all_products)
             
             # 构建消息文本
-            uid = update.effective_user.id
+            uid = message.from_user.id if hasattr(message, 'from_user') else message.chat.id
             lang = self.core.get_user_language(uid)
             unit = self.core.t(uid, 'common.unit')
             
