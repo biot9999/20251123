@@ -3817,28 +3817,42 @@ class AgentBotHandlers:
         # 🔍 调试：打印查询结果
         logger.info(f"🔍 DEBUG: query result for user {uid} = {info}")
         if not info:
-            self.safe_edit_message(query, "❌ 用户信息不存在", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'user.info_not_exist'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
         
         avg = round(info.get('zgje', 0) / max(info.get('zgsl', 1), 1), 2)
-        level = '🥇 金牌' if info.get('zgje', 0) > 100 else '🥈 银牌' if info.get('zgje', 0) > 50 else '🥉 铜牌'
+        # Simple level badges - keep emojis language-neutral
+        level = '🥇 ' + ('金牌' if self.core.get_user_language(uid) == 'zh' else 'Gold') if info.get('zgje', 0) > 100 else '🥈 ' + ('银牌' if self.core.get_user_language(uid) == 'zh' else 'Silver') if info.get('zgje', 0) > 50 else '🥉 ' + ('铜牌' if self.core.get_user_language(uid) == 'zh' else 'Bronze')
         
-        text = (
-            f"👤 个人中心\n\n"
-            f"ID: {uid}\n"
-            f"内部ID: {self.H(info.get('count_id', '-'))}\n"
-            f"余额: {info.get('USDT', 0):.2f}U\n"
-            f"累计消费: {info.get('zgje', 0):.2f}U  次数:{info.get('zgsl', 0)}\n"
-            f"平均订单: {avg:.2f}U\n"
-            f"等级: {level}\n"
-        )
+        # Create language-aware labels
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = (
+                f"👤 个人中心\n\n"
+                f"ID: {uid}\n"
+                f"内部ID: {self.H(info.get('count_id', '-'))}\n"
+                f"余额: {info.get('USDT', 0):.2f}U\n"
+                f"累计消费: {info.get('zgje', 0):.2f}U  次数:{info.get('zgsl', 0)}\n"
+                f"平均订单: {avg:.2f}U\n"
+                f"等级: {level}\n"
+            )
+        else:
+            text = (
+                f"👤 Profile\n\n"
+                f"ID: {uid}\n"
+                f"Internal ID: {self.H(info.get('count_id', '-'))}\n"
+                f"Balance: {info.get('USDT', 0):.2f}U\n"
+                f"Total Spent: {info.get('zgje', 0):.2f}U  Orders:{info.get('zgsl', 0)}\n"
+                f"Avg Order: {avg:.2f}U\n"
+                f"Level: {level}\n"
+            )
         
         kb = [
-            [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-             InlineKeyboardButton("📊 订单历史", callback_data="orders")],
-            [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-             InlineKeyboardButton("📞 联系客服", callback_data="support")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         
         self.safe_edit_message(query, text, kb, parse_mode=None)
@@ -4618,31 +4632,45 @@ class AgentBotHandlers:
 
     # ========== 其它 ==========
     def show_support_info(self, query):
+        uid = query.from_user.id
         # Build display text using config
         display = self.core.config.SUPPORT_CONTACT_DISPLAY or f"@{self.core.config.SUPPORT_CONTACT_USERNAME}"
-        text = f"📞 客服 {display}\n请描述问题 + 用户ID/订单号，便于快速处理。"
+        text = self.core.t(uid, 'support.description', display=display)
         kb = [
-            [InlineKeyboardButton("💬 联系客服", url=self.core.config.SUPPORT_CONTACT_URL)],
-            [InlineKeyboardButton("👤 个人中心", callback_data="profile"),
-             InlineKeyboardButton("❓ 使用帮助", callback_data="help")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'support.contact'), url=self.core.config.SUPPORT_CONTACT_URL)],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def show_help_info(self, query):
+        uid = query.from_user.id
         # Build display text using config
         display = self.core.config.SUPPORT_CONTACT_DISPLAY or f"@{self.core.config.SUPPORT_CONTACT_USERNAME}"
-        text = (
-            "❓ 使用帮助\n\n"
-            "• 购买：分类 -> 商品 -> 立即购买 -> 输入数量\n"
-            "• 充值：进入充值 -> 选择金额或输入金额 -> 按识别金额精确转账\n"
-            "• 自动监听入账，无需手动校验\n"
-            f"• 有问题联系人工客服 {display}"
-        )
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = (
+                "❓ 使用帮助\n\n"
+                "• 购买：分类 -> 商品 -> 立即购买 -> 输入数量\n"
+                "• 充值：进入充值 -> 选择金额或输入金额 -> 按识别金额精确转账\n"
+                "• 自动监听入账，无需手动校验\n"
+                f"• 有问题联系人工客服 {display}"
+            )
+        else:
+            text = (
+                "❓ Help\n\n"
+                "• Purchase: Category -> Product -> Buy -> Enter quantity\n"
+                "• Recharge: Enter recharge -> Select amount or input amount -> Transfer exact recognition amount\n"
+                "• Auto-detects incoming payments, no manual verification needed\n"
+                f"• For issues, contact support {display}"
+            )
+        
         kb = [
-            [InlineKeyboardButton("📞 联系客服", callback_data="support"),
-             InlineKeyboardButton("🛍️ 商品中心", callback_data="products")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
