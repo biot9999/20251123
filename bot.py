@@ -6354,7 +6354,7 @@ def catejflsp(update: Update, context: CallbackContext):
 
         keyboard.append([
             InlineKeyboardButton(
-                f'{projectname} {money}U [{hsl}个]',
+                f'{projectname} {money}U  [{hsl}个]',
                 callback_data=f'gmsp {nowuid}:{hsl}'
             )
         ])
@@ -11347,16 +11347,16 @@ def jianceguoqi(context: CallbackContext):
                         print(f"⚠️ 删除旧支付消息失败：{e}")
 
                     # 发送一条新的通知说明
-                    keyboard = [[InlineKeyboardButton("✅已读（点击销毁此消息）", callback_data=f'close {user_id}')]]
-                    try:
-                        context.bot.send_message(
-                            chat_id=user_id,
-                            text=f"❌ <b>订单超时</b>\n\n订单号：<code>{bianhao}</code>\n状态：<b>支付超时或金额错误</b>",
-                            parse_mode='HTML',
-                            reply_markup=InlineKeyboardMarkup(keyboard)
-                        )
-                    except Exception as e:
-                        print(f"⚠️ 发送超时通知失败：{e}")
+                    #keyboard = [[InlineKeyboardButton("✅已读（点击销毁此消息）", callback_data=f'close {user_id}')]]
+                    #try:
+                    #    context.bot.send_message(
+                    #        chat_id=user_id,
+                    #        text=f"❌ <b>订单超时</b>\n\n订单号：<code>{bianhao}</code>\n状态：<b>支付超时或金额错误</b>",
+                    #        parse_mode='HTML',
+                    #        reply_markup=InlineKeyboardMarkup(keyboard)
+                    #    )
+                    #except Exception as e:
+                    #    print(f"⚠️ 发送超时通知失败：{e}")
 
                     # 删除订单记录
                     topup.delete_one({'_id': i['_id']})
