@@ -3287,26 +3287,28 @@ class AgentBotHandlers:
     def show_product_categories(self, query):
         """显示商品分类（增强版：支持显示零库存分类）"""
         try:
+            uid = query.from_user.id
             # ✅ 调用核心方法获取分类列表（包含零库存分类）
             categories = self.core.get_product_categories()
             
             if not categories:
-                self.safe_edit_message(query, "❌ 暂无可用商品分类", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.categories.no_categories'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
                 return
             
             text = (
-                "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
-                "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
-                "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
+                f"<b>{self.core.t(uid, 'products.categories.title')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.search_tip')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.first_purchase_tip')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.inactive_tip')}</b>"
             )
             
             kb = []
+            unit = self.core.t(uid, 'common.unit')
             for cat in categories:
-                button_text = f"{cat['_id']}  [{cat ['stock']}个]"
+                button_text = f"{cat['_id']}  [{cat['stock']}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
             
-            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
             
             self.safe_edit_message(query, text, kb, parse_mode='HTML')
             
@@ -3314,7 +3316,8 @@ class AgentBotHandlers:
             logger.error(f"❌ 获取商品分类失败: {e}")
             import traceback
             traceback.print_exc()
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             
     def show_category_products(self, query, category: str, page: int = 1):
         """显示分类下的商品（二级分类）- 支持HQ克隆模式 + 统一协议号分类"""
