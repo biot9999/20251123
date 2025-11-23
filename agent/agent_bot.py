@@ -103,7 +103,7 @@ I18N = {
         "start": {
             "welcome": "🎉 欢迎使用 {agent_name}！",
             "user_info": "👤 用户信息",
-            "user_id": "• ID: {user_id}",
+            "user_id": "• ID: {uid}",
             "username": "• 用户名: @{username}",
             "nickname": "• 昵称: {nickname}",
             "select_function": "请选择功能："
@@ -149,7 +149,7 @@ I18N = {
         "start": {
             "welcome": "🎉 Welcome to {agent_name}!",
             "user_info": "👤 User Information",
-            "user_id": "• ID: {user_id}",
+            "user_id": "• ID: {uid}",
             "username": "• Username: @{username}",
             "nickname": "• Nickname: {nickname}",
             "select_function": "Please select a function:"
@@ -2788,7 +2788,7 @@ class AgentBotHandlers:
             text = f"""{self.core.t(uid, 'start.welcome', agent_name=self.H(self.core.config.AGENT_NAME))}
 
 {self.core.t(uid, 'start.user_info')}
-{self.core.t(uid, 'start.user_id', user_id=user.id)}
+{self.core.t(uid, 'start.user_id', uid=user.id)}
 {self.core.t(uid, 'start.username', username=username_display)}
 {self.core.t(uid, 'start.nickname', nickname=nickname_display)}
 
