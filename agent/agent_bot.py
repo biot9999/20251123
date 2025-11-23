@@ -179,7 +179,9 @@ I18N = {
             "purchase_warning": "❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！",
             "country_list": "🌍 {title}商品列表 ({codes_display})",
             "country_product": "{name} | {price}U | [{stock}个]",
-            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540"
+            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540",
+            "file_delivery_quantity": "🔢 商品数量: {count} 个",
+            "file_delivery_time": "⏰ 发货时间: {time}"
         },
         "orders": {
             "title": "📊 订单历史",
@@ -417,7 +419,9 @@ I18N = {
             "purchase_warning": "❗For first-time purchases from our store, please buy in small quantities for testing to avoid unnecessary disputes! Thank you for your cooperation!",
             "country_list": "🌍 {title} Product List ({codes_display})",
             "country_product": "{name} | {price}U | [{stock} pcs]",
-            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540"
+            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540",
+            "file_delivery_quantity": "🔢 Product Quantity: {count} pcs",
+            "file_delivery_time": "⏰ Delivery Time: {time}"
         },
         "orders": {
             "title": "📊 Order History",
@@ -4389,14 +4393,16 @@ class AgentBotCore:
                     os.remove(zip_path)
                     return 0
                 with open(zip_path, 'rb') as f:
+                    # Build internationalized caption
+                    quantity_text = self.t(user_id, 'products.file_delivery_quantity', count=len(items))
+                    time_text = self.t(user_id, 'products.file_delivery_time', time=self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))
+                    
                     bot.send_document(
                         chat_id=user_id,
                         document=f,
                         caption=(f"📁 <b>{self._h(translated_product_name)}</b>\n"
-                                # f"📦 批量发货文件包\n"
-                                 f"🔢 商品数量: {len(items)} 个\n"
-                                # f"📂 文件总数: {files_added} 个\n"
-                                 f"⏰ 发货时间: {self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')}"),
+                                 f"{quantity_text}\n"
+                                 f"{time_text}"),
                         parse_mode=ParseMode.HTML
                     )
                 try:
