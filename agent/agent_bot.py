@@ -97,7 +97,8 @@ I18N = {
     "zh": {
         "common": {
             "back_main": "🏠 主菜单",
-            "back": "🔙 返回"
+            "back": "🔙 返回",
+            "not_set": "未设置"
         },
         "start": {
             "welcome": "🎉 欢迎使用 {agent_name}！",
@@ -142,7 +143,8 @@ I18N = {
     "en": {
         "common": {
             "back_main": "🏠 Main Menu",
-            "back": "🔙 Back"
+            "back": "🔙 Back",
+            "not_set": "Not set"
         },
         "start": {
             "welcome": "🎉 Welcome to {agent_name}!",
@@ -2780,8 +2782,8 @@ class AgentBotHandlers:
             
             # ✅ 默认启动消息
             uid = user.id
-            username_display = self.H(user.username or ('未设置' if self.core.get_user_language(uid) == 'zh' else 'Not set'))
-            nickname_display = self.H(user.first_name or ('未设置' if self.core.get_user_language(uid) == 'zh' else 'Not set'))
+            username_display = self.H(user.username or self.core.t(uid, 'common.not_set'))
+            nickname_display = self.H(user.first_name or self.core.t(uid, 'common.not_set'))
             
             text = f"""{self.core.t(uid, 'start.welcome', agent_name=self.H(self.core.config.AGENT_NAME))}
 
