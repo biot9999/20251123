@@ -3176,11 +3176,14 @@ class AgentBotHandlers:
     def show_profit_center(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]], parse_mode=None)
             return
         s = self.core.get_profit_summary()
         refresh_time = self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')
-        text = f"""💸 <b>利润中心</b>
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = f"""💸 <b>利润中心</b>
 
 累计利润: {s['total_profit']:.2f} USDT
 已提现: {s['withdrawn_profit']:.2f} USDT
@@ -3193,11 +3196,26 @@ class AgentBotHandlers:
 
 • 审核/付款需人工处理
 """
+        else:
+            text = f"""💸 <b>Profit Center</b>
+
+Total Profit: {s['total_profit']:.2f} USDT
+Withdrawn: {s['withdrawn_profit']:.2f} USDT
+Pending: {s['pending_profit']:.2f} USDT
+Available: {s['available_profit']:.2f} USDT
+Pending Requests: {s['request_count_pending']}
+
+
+Refresh Time: {refresh_time}
+
+• Review/Payment requires manual processing
+"""
+        
         kb = [
-            [InlineKeyboardButton("📝 申请提现", callback_data="profit_withdraw"),
-             InlineKeyboardButton("📋 申请记录", callback_data="profit_withdraw_list")],
-            [InlineKeyboardButton("🔄 刷新", callback_data="profit_center"),
-             InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'profit.apply_withdrawal'), callback_data="profit_withdraw"),
+             InlineKeyboardButton(self.core.t(uid, 'profit.application_records'), callback_data="profit_withdraw_list")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.refresh'), callback_data="profit_center"),
+             InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=ParseMode.HTML)
 
@@ -3454,12 +3472,24 @@ class AgentBotHandlers:
                 
                 # 如果HQ克隆模式成功，直接渲染
                 if products_with_stock is not None:
-                    text = (
-                        "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
-                        "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
-                        "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
-                        "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
-                    )
+                    uid = query.from_user.id
+                    lang = self.core.get_user_language(uid)
+                    unit = self.core.t(uid, 'common.unit')
+                    
+                    if lang == 'zh':
+                        text = (
+                            "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
+                            "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
+                            "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
+                            "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
+                        )
+                    else:
+                        text = (
+                            "<b>🛒 Product List - Select what you need:</b>\n\n"
+                            "❗️First-time buyers please test with small quantities to avoid disputes! Thank you for your cooperation.\n\n"
+                            "❗After-sales time: 1 hour for accounts with passwords, 30 minutes for accounts with unknown 2FA!\n\n"
+                            "❗Check account immediately after purchase, provide proof for after-sales - timeout at your own risk!"
+                        )
                     
                     kb = []
                     for p in products_with_stock:
@@ -3469,17 +3499,17 @@ class AgentBotHandlers:
                         stock = p['stock']
                         
                         # ✅ 按钮格式
-                        button_text = f"{name} {price}U   [{stock}个]"
+                        button_text = f"{name} {price}U   [{stock}{unit}]"
                         kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
                     
                     # 如果没有有库存的商品
                     if not kb:
-                        kb.append([InlineKeyboardButton("暂无商品耐心等待", callback_data="no_action")])
+                        kb.append([InlineKeyboardButton(self.core.t(uid, 'products.no_products_wait'), callback_data="no_action")])
                     
                     # ✅ 返回按钮
                     kb.append([
-                        InlineKeyboardButton("🔙 返回", callback_data="back_products"),
-                        InlineKeyboardButton("❌ 关闭", callback_data=f"close {query.from_user.id}")
+                        InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products"),
+                        InlineKeyboardButton(self.core.t(uid, 'error.close'), callback_data=f"close {query.from_user.id}")
                     ])
                     
                     self.safe_edit_message(query, text, kb, parse_mode='HTML')
@@ -3553,12 +3583,24 @@ class AgentBotHandlers:
             products_with_stock.sort(key=lambda x: -x['stock'])
             
             # ✅ 文本格式
-            text = (
-                "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
-                "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
-                "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
-                "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
-            )
+            uid = query.from_user.id
+            lang = self.core.get_user_language(uid)
+            unit = self.core.t(uid, 'common.unit')
+            
+            if lang == 'zh':
+                text = (
+                    "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
+                    "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
+                    "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
+                    "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
+                )
+            else:
+                text = (
+                    "<b>🛒 Product List - Select what you need:</b>\n\n"
+                    "❗️First-time buyers please test with small quantities to avoid disputes! Thank you for your cooperation.\n\n"
+                    "❗After-sales time: 1 hour for accounts with passwords, 30 minutes for accounts with unknown 2FA!\n\n"
+                    "❗Check account immediately after purchase, provide proof for after-sales - timeout at your own risk!"
+                )
             
             kb = []
             for p in products_with_stock:
@@ -3568,17 +3610,17 @@ class AgentBotHandlers:
                 stock = p['stock']
                 
                 # ✅ 按钮格式
-                button_text = f"{name} {price}U    [{stock}个]"
+                button_text = f"{name} {price}U    [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 如果没有有库存的商品
             if not kb:
-                kb.append([InlineKeyboardButton("暂无商品耐心等待", callback_data="no_action")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.no_products_wait'), callback_data="no_action")])
             
             # ✅ 返回按钮
             kb.append([
-                InlineKeyboardButton("🔙 返回", callback_data="back_products"),
-                InlineKeyboardButton("❌ 关闭", callback_data=f"close {query.from_user.id}")
+                InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products"),
+                InlineKeyboardButton(self.core.t(uid, 'error.close'), callback_data=f"close {query.from_user.id}")
             ])
             
             self.safe_edit_message(query, text, kb, parse_mode='HTML')
@@ -3587,7 +3629,8 @@ class AgentBotHandlers:
             logger.error(f"❌ 获取分类商品失败: {e}")
             import traceback
             traceback.print_exc()
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
 
     def show_product_detail(self, query, nowuid: str):
         """显示商品详情 - 完全仿照总部格式"""
@@ -3879,12 +3922,23 @@ class AgentBotHandlers:
 
     def show_recharge_options(self, query):
         uid = query.from_user.id
-        text = ("💰 余额充值\n\n"
-                "• 固定地址收款，自动到账\n"
-                f"• 最低金额: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
-                f"• 有效期: 10分钟\n"
-                f"• 轮询间隔: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
-                "请选择金额或发送自定义金额（数字）：")
+        lang = self.core.get_user_language(uid)
+        
+        if lang == 'zh':
+            text = ("💰 余额充值\n\n"
+                    "• 固定地址收款，自动到账\n"
+                    f"• 最低金额: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
+                    f"• 有效期: 10分钟\n"
+                    f"• 轮询间隔: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
+                    "请选择金额或发送自定义金额（数字）：")
+        else:
+            text = ("💰 Balance Recharge\n\n"
+                    "• Fixed address payment, auto credit\n"
+                    f"• Minimum: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
+                    f"• Validity: 10 minutes\n"
+                    f"• Poll interval: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
+                    "Select amount or send custom amount (number):")
+        
         kb = [
             [InlineKeyboardButton("10 USDT", callback_data="recharge_amount_10"),
              InlineKeyboardButton("30 USDT", callback_data="recharge_amount_30"),
@@ -3892,8 +3946,8 @@ class AgentBotHandlers:
             [InlineKeyboardButton("100 USDT", callback_data="recharge_amount_100"),
              InlineKeyboardButton("200 USDT", callback_data="recharge_amount_200"),
              InlineKeyboardButton("500 USDT", callback_data="recharge_amount_500")],
-            [InlineKeyboardButton("📜 充值记录", callback_data="recharge_list"),
-             InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'recharge.records'), callback_data="recharge_list"),
+             InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.user_states[uid] = {'state': 'waiting_recharge_amount'}
         self.safe_edit_message(query, text, kb, parse_mode=None)
@@ -3960,14 +4014,19 @@ class AgentBotHandlers:
     def show_price_management(self, query, page: int = 1):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
         res = self.core.get_agent_product_list(uid, page)
         prods = res['products']
         if not prods:
-            self.safe_edit_message(query, "❌ 暂无商品可管理", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'products.no_products_to_manage'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
-        text = f"💰 价格管理（第{page}页）\n\n"
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = f"💰 价格管理（第{page}页）\n\n"
+        else:
+            text = f"💰 Price Management (Page {page})\n\n"
         kb = []
         for p in prods:
             info = p['product_info'][0] if p['product_info'] else {}
@@ -3987,16 +4046,19 @@ class AgentBotHandlers:
             profit_rate = (agent_markup / origin_price * 100) if origin_price else 0
             
             stock = self.core.get_product_stock(nowuid)
-            text += f"{self.H(name)}\n总部:{origin_price}U  加价:{agent_markup:.2f}U  代理价:{agent_price}U  利润率:{profit_rate:.1f}%  库:{stock}\n\n"
+            if lang == 'zh':
+                text += f"{self.H(name)}\n总部:{origin_price}U  加价:{agent_markup:.2f}U  代理价:{agent_price}U  利润率:{profit_rate:.1f}%  库:{stock}\n\n"
+            else:
+                text += f"{self.H(name)}\nHQ:{origin_price}U  Markup:{agent_markup:.2f}U  Agent:{agent_price}U  Profit:{profit_rate:.1f}%  Stock:{stock}\n\n"
             kb.append([InlineKeyboardButton(f"📝 {name[:18]}", callback_data=f"edit_price_{nowuid}")])
         pag = []
         if page > 1:
-            pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"price_page_{page-1}"))
+            pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"price_page_{page-1}"))
         if res['current_page'] < res['total_pages']:
-            pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"price_page_{page+1}"))
+            pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"price_page_{page+1}"))
         if pag:
             kb.append(pag)
-        kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def show_price_edit(self, query, nowuid: str):
@@ -4076,18 +4138,25 @@ class AgentBotHandlers:
     def show_system_reports(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
-        text = ("📊 系统报表中心\n\n"
-                "请选择需要查看的报表类型：")
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = ("📊 系统报表中心\n\n"
+                    "请选择需要查看的报表类型：")
+        else:
+            text = ("📊 System Reports Center\n\n"
+                    "Please select report type:")
+        
         kb = [
-            [InlineKeyboardButton("📈 销售报表(30天)", callback_data="report_sales_30"),
-             InlineKeyboardButton("👥 用户报表", callback_data="report_users")],
-            [InlineKeyboardButton("📦 商品报表", callback_data="report_products"),
-             InlineKeyboardButton("💰 财务报表(30天)", callback_data="report_financial_30")],
-            [InlineKeyboardButton("📊 综合概览", callback_data="report_overview_quick"),
-             InlineKeyboardButton("🔄 刷新数据", callback_data="system_reports")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'reports.sales_30d'), callback_data="report_sales_30"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.user_report'), callback_data="report_users")],
+            [InlineKeyboardButton(self.core.t(uid, 'reports.product_report'), callback_data="report_products"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.financial_30d'), callback_data="report_financial_30")],
+            [InlineKeyboardButton(self.core.t(uid, 'reports.overview_btn'), callback_data="report_overview_quick"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.refresh'), callback_data="system_reports")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
@@ -4707,11 +4776,18 @@ class AgentBotHandlers:
             total = result['total']
             total_pages = result['total_pages']
             
+            lang = self.core.get_user_language(uid)
+            
             if total == 0:
+                if lang == 'zh':
+                    text_empty = "📦 购买记录\n\n暂无购买记录"
+                else:
+                    text_empty = "📦 Purchase Records\n\nNo purchase records"
+                
                 self.safe_edit_message(
                     query,
-                    "📦 购买记录\n\n暂无购买记录",
-                    [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]],
+                    text_empty,
+                    [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]],
                     parse_mode=None
                 )
                 return
@@ -4727,13 +4803,22 @@ class AgentBotHandlers:
             except:
                 latest_time_display = '-'
             
-            text = "📦 购买记录\n\n"
-            text += f"📊 记录概览\n"
-            text += f"• 总订单数：{total}\n"
-            text += f"• 当前页显示：{len(orders)}\n"
-            text += f"• 最近更新：{latest_time_display}\n\n"
-            text += "💡 操作说明\n"
-            text += "点击下面按钮查看订单详情或重新下载商品\n\n"
+            if lang == 'zh':
+                text = "📦 购买记录\n\n"
+                text += f"📊 记录概览\n"
+                text += f"• 总订单数：{total}\n"
+                text += f"• 当前页显示：{len(orders)}\n"
+                text += f"• 最近更新：{latest_time_display}\n\n"
+                text += "💡 操作说明\n"
+                text += "点击下面按钮查看订单详情或重新下载商品\n\n"
+            else:
+                text = "📦 Purchase Records\n\n"
+                text += f"📊 Records Overview\n"
+                text += f"• Total Orders: {total}\n"
+                text += f"• Current Page: {len(orders)}\n"
+                text += f"• Recent Update: {latest_time_display}\n\n"
+                text += "💡 Operation Guide\n"
+                text += "Click buttons below to view order details or re-download products\n\n"
             
             # 为每个订单构建一个紧凑的按钮
             kb = []
