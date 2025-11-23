@@ -33,8 +33,8 @@ All admin-related features now check the `ADMIN_IDS` list:
 - `/add <user_id> <+/-amount>` - Adjust user balance
 - `/cha <user_id>` - Check user information
 - `/gg <message>` - Broadcast message to all users
-- `/admin_add @username` - Add admin (runtime only, requires .env update)
-- `/admin_remove @username` - Remove admin (runtime only)
+- `/admin_add @username` or `/admin_add <user_id>` - Add admin (runtime only, requires .env update)
+- `/admin_remove @username` or `/admin_remove <user_id>` - Remove admin (runtime only)
 
 ### 3. Admin Panel Features
 - 用户列表 (User List)
