@@ -749,7 +749,7 @@ def inline_query(update: Update, context: CallbackContext):
         fstext = (
             "<b>欢迎使用本号商机器人</b>\n\n"
             "<b>主营类型：</b>\n"
-            "Telegram账号、微信账号、QQ账号\n\n"
+            "Telegram账号\n\n"
             "<b>为什么选择我们？</b>\n"
             "<blockquote>"
             "- 无需链接交易，避免盗号风险\n"
@@ -767,8 +767,8 @@ def inline_query(update: Update, context: CallbackContext):
         results = [
             InlineQueryResultArticle(
                 id=str(uuid.uuid4()),
-                title="📦 飞机号 / 微信号 / QQ号 自动发货",
-                description="自动发货 | 安全交易 | 支持微信支付宝USDT",
+                title="📦 飞机号/ 协议号 /自动发货",
+                description="自动发货 | 安全交易 ",
                 input_message_content=InputTextMessageContent(
                     fstext,
                     parse_mode="HTML"
@@ -4279,7 +4279,7 @@ def search_goods(update: Update, context: CallbackContext):
     query = ' '.join(context.args).strip()
 
     if not query:
-        msg = "❌ 请输入关键词，例如：/search 微信" if lang == 'zh' else "❌ Please enter a keyword, e.g. /search wechat"
+        msg = "❌ 请输入关键词，例如：/search +54" if lang == 'zh' else "❌ Please enter a keyword, e.g. /search wechat"
         update.message.reply_text(msg)
         return
 
@@ -4418,13 +4418,6 @@ def help_command(update: Update, context: CallbackContext):
             "<b>📖 使用指南 / 帮助中心</b>\n\n"
             "<b>🛒 本机器人支持出售：</b>\n"
             "✈️ 飞机号账号（Telegram）\n"
-            "💬 微信号账号\n"
-            "🆔 QQ号账号\n\n"
-            "<b>📌 常用指令：</b>\n"
-            "• /search 关键词 - 搜索商品（如 /search 微信）\n"
-            "• /new - 查看最新上架商品\n"
-            "• /hot - 查看热门商品排行\n"
-            "• /help - 显示帮助中心\n\n"
             "<b>💡 功能优势：</b>\n"
             "✅ 自动发货，秒到账\n"
             "✅ 永久保存购买记录\n"
@@ -4441,13 +4434,6 @@ def help_command(update: Update, context: CallbackContext):
             "<b>📖 User Guide / Help Center</b>\n\n"
             "<b>🛒 Supported Products:</b>\n"
             "✈️ Telegram accounts\n"
-            "💬 WeChat accounts\n"
-            "🆔 QQ accounts\n\n"
-            "<b>📌 Commands:</b>\n"
-            "• /search keyword - Search items (e.g. /search wechat)\n"
-            "• /new - View latest arrivals\n"
-            "• /hot - View hot-selling items\n"
-            "• /help - Show help center\n\n"
             "<b>💡 Features:</b>\n"
             "✅ 24/7 Automatic delivery\n"
             "✅ Secure encrypted storage\n"
