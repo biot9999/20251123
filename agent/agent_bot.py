@@ -3001,26 +3001,28 @@ class AgentBotHandlers:
             # ✅ 处理 restock 深度链接 - 直接显示商品分类（无欢迎消息）
             if payload == "restock":
                 try:
+                    uid = user.id
                     # 直接获取并显示商品分类
                     categories = self.core.get_product_categories()
                     
                     if not categories:
-                        text = "❌ 暂无可用商品分类"
-                        kb = [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]]
+                        text = self.core.t(uid, 'products.categories.no_categories')
+                        kb = [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]]
                     else:
                         text = (
-                            "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                            "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
-                            "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
-                            "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
+                            f"<b>{self.core.t(uid, 'products.categories.title')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.search_tip')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.first_purchase_tip')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.inactive_tip')}</b>"
                         )
                         
                         kb = []
+                        unit = self.core.t(uid, 'common.unit')
                         for cat in categories:
-                            button_text = f"{cat['_id']}  [{cat ['stock']}个]"
+                            button_text = f"{cat['_id']}  [{cat['stock']}{unit}]"
                             kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
                         
-                        kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+                        kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
                     
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     logger.info(f"✅ 已为用户 {user.id} 直接显示商品分类")
@@ -3030,8 +3032,9 @@ class AgentBotHandlers:
                     logger.error(f"❌ 显示商品分类失败: {e}")
                     import traceback
                     traceback.print_exc()
-                    text = "❌ 加载失败，请重试"
-                    kb = [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]]
+                    uid = user.id
+                    text = self.core.t(uid, 'error.load_failed')
+                    kb = [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]]
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     return
             
@@ -3039,18 +3042,19 @@ class AgentBotHandlers:
             if payload and payload.startswith("product_"):
                 nowuid = payload.replace("product_", "")
                 try:
+                    uid = user.id
                     # 直接显示商品详情（购买页面）
                     prod = self.core.config.ejfl.find_one({'nowuid': nowuid})
                     if not prod:
-                        text = "❌ 商品不存在"
-                        kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                        text = self.core.t(uid, 'products.not_exist')
+                        kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                     else:
                         price = self.core.get_product_price(nowuid)
                         stock = self.core.get_product_stock(nowuid)
                         
                         if price is None:
-                            text = "❌ 商品价格未设置"
-                            kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                            text = self.core.t(uid, 'products.price_not_set')
+                            kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                         else:
                             # ✅ 获取商品在代理价格表中的分类（统一后的分类）
                             agent_price_info = self.core.config.agent_product_prices.find_one({
@@ -3062,26 +3066,26 @@ class AgentBotHandlers:
                             
                             # ✅ 完全按照总部的简洁格式
                             product_name = self.H(prod.get('projectname', 'N/A'))
-                            product_status = "✅您正在购买："
+                            unit = self.core.t(uid, 'common.unit')
                             
                             text = (
-                                f"<b>{product_status} {product_name}\n\n</b>"
-                                f"<b>💰 价格: {price:.2f} USDT\n\n</b>"
-                                f"<b>📦 库存: {stock}个\n\n</b>"
-                                f"<b>❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！\n</b>"
+                                f"<b>{self.core.t(uid, 'products.purchase_status')} {product_name}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.price_label', price=price)}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.stock_label', stock=stock)}{unit}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.purchase_warning')}\n</b>"
                             )
                             
                             kb = []
                             if stock > 0:
-                                kb.append([InlineKeyboardButton("✅ 购买", callback_data=f"buy_{nowuid}"),
-                                          InlineKeyboardButton("❗使用说明", callback_data="help")])
+                                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.buy'), callback_data=f"buy_{nowuid}"),
+                                          InlineKeyboardButton(self.core.t(uid, 'help.instructions'), callback_data="help")])
                             else:
-                                text += "\n\n⚠️ 商品缺货"
-                                kb.append([InlineKeyboardButton("使用说明", callback_data="help")])
+                                text += f"\n\n{self.core.t(uid, 'products.out_of_stock')}"
+                                kb.append([InlineKeyboardButton(self.core.t(uid, 'help.instructions_simple'), callback_data="help")])
                             
                             # ✅ 使用统一后的分类作为返回目标
-                            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main"),
-                                      InlineKeyboardButton("返回", callback_data=f"category_{category}")])
+                            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main"),
+                                      InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data=f"category_{category}")])
                     
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     logger.info(f"✅ 已为用户 {user.id} 直接显示商品 {nowuid} 购买页面")
@@ -3091,8 +3095,9 @@ class AgentBotHandlers:
                     logger.error(f"❌ 显示商品购买页面失败: {e}")
                     import traceback
                     traceback.print_exc()
-                    text = "❌ 加载失败，请重试"
-                    kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                    uid = user.id
+                    text = self.core.t(uid, 'error.load_failed')
+                    kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     return
             
@@ -3124,7 +3129,8 @@ class AgentBotHandlers:
             kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.language'), callback_data="language_menu")])
             update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
         else:
-            update.message.reply_text("初始化失败，请稍后重试")
+            uid = user.id
+            update.message.reply_text(self.core.t(uid, 'common.init_failed'))
 
     def show_main_menu(self, query):
         user = query.from_user
