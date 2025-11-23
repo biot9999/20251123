@@ -98,7 +98,20 @@ I18N = {
         "common": {
             "back_main": "🏠 主菜单",
             "back": "🔙 返回",
-            "not_set": "未设置"
+            "not_set": "未设置",
+            "back_to_main": "🏠 返回主菜单",
+            "refresh": "🔄 刷新",
+            "cancel": "🔙 取消",
+            "prev_page": "⬅️ 上一页",
+            "next_page": "➡️ 下一页",
+            "init_failed": "初始化失败，请稍后重试",
+            "latest_state": "界面已是最新状态",
+            "refresh_failed": "刷新失败，请重试",
+            "interface_latest": "界面已是最新",
+            "operation_exception": "操作异常",
+            "no_permission": "无权限",
+            "cancelled": "已取消",
+            "unit": "个"
         },
         "start": {
             "welcome": "🎉 欢迎使用 {agent_name}！",
@@ -123,7 +136,10 @@ I18N = {
             "system_reports": "📊 系统报表",
             "profit_center": "💸 利润提现",
             "language": "🌐 语言 / Language",
-            "back_main": "🏠 主菜单"
+            "back_main": "🏠 主菜单",
+            "back_to_list": "🔙 返回列表",
+            "back_to_management": "🔙 返回管理",
+            "back_to_edit": "🔙 返回编辑"
         },
         "lang": {
             "menu_title": "🌐 语言选择 / Language Selection",
@@ -132,19 +148,174 @@ I18N = {
             "set_ok": "✅ 语言已切换"
         },
         "products": {
+            "center": "🛍️ 商品中心",
+            "view": "🧾 查看商品",
             "categories": {
                 "title": "🛒 商品分类 - 请选择所需商品：",
                 "search_tip": "❗快速查找商品，输入区号查找（例：+54）",
                 "first_purchase_tip": "❗️首次购买请先少量测试，避免纠纷！",
-                "inactive_tip": "❗️长期未使用账户可能会出现问题，联系客服处理。"
-            }
+                "inactive_tip": "❗️长期未使用账户可能会出现问题，联系客服处理。",
+                "no_categories": "❌ 暂无可用商品分类"
+            },
+            "not_exist": "❌ 商品不存在",
+            "back_to_list": "🔙 返回商品列表",
+            "price_not_set": "❌ 商品价格未设置",
+            "buy": "✅ 购买",
+            "confirm_purchase": "✅ 确认购买",
+            "continue_shopping": "🛍️ 继续购买",
+            "purchase_success": "✅ 购买成功！",
+            "purchase_failed": "❌ 购买失败: {res}",
+            "no_products_wait": "暂无商品耐心等待",
+            "insufficient_stock": "❌ 库存不足（当前 {stock}）",
+            "no_products_to_manage": "❌ 暂无商品可管理",
+            "cannot_find": "❌ 无法找到商品信息",
+            "no_longer_exists": "❌ 商品已不存在",
+            "file_not_found": "⚠️ 未找到原始商品文件，正在尝试重新获取...",
+            "purchasing": "🛒 购买商品",
+            "out_of_stock": "⚠️ 商品缺货",
+            "purchase_status": "✅您正在购买：",
+            "price_label": "💰 价格: {price:.2f} USDT",
+            "stock_label": "📦 库存: {stock}个",
+            "purchase_warning": "❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！",
+            "country_list": "🌍 {title}商品列表 ({codes_display})",
+            "country_product": "{name} | {price}U | [{stock}个]"
+        },
+        "orders": {
+            "title": "📊 订单历史",
+            "purchase_records": "📦 购买记录",
+            "no_records": "暂无购买记录",
+            "cancel_order": "❌ 取消订单",
+            "not_exist": "❌ 订单不存在或无权访问",
+            "details": "📋 订单详情",
+            "load_failed": "❌ 加载订单详情失败",
+            "overview": "📊 记录概览",
+            "total_orders": "• 总订单数：{total}",
+            "current_page": "• 当前页显示：{count}",
+            "recent_update": "• 最近更新：{time}",
+            "operation_guide": "💡 操作说明",
+            "operation_tip": "点击下面按钮查看订单详情或重新下载商品"
+        },
+        "recharge": {
+            "title": "💰 充值余额",
+            "balance_recharge": "💰 余额充值",
+            "records": "📜 充值记录",
+            "recent_records_empty": "📜 最近充值记录\n\n暂无记录",
+            "recent_records": "📜 最近充值记录（最新优先）",
+            "back_to_recharge": "🔙 返回充值",
+            "exceed_balance": "❌ 超出可提现余额 {balance:.2f}，请重新输入",
+            "insufficient_balance": "❌ 余额不足，需: {total_cost:.2f}U 当前: {bal:.2f}U",
+            "amount_generated": "已生成识别金额，请按应付金额转账"
+        },
+        "profit": {
+            "center": "💸 利润中心",
+            "apply_withdrawal": "📝 申请提现",
+            "application_records": "📋 申请记录",
+            "no_withdrawable": "⚠️ 当前无可提现利润",
+            "back_to_center": "💸 返回利润中心",
+            "budget": "📊 利润预算",
+            "calculator": "📊 利润计算器 - {name}\n总部: {op}U（实时价格）",
+            "withdrawal_apply": "📝 申请提现",
+            "withdrawal_records_empty": "📋 提现记录\n\n暂无申请",
+            "withdrawal_records": "📋 提现记录（最新优先）",
+            "withdrawal_success": "✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{address}\n状态：待审核",
+            "amount_recorded": "✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）"
+        },
+        "price": {
+            "management": "💰 价格管理（第{page}页）",
+            "config_not_exist": "❌ 代理价格配置不存在",
+            "invalid_price": "❌ 请输入有效的价格数字",
+            "below_hq_price": "❌ 代理价格不能低于总部价格 {op} USDT",
+            "set_rate": "设置 {rate}%({new_agent_price})",
+            "update_success": "价格更新成功！加价 {new_markup:.2f}U，利润率 {profit_rate:.1f}%（基于当前总部价 {op}U）",
+            "no_change": "无变化",
+            "below_hq_error": "代理价格不能低于总部价格 {op} USDT（当前总部价），您输入的 {new_agent_price} USDT 低于总部价",
+            "product_not_exist": "原始商品不存在"
+        },
+        "reports": {
+            "center": "📊 系统报表中心",
+            "sales": "📈 销售报表（{days}天）",
+            "sales_30d": "📈 销售报表(30天)",
+            "user_report": "👥 用户报表",
+            "user_stats": "👥 用户统计报表",
+            "product_report": "📦 商品报表",
+            "product_stats": "📦 商品统计报表",
+            "financial": "💰 财务报表（{days}天）",
+            "financial_30d": "💰 财务报表(30天)",
+            "overview": "📊 系统概览报表(30天)",
+            "overview_btn": "📊 综合概览",
+            "refresh": "🔄 刷新数据",
+            "back_to_reports": "🔙 返回报表",
+            "7days": "📅 7天",
+            "30days": "📅 30天",
+            "90days": "📅 90天"
+        },
+        "user": {
+            "profile": "👤 个人中心",
+            "contact": "👤 联系用户",
+            "info_not_exist": "❌ 用户信息不存在",
+            "admin_reloaded": "✅ 管理员列表已重新加载\n\n当前管理员用户ID:\n{admin_list}",
+            "admin_reload_no_config": "⚠️ 管理员列表已重新加载，但当前无管理员配置"
+        },
+        "support": {
+            "title": "📞 联系客服",
+            "contact": "💬 联系客服",
+            "description": "📞 客服 {display}\n请描述问题 + 用户ID/订单号，便于快速处理。",
+            "file_send_failed": "❌ 文件发送失败，请联系客服"
+        },
+        "help": {
+            "title": "❓ 使用帮助",
+            "instructions": "❗使用说明",
+            "instructions_simple": "使用说明"
+        },
+        "error": {
+            "load_failed": "❌ 加载失败，请重试",
+            "no_permission": "❌ 无权限",
+            "invalid_amount": "❌ 金额必须大于0，请重新输入",
+            "invalid_format": "❌ 金额格式错误，请输入数字",
+            "invalid_address": "❌ 地址长度不正确，请重新输入",
+            "close": "❌ 关闭",
+            "cancel_transaction": "❌ 取消交易",
+            "invalid_integer": "❌ 请输入有效整数",
+            "quantity_required": "❌ 数量需 > 0",
+            "download_failed": "❌ 下载失败，请稍后重试",
+            "invalid_number": "❌ 金额格式错误，请输入数字（例如 12 或 12.5）",
+            "processing_error": "❌ 处理异常，请重试",
+            "search_expired": "搜索已过期，请重新搜索",
+            "operation_failed": "操作失败",
+            "invalid_params": "参数错误",
+            "amount_format_error": "金额格式错误",
+            "cannot_cancel": "无法取消（已过期/已支付/不存在）",
+            "cancel_failed": "取消失败",
+            "unknown_operation": "❓ 未知操作"
+        },
+        "success": {
+            "file_resent": "✅ 文件已重新发送，请查收！"
+        },
+        "general": {
+            "view_transaction": "🔎 查看交易",
+            "view_address": "📬 查看地址",
+            "toggle_status": "🔄 切换状态",
+            "announcement": "<b>📢 最新公告</b>\n\n{message_text}"
         }
     },
     "en": {
         "common": {
             "back_main": "🏠 Main Menu",
             "back": "🔙 Back",
-            "not_set": "Not set"
+            "not_set": "Not set",
+            "back_to_main": "🏠 Back to Main",
+            "refresh": "🔄 Refresh",
+            "cancel": "🔙 Cancel",
+            "prev_page": "⬅️ Previous",
+            "next_page": "➡️ Next",
+            "init_failed": "Initialization failed, please try again later",
+            "latest_state": "Interface is up to date",
+            "refresh_failed": "Refresh failed, please try again",
+            "interface_latest": "Interface is latest",
+            "operation_exception": "Operation exception",
+            "no_permission": "No permission",
+            "cancelled": "Cancelled",
+            "unit": "pcs"
         },
         "start": {
             "welcome": "🎉 Welcome to {agent_name}!",
@@ -169,7 +340,10 @@ I18N = {
             "system_reports": "📊 System Reports",
             "profit_center": "💸 Profit Center",
             "language": "🌐 语言 / Language",
-            "back_main": "🏠 Main Menu"
+            "back_main": "🏠 Main Menu",
+            "back_to_list": "🔙 Back to List",
+            "back_to_management": "🔙 Back to Management",
+            "back_to_edit": "🔙 Back to Edit"
         },
         "lang": {
             "menu_title": "🌐 语言选择 / Language Selection",
@@ -178,12 +352,154 @@ I18N = {
             "set_ok": "✅ Language switched"
         },
         "products": {
+            "center": "🛍️ Product Center",
+            "view": "🧾 View Product",
             "categories": {
                 "title": "🛒 Product Categories - Please select:",
                 "search_tip": "❗Quick search by country code (e.g., +54)",
                 "first_purchase_tip": "❗️First-time buyers please test with small quantities!",
-                "inactive_tip": "❗️Long-inactive accounts may have issues. Contact support."
-            }
+                "inactive_tip": "❗️Long-inactive accounts may have issues. Contact support.",
+                "no_categories": "❌ No product categories available"
+            },
+            "not_exist": "❌ Product does not exist",
+            "back_to_list": "🔙 Back to Product List",
+            "price_not_set": "❌ Product price not set",
+            "buy": "✅ Buy",
+            "confirm_purchase": "✅ Confirm Purchase",
+            "continue_shopping": "🛍️ Continue Shopping",
+            "purchase_success": "✅ Purchase successful!",
+            "purchase_failed": "❌ Purchase failed: {res}",
+            "no_products_wait": "No products available, please wait",
+            "insufficient_stock": "❌ Insufficient stock (current {stock})",
+            "no_products_to_manage": "❌ No products to manage",
+            "cannot_find": "❌ Cannot find product information",
+            "no_longer_exists": "❌ Product no longer exists",
+            "file_not_found": "⚠️ Original product file not found, attempting to retrieve...",
+            "purchasing": "🛒 Purchasing Product",
+            "out_of_stock": "⚠️ Out of stock",
+            "purchase_status": "✅You are purchasing:",
+            "price_label": "💰 Price: {price:.2f} USDT",
+            "stock_label": "📦 Stock: {stock} pcs",
+            "purchase_warning": "❗For first-time purchases from our store, please buy in small quantities for testing to avoid unnecessary disputes! Thank you for your cooperation!",
+            "country_list": "🌍 {title} Product List ({codes_display})",
+            "country_product": "{name} | {price}U | [{stock} pcs]"
+        },
+        "orders": {
+            "title": "📊 Order History",
+            "purchase_records": "📦 Purchase Records",
+            "no_records": "No purchase records",
+            "cancel_order": "❌ Cancel Order",
+            "not_exist": "❌ Order does not exist or no access",
+            "details": "📋 Order Details",
+            "load_failed": "❌ Failed to load order details",
+            "overview": "📊 Records Overview",
+            "total_orders": "• Total Orders: {total}",
+            "current_page": "• Current Page: {count}",
+            "recent_update": "• Recent Update: {time}",
+            "operation_guide": "💡 Operation Guide",
+            "operation_tip": "Click the buttons below to view order details or re-download products"
+        },
+        "recharge": {
+            "title": "💰 Recharge Balance",
+            "balance_recharge": "💰 Balance Recharge",
+            "records": "📜 Recharge Records",
+            "recent_records_empty": "📜 Recent Recharge Records\n\nNo records",
+            "recent_records": "📜 Recent Recharge Records (Latest First)",
+            "back_to_recharge": "🔙 Back to Recharge",
+            "exceed_balance": "❌ Exceeds withdrawable balance {balance:.2f}, please re-enter",
+            "insufficient_balance": "❌ Insufficient balance, need: {total_cost:.2f}U current: {bal:.2f}U",
+            "amount_generated": "Amount generated, please transfer according to the payable amount"
+        },
+        "profit": {
+            "center": "💸 Profit Center",
+            "apply_withdrawal": "📝 Apply for Withdrawal",
+            "application_records": "📋 Application Records",
+            "no_withdrawable": "⚠️ No withdrawable profit currently",
+            "back_to_center": "💸 Back to Profit Center",
+            "budget": "📊 Profit Budget",
+            "calculator": "📊 Profit Calculator - {name}\nHQ: {op}U (Real-time Price)",
+            "withdrawal_apply": "📝 Apply for Withdrawal",
+            "withdrawal_records_empty": "📋 Withdrawal Records\n\nNo applications",
+            "withdrawal_records": "📋 Withdrawal Records (Latest First)",
+            "withdrawal_success": "✅ Withdrawal application successful\nAmount: {amt:.2f} USDT\nAddress: {address}\nStatus: Pending Review",
+            "amount_recorded": "✅ Amount recorded: {amt:.2f} USDT\nPlease send receiving address (TRON or ERC20)"
+        },
+        "price": {
+            "management": "💰 Price Management (Page {page})",
+            "config_not_exist": "❌ Agent price configuration does not exist",
+            "invalid_price": "❌ Please enter a valid price number",
+            "below_hq_price": "❌ Agent price cannot be lower than HQ price {op} USDT",
+            "set_rate": "Set {rate}%({new_agent_price})",
+            "update_success": "Price update successful! Markup {new_markup:.2f}U, profit rate {profit_rate:.1f}% (based on current HQ price {op}U)",
+            "no_change": "No change",
+            "below_hq_error": "Agent price cannot be lower than HQ price {op} USDT (current HQ price), your input {new_agent_price} USDT is below HQ price",
+            "product_not_exist": "Original product does not exist"
+        },
+        "reports": {
+            "center": "📊 System Reports Center",
+            "sales": "📈 Sales Report ({days} days)",
+            "sales_30d": "📈 Sales Report (30 days)",
+            "user_report": "👥 User Report",
+            "user_stats": "👥 User Statistics Report",
+            "product_report": "📦 Product Report",
+            "product_stats": "📦 Product Statistics Report",
+            "financial": "💰 Financial Report ({days} days)",
+            "financial_30d": "💰 Financial Report (30 days)",
+            "overview": "📊 System Overview Report (30 days)",
+            "overview_btn": "📊 Comprehensive Overview",
+            "refresh": "🔄 Refresh Data",
+            "back_to_reports": "🔙 Back to Reports",
+            "7days": "📅 7 Days",
+            "30days": "📅 30 Days",
+            "90days": "📅 90 Days"
+        },
+        "user": {
+            "profile": "👤 Profile",
+            "contact": "👤 Contact User",
+            "info_not_exist": "❌ User information does not exist",
+            "admin_reloaded": "✅ Admin list reloaded\n\nCurrent admin user IDs:\n{admin_list}",
+            "admin_reload_no_config": "⚠️ Admin list reloaded, but no admin configured"
+        },
+        "support": {
+            "title": "📞 Contact Support",
+            "contact": "💬 Contact Support",
+            "description": "📞 Support {display}\nPlease describe the issue + User ID/Order No. for quick processing.",
+            "file_send_failed": "❌ File send failed, please contact support"
+        },
+        "help": {
+            "title": "❓ Help",
+            "instructions": "❗Instructions",
+            "instructions_simple": "Instructions"
+        },
+        "error": {
+            "load_failed": "❌ Load failed, please try again",
+            "no_permission": "❌ No permission",
+            "invalid_amount": "❌ Amount must be greater than 0, please re-enter",
+            "invalid_format": "❌ Invalid format, please enter a number",
+            "invalid_address": "❌ Incorrect address length, please re-enter",
+            "close": "❌ Close",
+            "cancel_transaction": "❌ Cancel Transaction",
+            "invalid_integer": "❌ Please enter a valid integer",
+            "quantity_required": "❌ Quantity must be > 0",
+            "download_failed": "❌ Download failed, please try again later",
+            "invalid_number": "❌ Invalid format, please enter a number (e.g., 12 or 12.5)",
+            "processing_error": "❌ Processing error, please try again",
+            "search_expired": "Search expired, please search again",
+            "operation_failed": "Operation failed",
+            "invalid_params": "Invalid parameters",
+            "amount_format_error": "Amount format error",
+            "cannot_cancel": "Cannot cancel (expired/paid/does not exist)",
+            "cancel_failed": "Cancel failed",
+            "unknown_operation": "❓ Unknown operation"
+        },
+        "success": {
+            "file_resent": "✅ File resent successfully, please check!"
+        },
+        "general": {
+            "view_transaction": "🔎 View Transaction",
+            "view_address": "📬 View Address",
+            "toggle_status": "🔄 Toggle Status",
+            "announcement": "<b>📢 Latest Announcement</b>\n\n{message_text}"
         }
     }
 }
