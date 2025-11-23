@@ -3635,16 +3635,17 @@ Refresh Time: {refresh_time}
     def show_product_detail(self, query, nowuid: str):
         """显示商品详情 - 完全仿照总部格式"""
         try:
+            uid = query.from_user.id
             prod = self.core.config.ejfl.find_one({'nowuid': nowuid})
             if not prod:
-                self.safe_edit_message(query, "❌ 商品不存在", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.not_exist'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
                 return
             
             price = self.core.get_product_price(nowuid)
             stock = self.core.get_product_stock(nowuid)
             
             if price is None:
-                self.safe_edit_message(query, "❌ 商品价格未设置", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.price_not_set'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
                 return
             
             # ✅ 获取商品在代理价格表中的分类（统一后的分类）
@@ -3657,33 +3658,34 @@ Refresh Time: {refresh_time}
             
             # ✅ 完全按照总部的简洁格式
             product_name = self.H(prod.get('projectname', 'N/A'))
-            product_status = "✅您正在购买："
+            unit = self.core.t(uid, 'common.unit')
             
             text = (
-                f"<b>{product_status} {product_name}\n\n</b>"
-                f"<b>💰 价格: {price:.2f} USDT\n\n</b>"
-                f"<b>📦 库存: {stock}个\n\n</b>"
-                f"<b>❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！\n</b>"
+                f"<b>{self.core.t(uid, 'products.purchase_status')} {product_name}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.price_label', price=price)}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.stock_label', stock=stock)}{unit}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.purchase_warning')}\n</b>"
                 
             )
             
             kb = []
             if stock > 0:
-                kb.append([InlineKeyboardButton("✅ 购买", callback_data=f"buy_{nowuid}"),
-                          InlineKeyboardButton("❗使用说明", callback_data="help")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.buy'), callback_data=f"buy_{nowuid}"),
+                          InlineKeyboardButton(self.core.t(uid, 'help.instructions'), callback_data="help")])
             else:
-                text += "\n\n⚠️ 商品缺货"
-                kb.append([InlineKeyboardButton("使用说明", callback_data="help")])
+                text += f"\n\n{self.core.t(uid, 'products.out_of_stock')}"
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'help.instructions_simple'), callback_data="help")])
             
             # ✅ 使用统一后的分类作为返回目标
-            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main"),
-                      InlineKeyboardButton("返回", callback_data=f"category_{category}")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main"),
+                      InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data=f"category_{category}")])
             
             self.safe_edit_message(query, text, kb, parse_mode=ParseMode.HTML)
         
         except Exception as e:
             logger.error(f"❌ 获取商品详情失败: {e}")
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
             
             
     def handle_buy_product(self, query, nowuid: str):
@@ -3696,18 +3698,32 @@ Refresh Time: {refresh_time}
         bal = user.get('USDT', 0) if user else 0
         max_afford = int(bal // price) if price else 0
         max_qty = min(stock, max_afford)
+        unit = self.core.t(uid, 'common.unit')
+        
+        lang = self.core.get_user_language(uid)
         
         # ✅ 完全按照总部的格式
-        text = (
-            f"请输入数量:\n"
-            f"格式: 10\n\n"
-            f"✅ 您正在购买 - {self.H(prod['projectname'])}\n"
-            f"💰 单价: {price} U\n"
-            f"🪙 您的余额: {bal:.2f} U\n"
-            f"📊 最多可买: {max_qty} 个"
-        )
+        if lang == 'zh':
+            text = (
+                f"请输入数量:\n"
+                f"格式: 10\n\n"
+                f"✅ 您正在购买 - {self.H(prod['projectname'])}\n"
+                f"💰 单价: {price} U\n"
+                f"🪙 您的余额: {bal:.2f} U\n"
+                f"📊 最多可买: {max_qty} {unit}"
+            )
+        else:
+            text = (
+                f"Please enter quantity:\n"
+                f"Format: 10\n\n"
+                f"✅ You are purchasing - {self.H(prod['projectname'])}\n"
+                f"💰 Unit price: {price} U\n"
+                f"🪙 Your balance: {bal:.2f} U\n"
+                f"📊 Max affordable: {max_qty} {unit}"
+            )
+        
         kb = [
-            [InlineKeyboardButton("❌ 取消交易", callback_data=f"product_{nowuid}")]
+            [InlineKeyboardButton(self.core.t(uid, 'error.cancel_transaction'), callback_data=f"product_{nowuid}")]
         ]
         
         # ✅ 保存当前消息的ID（这是要被删除的消息）
@@ -3733,7 +3749,7 @@ Refresh Time: {refresh_time}
         try:
             qty = int(update.message.text.strip())
         except:
-            update.message.reply_text("❌ 请输入有效整数")
+            update.message.reply_text(self.core.t(uid, 'error.invalid_integer'))
             return
         
         st = self.user_states[uid]
@@ -3745,18 +3761,19 @@ Refresh Time: {refresh_time}
         bal = user.get('USDT', 0) if user else 0
         
         if qty <= 0:
-            update.message.reply_text("❌ 数量需 > 0")
+            update.message.reply_text(self.core.t(uid, 'error.quantity_required'))
             return
         if qty > stock:
-            update.message.reply_text(f"❌ 库存不足（当前 {stock}）")
+            update.message.reply_text(self.core.t(uid, 'products.insufficient_stock', stock=stock))
             return
         
         total_cost = price * qty
         if total_cost > bal:
-            update.message.reply_text(f"❌ 余额不足，需: {total_cost:.2f}U 当前: {bal:.2f}U")
+            update.message.reply_text(self.core.t(uid, 'recharge.insufficient_balance', total_cost=total_cost, bal=bal))
             return
         
         chat_id = uid
+        lang = self.core.get_user_language(uid)
         
         # ✅ 先删除"请输入数量"的消息
         if 'input_msg_id' in st:
@@ -3772,17 +3789,25 @@ Refresh Time: {refresh_time}
             logger.error(f"删除用户消息失败: {e}")
         
         # ✅ 显示确认页面（总部格式）
-        text = (
-            f"<b>✅ 您正在购买 - {self.H(prod['projectname'])}</b>\n\n"
-            f"<b>🛍 数量: {qty}</b>\n\n"
-            f"<b>💰 价格: {price}</b>\n\n"
-            f"<b>🪙 您的余额: {bal:.2f}</b>"
-        )
+        if lang == 'zh':
+            text = (
+                f"<b>✅ 您正在购买 - {self.H(prod['projectname'])}</b>\n\n"
+                f"<b>🛍 数量: {qty}</b>\n\n"
+                f"<b>💰 价格: {price}</b>\n\n"
+                f"<b>🪙 您的余额: {bal:.2f}</b>"
+            )
+        else:
+            text = (
+                f"<b>✅ You are purchasing - {self.H(prod['projectname'])}</b>\n\n"
+                f"<b>🛍 Quantity: {qty}</b>\n\n"
+                f"<b>💰 Price: {price}</b>\n\n"
+                f"<b>🪙 Your balance: {bal:.2f}</b>"
+            )
         
         kb = [
-            [InlineKeyboardButton("❌ 取消交易", callback_data=f"product_{nowuid}"),
-             InlineKeyboardButton("✅ 确认购买", callback_data=f"confirm_buy_{nowuid}_{qty}")],
-            [InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'error.cancel_transaction'), callback_data=f"product_{nowuid}"),
+             InlineKeyboardButton(self.core.t(uid, 'products.confirm_purchase'), callback_data=f"confirm_buy_{nowuid}_{qty}")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]
         ]
         
         # ✅ 用 send_message 发送确认页面
@@ -3830,8 +3855,8 @@ Refresh Time: {refresh_time}
 
             # ✅ 发送购买成功通知（不包括订单、商品等细节内容）
             keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🛍️ 继续购买", callback_data="products"),
-                 InlineKeyboardButton("👤 个人中心", callback_data="profile")]
+                [InlineKeyboardButton(self.core.t(uid, 'products.continue_shopping'), callback_data="products"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")]
             ])
             try:
                 context.bot.send_message(
@@ -3844,9 +3869,9 @@ Refresh Time: {refresh_time}
             except Exception as msg_error:
                 logger.error(f"❌ 发送购买成功通知失败: {msg_error}")
             
-            query.answer("✅ 购买成功！")
+            query.answer(self.core.t(uid, 'products.purchase_success'))
         else:
-            query.answer(f"❌ 购买失败: {res}", show_alert=True)
+            query.answer(self.core.t(uid, 'products.purchase_failed', res=res), show_alert=True)
        
     def show_user_profile(self, query):
         """显示用户个人中心"""
@@ -4631,11 +4656,22 @@ Refresh Time: {refresh_time}
             total_stock = sum(p['stock'] for p in all_products)
             
             # 构建消息文本
-            text = f"🌍 {title}商品列表 ({codes_display})\n\n"
-            text += f"📊 搜索结果\n"
-            text += f"  • 总商品数：{total}\n"
-            text += f"  • 总库存：{total_stock}\n"
-            text += f"  • 当前页：{page}/{total_pages}\n\n"
+            uid = update.effective_user.id
+            lang = self.core.get_user_language(uid)
+            unit = self.core.t(uid, 'common.unit')
+            
+            if lang == 'zh':
+                text = f"🌍 {title}商品列表 ({codes_display})\n\n"
+                text += f"📊 搜索结果\n"
+                text += f"  • 总商品数：{total}\n"
+                text += f"  • 总库存：{total_stock}\n"
+                text += f"  • 当前页：{page}/{total_pages}\n\n"
+            else:
+                text = f"🌍 {title} Product List ({codes_display})\n\n"
+                text += f"📊 Search Results\n"
+                text += f"  • Total Products: {total}\n"
+                text += f"  • Total Stock: {total_stock}\n"
+                text += f"  • Current Page: {page}/{total_pages}\n\n"
             
             # 构建按钮
             kb = []
@@ -4649,23 +4685,23 @@ Refresh Time: {refresh_time}
                 if len(name) > 25:
                     name = name[:25] + "..."
                 
-                button_text = f"{name} | {price}U | [{stock}个]"
+                button_text = f"{name} | {price}U | [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 分页按钮
             if total_pages > 1:
                 pag = []
                 if page > 1:
-                    pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"country_page_{page-1}"))
+                    pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"country_page_{page-1}"))
                 pag.append(InlineKeyboardButton(f"📄 {page}/{total_pages}", callback_data="no_action"))
                 if page < total_pages:
-                    pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"country_page_{page+1}"))
+                    pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"country_page_{page+1}"))
                 kb.append(pag)
             
             # 底部按钮
             kb.append([
-                InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-                InlineKeyboardButton("🏠 主菜单", callback_data="back_main")
+                InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+                InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")
             ])
             
             # 发送或编辑消息
@@ -4841,7 +4877,10 @@ Refresh Time: {refresh_time}
                 name_display = product_name[:20] if len(product_name) > 20 else product_name
                 
                 # 构建按钮文本："商品名 | 数量:N | YYYY-MM-DD HH:MM"
-                button_text = f"{name_display} | 数量:{quantity} | {time_display}"
+                if lang == 'zh':
+                    button_text = f"{name_display} | 数量:{quantity} | {time_display}"
+                else:
+                    button_text = f"{name_display} | Qty:{quantity} | {time_display}"
                 
                 # 添加订单详情按钮
                 kb.append([InlineKeyboardButton(
@@ -4852,9 +4891,9 @@ Refresh Time: {refresh_time}
             # 分页按钮
             pag = []
             if page > 1:
-                pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"orders_page_{page-1}"))
+                pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"orders_page_{page-1}"))
             if page < total_pages:
-                pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"orders_page_{page+1}"))
+                pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"orders_page_{page+1}"))
             if pag:
                 kb.append(pag)
             
@@ -4888,28 +4927,40 @@ Refresh Time: {refresh_time}
             })
             
             if not order:
-                query.answer("❌ 订单不存在或无权访问", show_alert=True)
+                query.answer(self.core.t(uid, 'orders.not_exist'), show_alert=True)
                 return
             
             # 提取订单信息
-            product_name = order.get('projectname', '未知商品')
+            lang = self.core.get_user_language(uid)
+            product_name = order.get('projectname', self.core.t(uid, 'products.not_exist') if lang == 'en' else '未知商品')
             quantity = order.get('count', 1)
             total_amount = float(order.get('ts', 0))
             unit_price = total_amount / max(quantity, 1)
-            order_time = order.get('timer', '未知时间')
+            order_time = order.get('timer', '-')
             category = order.get('category', '-')
             nowuid = order.get('nowuid', '')
             
             # 构建详情文本
-            text = "📋 订单详情\n\n"
-            text += f"📦 商品：{product_name}\n"
-            text += f"🔢 数量：{quantity}\n"
-            text += f"💴 单价：{unit_price:.2f}U\n"
-            text += f"💰 总额：{total_amount:.2f}U\n"
-            text += f"🕒 时间：{order_time}\n"
-            if category and category != '-':
-                text += f"📂 分类：{category}\n"
-            text += f"📋 订单号：{order_id}\n"
+            if lang == 'zh':
+                text = "📋 订单详情\n\n"
+                text += f"📦 商品：{product_name}\n"
+                text += f"🔢 数量：{quantity}\n"
+                text += f"💴 单价：{unit_price:.2f}U\n"
+                text += f"💰 总额：{total_amount:.2f}U\n"
+                text += f"🕒 时间：{order_time}\n"
+                if category and category != '-':
+                    text += f"📂 分类：{category}\n"
+                text += f"📋 订单号：{order_id}\n"
+            else:
+                text = "📋 Order Details\n\n"
+                text += f"📦 Product: {product_name}\n"
+                text += f"🔢 Quantity: {quantity}\n"
+                text += f"💴 Unit Price: {unit_price:.2f}U\n"
+                text += f"💰 Total: {total_amount:.2f}U\n"
+                text += f"🕒 Time: {order_time}\n"
+                if category and category != '-':
+                    text += f"📂 Category: {category}\n"
+                text += f"📋 Order No.: {order_id}\n"
             
             # 构建按钮
             kb = []
@@ -4917,19 +4968,21 @@ Refresh Time: {refresh_time}
             # 第一行：再次购买 + 下载文件
             row1 = []
             if nowuid:
+                buy_again_text = "🛒 再次购买" if lang == 'zh' else "🛒 Buy Again"
                 row1.append(InlineKeyboardButton(
-                    "🛒 再次购买",
+                    buy_again_text,
                     callback_data=f"product_{nowuid}"
                 ))
+            download_text = "📥 下载文件" if lang == 'zh' else "📥 Download File"
             row1.append(InlineKeyboardButton(
-                "📥 下载文件",
+                download_text,
                 callback_data=f"redownload_{order_id}"
             ))
             if row1:
                 kb.append(row1)
             
             # 第二行：返回列表
-            kb.append([InlineKeyboardButton("🔙 返回列表", callback_data="orders")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.back_to_list'), callback_data="orders")])
             
             self.safe_edit_message(query, text, kb, parse_mode=None)
             query.answer()
@@ -4938,7 +4991,7 @@ Refresh Time: {refresh_time}
             logger.error(f"显示订单详情失败: {e}")
             import traceback
             traceback.print_exc()
-            query.answer("❌ 加载订单详情失败", show_alert=True)
+            query.answer(self.core.t(uid, 'orders.load_failed'), show_alert=True)
 
     def handle_redownload_order(self, query, order_id: str):
         """处理重新下载订单文件（使用存储的 item_ids）"""
