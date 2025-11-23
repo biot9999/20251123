@@ -90,6 +90,102 @@ AGENT_RESTOCK_NOTIFY_CHAT_ID = os.getenv("AGENT_RESTOCK_NOTIFY_CHAT_ID")
 AGENT_PROTOCOL_CATEGORY_UNIFIED = os.getenv("AGENT_PROTOCOL_CATEGORY_UNIFIED", "🔥二次协议号（session+json）")
 AGENT_PROTOCOL_CATEGORY_ALIASES = os.getenv("AGENT_PROTOCOL_CATEGORY_ALIASES", "协议号,未分类,,🔥二手TG协议号（session+json）,二手TG协议号（session+json）,二次协议号（session+json）")
 
+# ================= 国际化配置 =================
+DEFAULT_LANGUAGE = "zh"
+
+I18N = {
+    "zh": {
+        "common": {
+            "back_main": "🏠 主菜单",
+            "back": "🔙 返回"
+        },
+        "start": {
+            "welcome": "🎉 欢迎使用 {agent_name}！",
+            "user_info": "👤 用户信息",
+            "user_id": "• ID: {user_id}",
+            "username": "• 用户名: @{username}",
+            "nickname": "• 昵称: {nickname}",
+            "select_function": "请选择功能："
+        },
+        "main_menu": {
+            "title": "🏠 主菜单",
+            "current_time": "当前时间: {time}"
+        },
+        "btn": {
+            "products": "🛍️ 商品中心",
+            "profile": "👤 个人中心",
+            "recharge": "💰 充值余额",
+            "orders": "📊 订单历史",
+            "support": "📞 联系客服",
+            "help": "❓ 使用帮助",
+            "price_management": "💰 价格管理",
+            "system_reports": "📊 系统报表",
+            "profit_center": "💸 利润提现",
+            "language": "🌐 语言 / Language",
+            "back_main": "🏠 主菜单"
+        },
+        "lang": {
+            "menu_title": "🌐 语言选择 / Language Selection",
+            "zh_label": "🇨🇳 中文",
+            "en_label": "🇬🇧 English",
+            "set_ok": "✅ 语言已切换"
+        },
+        "products": {
+            "categories": {
+                "title": "🛒 商品分类 - 请选择所需商品：",
+                "search_tip": "❗快速查找商品，输入区号查找（例：+54）",
+                "first_purchase_tip": "❗️首次购买请先少量测试，避免纠纷！",
+                "inactive_tip": "❗️长期未使用账户可能会出现问题，联系客服处理。"
+            }
+        }
+    },
+    "en": {
+        "common": {
+            "back_main": "🏠 Main Menu",
+            "back": "🔙 Back"
+        },
+        "start": {
+            "welcome": "🎉 Welcome to {agent_name}!",
+            "user_info": "👤 User Information",
+            "user_id": "• ID: {user_id}",
+            "username": "• Username: @{username}",
+            "nickname": "• Nickname: {nickname}",
+            "select_function": "Please select a function:"
+        },
+        "main_menu": {
+            "title": "🏠 Main Menu",
+            "current_time": "Current time: {time}"
+        },
+        "btn": {
+            "products": "🛍️ Products",
+            "profile": "👤 Profile",
+            "recharge": "💰 Recharge",
+            "orders": "📊 Orders",
+            "support": "📞 Support",
+            "help": "❓ Help",
+            "price_management": "💰 Price Management",
+            "system_reports": "📊 System Reports",
+            "profit_center": "💸 Profit Center",
+            "language": "🌐 语言 / Language",
+            "back_main": "🏠 Main Menu"
+        },
+        "lang": {
+            "menu_title": "🌐 语言选择 / Language Selection",
+            "zh_label": "🇨🇳 中文",
+            "en_label": "🇬🇧 English",
+            "set_ok": "✅ Language switched"
+        },
+        "products": {
+            "categories": {
+                "title": "🛒 Product Categories - Please select:",
+                "search_tip": "❗Quick search by country code (e.g., +54)",
+                "first_purchase_tip": "❗️First-time buyers please test with small quantities!",
+                "inactive_tip": "❗️Long-inactive accounts may have issues. Contact support."
+            }
+        }
+    }
+}
+
 class AgentBotConfig:
     """代理机器人配置"""
     def __init__(self):
@@ -632,7 +728,8 @@ class AgentBotCore:
                 'register_time': now,
                 'last_active': now,
                 'last_contact_time': now,
-                'status': 'active'
+                'status': 'active',
+                'language': DEFAULT_LANGUAGE
             })
             logger.info(f"✅ 用户注册成功 {user_id}")
             return True
@@ -646,6 +743,91 @@ class AgentBotCore:
         except Exception as e:
             logger.error(f"❌ 获取用户信息失败: {e}")
             return None
+
+    # ---------- 语言管理 ----------
+    def get_user_language(self, user_id: int) -> str:
+        """
+        获取用户的语言偏好
+        
+        Args:
+            user_id: 用户ID
+        
+        Returns:
+            语言代码（'zh' 或 'en'），默认返回 DEFAULT_LANGUAGE
+        """
+        try:
+            user_info = self.get_user_info(user_id)
+            if user_info and 'language' in user_info:
+                lang = user_info['language']
+                if lang in I18N:
+                    return lang
+            return DEFAULT_LANGUAGE
+        except Exception as e:
+            logger.error(f"❌ 获取用户语言失败: {e}")
+            return DEFAULT_LANGUAGE
+
+    def set_user_language(self, user_id: int, lang: str) -> bool:
+        """
+        设置用户的语言偏好
+        
+        Args:
+            user_id: 用户ID
+            lang: 语言代码（'zh' 或 'en'）
+        
+        Returns:
+            True 如果设置成功，否则 False
+        """
+        try:
+            if lang not in I18N:
+                logger.warning(f"⚠️ 不支持的语言代码: {lang}")
+                return False
+            
+            coll = self.config.get_agent_user_collection()
+            result = coll.update_one(
+                {'user_id': user_id},
+                {'$set': {'language': lang}}
+            )
+            
+            if result.modified_count > 0 or result.matched_count > 0:
+                logger.info(f"✅ 用户 {user_id} 语言已设置为 {lang}")
+                return True
+            else:
+                logger.warning(f"⚠️ 用户 {user_id} 不存在，无法设置语言")
+                return False
+        except Exception as e:
+            logger.error(f"❌ 设置用户语言失败: {e}")
+            return False
+
+    def t(self, user_id: int, key: str, **kwargs) -> str:
+        """
+        翻译助手函数
+        
+        Args:
+            user_id: 用户ID
+            key: 翻译键（点号分隔，如 'start.welcome'）
+            **kwargs: 格式化参数
+        
+        Returns:
+            翻译后的文本，如果键不存在则返回键本身
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            keys = key.split('.')
+            value = I18N[lang]
+            
+            for k in keys:
+                if isinstance(value, dict) and k in value:
+                    value = value[k]
+                else:
+                    logger.warning(f"⚠️ 翻译键不存在: {key} (lang={lang})")
+                    return key
+            
+            if isinstance(value, str) and kwargs:
+                return value.format(**kwargs)
+            return value
+        except Exception as e:
+            logger.error(f"❌ 翻译失败 key={key}: {e}")
+            return key
 
     def broadcast_ad_to_agent_users(self, message_text: str, parse_mode: str = ParseMode.HTML) -> int:
         """
@@ -2597,45 +2779,52 @@ class AgentBotHandlers:
                     return
             
             # ✅ 默认启动消息
-            text = f"""🎉 欢迎使用 {self.H(self.core.config.AGENT_NAME)}！
+            uid = user.id
+            username_display = self.H(user.username or ('未设置' if self.core.get_user_language(uid) == 'zh' else 'Not set'))
+            nickname_display = self.H(user.first_name or ('未设置' if self.core.get_user_language(uid) == 'zh' else 'Not set'))
+            
+            text = f"""{self.core.t(uid, 'start.welcome', agent_name=self.H(self.core.config.AGENT_NAME))}
 
-👤 用户信息
-• ID: {user.id}
-• 用户名: @{self.H(user.username or '未设置')}
-• 昵称: {self.H(user.first_name or '未设置')}
+{self.core.t(uid, 'start.user_info')}
+{self.core.t(uid, 'start.user_id', user_id=user.id)}
+{self.core.t(uid, 'start.username', username=username_display)}
+{self.core.t(uid, 'start.nickname', nickname=nickname_display)}
 
-请选择功能："""
+{self.core.t(uid, 'start.select_function')}"""
             kb = [
-                [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-                 InlineKeyboardButton("👤 个人中心", callback_data="profile")],
-                [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-                 InlineKeyboardButton("📊 订单历史", callback_data="orders")]
+                [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")],
+                [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")]
             ]
             if self.core.config.is_admin(user.id):
-                kb.append([InlineKeyboardButton("💰 价格管理", callback_data="price_management"),
-                           InlineKeyboardButton("📊 系统报表", callback_data="system_reports")])
-                kb.append([InlineKeyboardButton("💸 利润提现", callback_data="profit_center")])
-            kb.append([InlineKeyboardButton("📞 联系客服", callback_data="support"),
-                       InlineKeyboardButton("❓ 使用帮助", callback_data="help")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.price_management'), callback_data="price_management"),
+                           InlineKeyboardButton(self.core.t(uid, 'btn.system_reports'), callback_data="system_reports")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.profit_center'), callback_data="profit_center")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+                       InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.language'), callback_data="language_menu")])
             update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
         else:
             update.message.reply_text("初始化失败，请稍后重试")
 
     def show_main_menu(self, query):
         user = query.from_user
+        uid = user.id
         kb = [
-            [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-             InlineKeyboardButton("👤 个人中心", callback_data="profile")],
-            [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-             InlineKeyboardButton("📊 订单历史", callback_data="orders")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")]
         ]
         if self.core.config.is_admin(user.id):
-            kb.append([InlineKeyboardButton("💰 价格管理", callback_data="price_management"),
-                       InlineKeyboardButton("📊 系统报表", callback_data="system_reports")])
-            kb.append([InlineKeyboardButton("💸 利润提现", callback_data="profit_center")])
-        kb.append([InlineKeyboardButton("📞 联系客服", callback_data="support"),
-                   InlineKeyboardButton("❓ 使用帮助", callback_data="help")])
-        text = f"🏠 主菜单\n\n当前时间: {self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')}"
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.price_management'), callback_data="price_management"),
+                       InlineKeyboardButton(self.core.t(uid, 'btn.system_reports'), callback_data="system_reports")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.profit_center'), callback_data="profit_center")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+                   InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.language'), callback_data="language_menu")])
+        text = self.core.t(uid, 'main_menu.title') + "\n\n" + self.core.t(uid, 'main_menu.current_time', time=self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def reload_admins_command(self, update: Update, context: CallbackContext):
@@ -4130,6 +4319,28 @@ class AgentBotHandlers:
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
+    def show_language_menu(self, query):
+        """显示语言选择菜单"""
+        uid = query.from_user.id
+        text = self.core.t(uid, 'lang.menu_title')
+        kb = [
+            [InlineKeyboardButton(self.core.t(uid, 'lang.zh_label'), callback_data="set_lang_zh")],
+            [InlineKeyboardButton(self.core.t(uid, 'lang.en_label'), callback_data="set_lang_en")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.back_main'), callback_data="back_main")]
+        ]
+        self.safe_edit_message(query, text, kb, parse_mode=None)
+
+    def set_user_language(self, query, lang: str):
+        """设置用户语言并返回主菜单"""
+        uid = query.from_user.id
+        success = self.core.set_user_language(uid, lang)
+        if success:
+            query.answer(self.core.t(uid, 'lang.set_ok'), show_alert=False)
+            # 刷新主菜单以显示新语言
+            self.show_main_menu(query)
+        else:
+            query.answer("❌ Failed to set language", show_alert=True)
+
     def show_order_history(self, query, page: int = 1):
         """显示用户订单历史（分页）- HQ风格紧凑列表"""
         uid = query.from_user.id
@@ -4417,6 +4628,14 @@ class AgentBotHandlers:
                 self.show_main_menu(q); q.answer(); return
             elif d == "back_products":
                 self.show_product_categories(q); q.answer(); return
+            
+            # 语言选择
+            elif d == "language_menu":
+                self.show_language_menu(q); q.answer(); return
+            elif d == "set_lang_zh":
+                self.set_user_language(q, "zh"); return
+            elif d == "set_lang_en":
+                self.set_user_language(q, "en"); return
             
             # 国家/地区商品查询分页
             elif d.startswith("country_page_"):
