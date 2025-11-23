@@ -4334,7 +4334,7 @@ class AgentBotCore:
             if not items:
                 return 0
             
-            # ✅ 翻译产品名称（支持年份前缀）
+            # ✅ Translate product name (with year prefix support)
             translated_product_name = self.translate_product_name(user_id, product_name)
             
             bot = Bot(self.config.BOT_TOKEN)
@@ -6836,7 +6836,7 @@ Refresh Time: {refresh_time}
             kb = []
             for order in orders:
                 raw_product_name = order.get('projectname', '未知商品')
-                # ✅ 翻译产品名称（支持年份前缀）
+                # ✅ Translate product name (with year prefix support)
                 product_name = self.core.translate_product_name(uid, raw_product_name)
                 quantity = order.get('count', 1)
                 order_time = order.get('timer', '未知时间')
