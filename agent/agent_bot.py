@@ -5167,8 +5167,11 @@ Refresh Time: {refresh_time}
                         price = p['price']
                         stock = p['stock']
                         
+                        # ✅ 翻译分类名称
+                        translated_name = self.core.translate_category(uid, name)
+                        
                         # ✅ 按钮格式
-                        button_text = f"{name} {price}U   [{stock}{unit}]"
+                        button_text = f"{translated_name} {price}U   [{stock}{unit}]"
                         kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
                     
                     # 如果没有有库存的商品
@@ -5278,8 +5281,11 @@ Refresh Time: {refresh_time}
                 price = p['price']
                 stock = p['stock']
                 
+                # ✅ 翻译分类名称
+                translated_name = self.core.translate_category(uid, name)
+                
                 # ✅ 按钮格式
-                button_text = f"{name} {price}U    [{stock}{unit}]"
+                button_text = f"{translated_name} {price}U    [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 如果没有有库存的商品
@@ -5326,7 +5332,9 @@ Refresh Time: {refresh_time}
             category = agent_price_info.get('category') if agent_price_info else (prod.get('leixing') or AGENT_PROTOCOL_CATEGORY_UNIFIED)
             
             # ✅ 完全按照总部的简洁格式
-            product_name = self.H(prod.get('projectname', 'N/A'))
+            raw_product_name = prod.get('projectname', 'N/A')
+            translated_product_name = self.core.translate_category(uid, raw_product_name)
+            product_name = self.H(translated_product_name)
             unit = self.core.t(uid, 'common.unit')
             
             text = (
@@ -5371,12 +5379,16 @@ Refresh Time: {refresh_time}
         
         lang = self.core.get_user_language(uid)
         
+        # ✅ 翻译商品名称
+        raw_product_name = prod['projectname']
+        translated_product_name = self.core.translate_category(uid, raw_product_name)
+        
         # ✅ 完全按照总部的格式
         if lang == 'zh':
             text = (
                 f"请输入数量:\n"
                 f"格式: 10\n\n"
-                f"✅ 您正在购买 - {self.H(prod['projectname'])}\n"
+                f"✅ 您正在购买 - {self.H(translated_product_name)}\n"
                 f"💰 单价: {price} U\n"
                 f"🪙 您的余额: {bal:.2f} U\n"
                 f"📊 最多可买: {max_qty} {unit}"
@@ -5385,7 +5397,7 @@ Refresh Time: {refresh_time}
             text = (
                 f"Please enter quantity:\n"
                 f"Format: 10\n\n"
-                f"✅ You are purchasing - {self.H(prod['projectname'])}\n"
+                f"✅ You are purchasing - {self.H(translated_product_name)}\n"
                 f"💰 Unit price: {price} U\n"
                 f"🪙 Your balance: {bal:.2f} U\n"
                 f"📊 Max affordable: {max_qty} {unit}"
@@ -5444,6 +5456,10 @@ Refresh Time: {refresh_time}
         chat_id = uid
         lang = self.core.get_user_language(uid)
         
+        # ✅ 翻译商品名称
+        raw_product_name = prod['projectname']
+        translated_product_name = self.core.translate_category(uid, raw_product_name)
+        
         # ✅ 先删除"请输入数量"的消息
         if 'input_msg_id' in st:
             try:
@@ -5460,14 +5476,14 @@ Refresh Time: {refresh_time}
         # ✅ 显示确认页面（总部格式）
         if lang == 'zh':
             text = (
-                f"<b>✅ 您正在购买 - {self.H(prod['projectname'])}</b>\n\n"
+                f"<b>✅ 您正在购买 - {self.H(translated_product_name)}</b>\n\n"
                 f"<b>🛍 数量: {qty}</b>\n\n"
                 f"<b>💰 价格: {price}</b>\n\n"
                 f"<b>🪙 您的余额: {bal:.2f}</b>"
             )
         else:
             text = (
-                f"<b>✅ You are purchasing - {self.H(prod['projectname'])}</b>\n\n"
+                f"<b>✅ You are purchasing - {self.H(translated_product_name)}</b>\n\n"
                 f"<b>🛍 Quantity: {qty}</b>\n\n"
                 f"<b>💰 Price: {price}</b>\n\n"
                 f"<b>🪙 Your balance: {bal:.2f}</b>"
@@ -6350,11 +6366,14 @@ Refresh Time: {refresh_time}
                 stock = p['stock']
                 nowuid = p['nowuid']
                 
-                # 截断商品名避免按钮太长
-                if len(name) > 25:
-                    name = name[:25] + "..."
+                # ✅ 翻译商品名称
+                translated_name = self.core.translate_category(uid, name)
                 
-                button_text = f"{name} | {price}U | [{stock}{unit}]"
+                # 截断商品名避免按钮太长
+                if len(translated_name) > 25:
+                    translated_name = translated_name[:25] + "..."
+                
+                button_text = f"{translated_name} | {price}U | [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 分页按钮
