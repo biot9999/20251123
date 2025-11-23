@@ -56,10 +56,9 @@ class MultiBotDistributionSystem:
     """多机器人分销系统管理类"""
     
     def __init__(self):
-        # 直接设置你的用户ID为管理员
-        self.master_admin_ids = [5991190607]
-        print(f"🤖 设置管理员ID: {self.master_admin_ids}")
+        # 管理员配置现在从环境变量ADMIN_IDS读取
         print("🤖 多机器人分销系统核心初始化完成")
+        print(f"🤖 管理员ID从环境变量读取: {get_admin_ids()}")
         
     def is_master_admin(self, user_id):
         """检查是否为总部管理员"""
@@ -645,7 +644,7 @@ def start_verified_user(update: Update, context: CallbackContext, user_id: int):
     # 拼接完整文本
     full_text = welcome_line + welcome_text
 
-    # 营业状态限制 - 管理员可以访问
+    # 营业状态限制 - 当业务关闭(0)时，只允许管理员访问，普通用户无法使用
     business_status = shangtext.find_one({'projectname': '营业状态'})['text']
     if business_status == 0 and not is_admin(user_id):
         return
@@ -1390,7 +1389,7 @@ def start(update: Update, context: CallbackContext):
         nowuid = args[1][4:]
         return gmsp(update, context, nowuid=nowuid)
 
-    # 营业状态限制 - 管理员可以访问
+    # 营业状态限制 - 当业务关闭(0)时，只允许管理员访问，普通用户无法使用
     business_status = shangtext.find_one({'projectname': '营业状态'})['text']
     if business_status == 0 and not is_admin(user_id):
         return
@@ -7054,8 +7053,8 @@ def qrgaimai(update: Update, context: CallbackContext):
             for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
             Timer(1, dabaohao,
                   args=[context, user_id, folder_names, '协议号', nowuid, erjiprojectname, fstext, timer]).start()
@@ -7143,8 +7142,8 @@ def qrgaimai(update: Update, context: CallbackContext):
             for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
 
         elif fhtype == 'API':
@@ -7199,8 +7198,8 @@ def qrgaimai(update: Update, context: CallbackContext):
             for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
         elif fhtype == '会员链接':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
@@ -7249,8 +7248,8 @@ def qrgaimai(update: Update, context: CallbackContext):
             for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
         else:
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
@@ -7296,8 +7295,8 @@ def qrgaimai(update: Update, context: CallbackContext):
             for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
             Timer(1, dabaohao,
                   args=[context, user_id, folder_names, '直登号', nowuid, erjiprojectname, fstext, timer]).start()
@@ -11052,8 +11051,8 @@ def jiexi(context: CallbackContext):
                         parse_mode='HTML',
                         disable_web_page_preview=True
                     )
-                except:
-                    continue
+                except Exception as e:
+                    logging.warning(f"Failed to send recharge notification to admin {admin_id}: {e}")
 
             # 删除订单消息，更新订单状态为成功
             existing_order = topup.find_one({'user_id': user_id, 'status': 'pending'})
