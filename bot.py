@@ -58,7 +58,7 @@ class MultiBotDistributionSystem:
     def __init__(self):
         # 管理员配置现在从环境变量ADMIN_IDS读取
         print("🤖 多机器人分销系统核心初始化完成")
-        print(f"🤖 管理员ID从环境变量读取: {ADMIN_IDS}")
+        # Note: ADMIN_IDS will be loaded later when .env is processed
         
     def is_master_admin(self, user_id):
         """检查是否为总部管理员"""
