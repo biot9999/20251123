@@ -179,7 +179,9 @@ I18N = {
             "purchase_warning": "❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！",
             "country_list": "🌍 {title}商品列表 ({codes_display})",
             "country_product": "{name} | {price}U | [{stock}个]",
-            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540"
+            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540",
+            "file_delivery_quantity": "🔢 商品数量: {count} 个",
+            "file_delivery_time": "⏰ 发货时间: {time}"
         },
         "orders": {
             "title": "📊 订单历史",
@@ -219,7 +221,20 @@ I18N = {
             "withdrawal_records_empty": "📋 提现记录\n\n暂无申请",
             "withdrawal_records": "📋 提现记录（最新优先）",
             "withdrawal_success": "✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{address}\n状态：待审核",
-            "amount_recorded": "✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）"
+            "amount_recorded": "✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）",
+            "withdraw_start_title": "📝 <b>申请提现</b>\n\n可提现金额: {available:.2f} USDT\n请输入提现金额（例如: {example:.2f}）\n\n直接发送数字金额：",
+            "withdraw_input_amount": "请输入提现金额",
+            "withdraw_invalid_amount": "❌ 金额必须大于0，请重新输入",
+            "withdraw_exceed_balance": "❌ 超出可提现余额 {balance:.2f}，请重新输入",
+            "withdraw_invalid_address": "❌ 地址长度不正确，请重新输入",
+            "withdraw_submit_success": "✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{address}\n状态：待审核",
+            "withdraw_submit_failed": "❌ {reason}",
+            "withdraw_list_title": "📋 提现记录（最新优先）\n\n",
+            "withdraw_record_item": "💰 {amount:.4f}U | {status}\n地址: {address} | 时间(京): {time}\n",
+            "withdraw_record_rejected": "原因: {reason}\n",
+            "withdraw_record_completed": "Tx: {tx}\n",
+            "withdraw_list_note": "（需人工审核/付款）",
+            "withdraw_cancel": "🔙 取消"
         },
         "price": {
             "management": "💰 价格管理（第{page}页）",
@@ -404,7 +419,9 @@ I18N = {
             "purchase_warning": "❗For first-time purchases from our store, please buy in small quantities for testing to avoid unnecessary disputes! Thank you for your cooperation!",
             "country_list": "🌍 {title} Product List ({codes_display})",
             "country_product": "{name} | {price}U | [{stock} pcs]",
-            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540"
+            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540",
+            "file_delivery_quantity": "🔢 Product Quantity: {count} pcs",
+            "file_delivery_time": "⏰ Delivery Time: {time}"
         },
         "orders": {
             "title": "📊 Order History",
@@ -444,7 +461,20 @@ I18N = {
             "withdrawal_records_empty": "📋 Withdrawal Records\n\nNo applications",
             "withdrawal_records": "📋 Withdrawal Records (Latest First)",
             "withdrawal_success": "✅ Withdrawal application successful\nAmount: {amt:.2f} USDT\nAddress: {address}\nStatus: Pending Review",
-            "amount_recorded": "✅ Amount recorded: {amt:.2f} USDT\nPlease send receiving address (TRON or ERC20)"
+            "amount_recorded": "✅ Amount recorded: {amt:.2f} USDT\nPlease send receiving address (TRON or ERC20)",
+            "withdraw_start_title": "📝 <b>Apply for Withdrawal</b>\n\nWithdrawable Amount: {available:.2f} USDT\nPlease enter withdrawal amount (e.g.: {example:.2f})\n\nSend amount directly:",
+            "withdraw_input_amount": "Please enter withdrawal amount",
+            "withdraw_invalid_amount": "❌ Amount must be greater than 0, please re-enter",
+            "withdraw_exceed_balance": "❌ Exceeds withdrawable balance {balance:.2f}, please re-enter",
+            "withdraw_invalid_address": "❌ Incorrect address length, please re-enter",
+            "withdraw_submit_success": "✅ Withdrawal application successful\nAmount: {amt:.2f} USDT\nAddress: {address}\nStatus: Pending Review",
+            "withdraw_submit_failed": "❌ {reason}",
+            "withdraw_list_title": "📋 Withdrawal Records (Latest First)\n\n",
+            "withdraw_record_item": "💰 {amount:.4f}U | {status}\nAddress: {address} | Time(BJT): {time}\n",
+            "withdraw_record_rejected": "Reason: {reason}\n",
+            "withdraw_record_completed": "Tx: {tx}\n",
+            "withdraw_list_note": "(Requires manual review/payment)",
+            "withdraw_cancel": "🔙 Cancel"
         },
         "price": {
             "management": "💰 Price Management (Page {page})",
@@ -4307,6 +4337,10 @@ class AgentBotCore:
         try:
             if not items:
                 return 0
+            
+            # ✅ Translate product name (with year prefix support)
+            translated_product_name = self.translate_product_name(user_id, product_name)
+            
             bot = Bot(self.config.BOT_TOKEN)
             first = items[0]
             item_type = first.get('leixing', '')
@@ -4359,14 +4393,16 @@ class AgentBotCore:
                     os.remove(zip_path)
                     return 0
                 with open(zip_path, 'rb') as f:
+                    # Build internationalized caption
+                    quantity_text = self.t(user_id, 'products.file_delivery_quantity', count=len(items))
+                    time_text = self.t(user_id, 'products.file_delivery_time', time=self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))
+                    
                     bot.send_document(
                         chat_id=user_id,
                         document=f,
-                        caption=(f"📁 <b>{self._h(product_name)}</b>\n"
-                                # f"📦 批量发货文件包\n"
-                                 f"🔢 商品数量: {len(items)} 个\n"
-                                # f"📂 文件总数: {files_added} 个\n"
-                                 f"⏰ 发货时间: {self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')}"),
+                        caption=(f"📁 <b>{self._h(translated_product_name)}</b>\n"
+                                 f"{quantity_text}\n"
+                                 f"{time_text}"),
                         parse_mode=ParseMode.HTML
                     )
                 try:
@@ -5108,20 +5144,30 @@ Refresh Time: {refresh_time}
     def start_withdrawal(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            query.answer("无权限", show_alert=True)
+            query.answer(self.core.t(uid, 'common.no_permission'), show_alert=True)
             return
         s = self.core.get_profit_summary()
         if s['available_profit'] <= 0:
-            self.safe_edit_message(query, "⚠️ 当前无可提现利润", [[InlineKeyboardButton("🔙 返回", callback_data="profit_center")]], parse_mode=None)
+            self.safe_edit_message(
+                query, 
+                self.core.t(uid, 'profit.no_withdrawable'), 
+                [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="profit_center")]], 
+                parse_mode=None
+            )
             return
-        text = f"""📝 <b>申请提现</b>
-
-可提现金额: {s['available_profit']:.2f} USDT
-请输入提现金额（例如: {min(s['available_profit'], 10):.2f}）
-
-直接发送数字金额："""
+        text = self.core.t(
+            uid, 
+            'profit.withdraw_start_title',
+            available=s['available_profit'],
+            example=min(s['available_profit'], 10)
+        )
         self.user_states[uid] = {'state': 'waiting_withdraw_amount'}
-        self.safe_edit_message(query, text, [[InlineKeyboardButton("🔙 取消", callback_data="profit_center")]], parse_mode=ParseMode.HTML)
+        self.safe_edit_message(
+            query, 
+            text, 
+            [[InlineKeyboardButton(self.core.t(uid, 'profit.withdraw_cancel'), callback_data="profit_center")]], 
+            parse_mode=ParseMode.HTML
+        )
 
     def handle_withdraw_amount_input(self, update: Update):
         uid = update.effective_user.id
@@ -5130,41 +5176,46 @@ Refresh Time: {refresh_time}
             amt = float(text)
             s = self.core.get_profit_summary()
             if amt <= 0:
-                update.message.reply_text("❌ 金额必须大于0，请重新输入")
+                update.message.reply_text(self.core.t(uid, 'profit.withdraw_invalid_amount'))
                 return
             if amt > s['available_profit']:
-                update.message.reply_text(f"❌ 超出可提现余额 {s['available_profit']:.2f}，请重新输入")
+                update.message.reply_text(self.core.t(uid, 'profit.withdraw_exceed_balance', balance=s['available_profit']))
                 return
             self.user_states[uid] = {'state': 'waiting_withdraw_address', 'withdraw_amount': amt}
             update.message.reply_text(
-                f"✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 取消", callback_data="profit_center")]])
+                self.core.t(uid, 'profit.amount_recorded', amt=amt),
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.core.t(uid, 'profit.withdraw_cancel'), callback_data="profit_center")]])
             )
         except ValueError:
-            update.message.reply_text("❌ 金额格式错误，请输入数字")
+            update.message.reply_text(self.core.t(uid, 'error.invalid_format'))
 
     def handle_withdraw_address_input(self, update: Update):
         uid = update.effective_user.id
         address = update.message.text.strip()
         if len(address) < 10:
-            update.message.reply_text("❌ 地址长度不正确，请重新输入")
+            update.message.reply_text(self.core.t(uid, 'profit.withdraw_invalid_address'))
             return
         amt = self.user_states[uid]['withdraw_amount']
         ok, msg = self.core.request_profit_withdrawal(uid, amt, address)
         self.user_states.pop(uid, None)
         if ok:
             update.message.reply_text(
-                f"✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{self.H(address)}\n状态：待审核",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💸 返回利润中心", callback_data="profit_center")]]),
+                self.core.t(uid, 'profit.withdraw_submit_success', amt=amt, address=self.H(address)),
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.core.t(uid, 'profit.back_to_center'), callback_data="profit_center")]]),
                 parse_mode=ParseMode.HTML
             )
         else:
-            update.message.reply_text(f"❌ {msg}")
+            update.message.reply_text(self.core.t(uid, 'profit.withdraw_submit_failed', reason=msg))
 
     def show_withdrawal_list(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("返回", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(
+                query, 
+                self.core.t(uid, 'error.no_permission'), 
+                [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_main")]], 
+                parse_mode=None
+            )
             return
         recs = self.core.config.withdrawal_requests.find({
             'agent_bot_id': self.core.config.AGENT_BOT_ID,
@@ -5173,9 +5224,14 @@ Refresh Time: {refresh_time}
         }).sort('created_time', -1).limit(30)
         recs = list(recs)
         if not recs:
-            self.safe_edit_message(query, "📋 提现记录\n\n暂无申请", [[InlineKeyboardButton("🔙 返回", callback_data="profit_center")]], parse_mode=None)
+            self.safe_edit_message(
+                query, 
+                self.core.t(uid, 'profit.withdrawal_records_empty'), 
+                [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="profit_center")]], 
+                parse_mode=None
+            )
             return
-        text = "📋 提现记录（最新优先）\n\n"
+        text = self.core.t(uid, 'profit.withdraw_list_title')
         for r in recs:
             status = r.get('status')
             amount = r.get('amount', 0.0)
@@ -5183,15 +5239,27 @@ Refresh Time: {refresh_time}
             created_s = self.core._to_beijing(created).strftime('%m-%d %H:%M') if created else '-'
             addr = str(r.get('withdrawal_address', ''))
             addr_short = f"{addr[:6]}...{addr[-6:]}" if len(addr) > 12 else addr
-            text += f"💰 {amount:.4f}U | {status}\n地址: {self.H(addr_short)} | 时间(京): {self.H(created_s)}\n"
+            text += self.core.t(
+                uid,
+                'profit.withdraw_record_item',
+                amount=amount,
+                status=status,
+                address=self.H(addr_short),
+                time=self.H(created_s)
+            )
             if status == 'rejected' and r.get('reject_reason'):
-                text += f"原因: {self.H(r.get('reject_reason'))}\n"
+                text += self.core.t(uid, 'profit.withdraw_record_rejected', reason=self.H(r.get('reject_reason')))
             if status == 'completed' and r.get('tx_hash'):
                 th = str(r['tx_hash'])
-                text += f"Tx: {self.H(th[:12] + '...' if len(th) > 12 else th)}\n"
+                text += self.core.t(uid, 'profit.withdraw_record_completed', tx=self.H(th[:12] + '...' if len(th) > 12 else th))
             text += "\n"
-        text += "（需人工审核/付款）"
-        self.safe_edit_message(query, text, [[InlineKeyboardButton("🔙 返回", callback_data="profit_center")]], parse_mode=None)
+        text += self.core.t(uid, 'profit.withdraw_list_note')
+        self.safe_edit_message(
+            query, 
+            text, 
+            [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="profit_center")]], 
+            parse_mode=None
+        )
 
     # ========== 商品相关 ==========
     def show_product_categories(self, query):
@@ -6773,7 +6841,9 @@ Refresh Time: {refresh_time}
             # 为每个订单构建一个紧凑的按钮
             kb = []
             for order in orders:
-                product_name = order.get('projectname', '未知商品')
+                raw_product_name = order.get('projectname', '未知商品')
+                # ✅ Translate product name (with year prefix support)
+                product_name = self.core.translate_product_name(uid, raw_product_name)
                 quantity = order.get('count', 1)
                 order_time = order.get('timer', '未知时间')
                 order_id = order.get('bianhao', '')
