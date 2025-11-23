@@ -2887,6 +2887,123 @@ class AgentBotCore:
             logger.error(f"❌ 分类名称翻译失败: {e}")
             return category_name
 
+    def _split_year_prefix(self, name: str) -> Tuple[str, str]:
+        """
+        从产品名称中分离年份前缀
+        
+        支持的前缀格式：【1-2年】、【3-8年】等
+        
+        Args:
+            name: 产品名称，可能包含年份前缀
+        
+        Returns:
+            (prefix, core_name) 元组
+            - prefix: 年份前缀（如 "【1-2年】"），如果没有则为空字符串
+            - core_name: 去除前缀后的核心名称
+        
+        Examples:
+            "【1-2年】阿尔及利亚" -> ("【1-2年】", "阿尔及利亚")
+            "【3-8年】美国" -> ("【3-8年】", "美国")
+            "阿尔及利亚" -> ("", "阿尔及利亚")
+        """
+        try:
+            name = name.strip()
+            # 匹配 【...】 格式的前缀
+            match = re.match(r'^(【[^】]*】)(.*)$', name)
+            if match:
+                prefix = match.group(1)
+                core_name = match.group(2).strip()
+                logger.debug(f"🔍 年份前缀分离: '{name}' -> prefix='{prefix}', core='{core_name}'")
+                return (prefix, core_name)
+            return ("", name)
+        except Exception as e:
+            logger.error(f"❌ 分离年份前缀失败: {e}")
+            return ("", name)
+
+    def _translate_year_prefix(self, prefix: str, lang: str) -> str:
+        """
+        翻译年份前缀
+        
+        Args:
+            prefix: 年份前缀（如 "【1-2年】"）
+            lang: 目标语言（'zh' 或 'en'）
+        
+        Returns:
+            翻译后的前缀
+            - 中文: 保持原样
+            - 英文: 将 "年" 替换为 " years"
+        
+        Examples:
+            "【1-2年】", "zh" -> "【1-2年】"
+            "【1-2年】", "en" -> "【1-2 years】"
+            "【3-8年】", "en" -> "【3-8 years】"
+        """
+        try:
+            if not prefix:
+                return ""
+            
+            if lang == "zh":
+                # 中文保持原样
+                return prefix
+            elif lang == "en":
+                # 英文：替换 "年" 为 " years"
+                translated = prefix.replace("年", " years")
+                logger.debug(f"🌐 年份前缀翻译: '{prefix}' -> '{translated}' (lang={lang})")
+                return translated
+            else:
+                # 其他语言保持原样
+                return prefix
+        except Exception as e:
+            logger.error(f"❌ 翻译年份前缀失败: {e}")
+            return prefix
+
+    def translate_product_name(self, user_id: int, product_name: str) -> str:
+        """
+        翻译产品名称，支持年份前缀分离
+        
+        处理逻辑：
+        1. 从产品名称中分离年份前缀（如 【1-2年】）
+        2. 翻译核心名称部分
+        3. 翻译年份前缀部分
+        4. 重新组合返回
+        
+        Args:
+            user_id: 用户ID
+            product_name: 产品名称
+        
+        Returns:
+            翻译后的完整产品名称
+        
+        Examples:
+            "阿尔及利亚" (zh) -> "阿尔及利亚"
+            "阿尔及利亚" (en) -> "Algeria"
+            "【1-2年】阿尔及利亚" (zh) -> "【1-2年】阿尔及利亚"
+            "【1-2年】阿尔及利亚" (en) -> "【1-2 years】Algeria"
+            "【3-8年】美国" (en) -> "【3-8 years】United States"
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            
+            # 1. 分离年份前缀和核心名称
+            prefix, core_name = self._split_year_prefix(product_name)
+            
+            # 2. 翻译核心名称
+            translated_core = self.translate_category(user_id, core_name)
+            
+            # 3. 翻译年份前缀
+            translated_prefix = self._translate_year_prefix(prefix, lang)
+            
+            # 4. 重新组合
+            result = translated_prefix + translated_core
+            
+            if prefix:  # 只在有前缀时记录日志
+                logger.debug(f"🌐 产品名称翻译: '{product_name}' -> '{result}' (lang={lang})")
+            
+            return result
+        except Exception as e:
+            logger.error(f"❌ 翻译产品名称失败: {e}")
+            return product_name
+
     def get_purchase_success_message(self, user_id: int) -> str:
         """
         获取购买成功消息（从环境变量配置中读取）
@@ -5261,8 +5378,8 @@ Refresh Time: {refresh_time}
                         price = p['price']
                         stock = p['stock']
                         
-                        # ✅ 翻译分类名称
-                        translated_name = self.core.translate_category(uid, name)
+                        # ✅ 翻译产品名称（支持年份前缀）
+                        translated_name = self.core.translate_product_name(uid, name)
                         
                         # ✅ 按钮格式
                         button_text = f"{translated_name} {price}U   [{stock}{unit}]"
@@ -5375,8 +5492,8 @@ Refresh Time: {refresh_time}
                 price = p['price']
                 stock = p['stock']
                 
-                # ✅ 翻译分类名称
-                translated_name = self.core.translate_category(uid, name)
+                # ✅ 翻译产品名称（支持年份前缀）
+                translated_name = self.core.translate_product_name(uid, name)
                 
                 # ✅ 按钮格式
                 button_text = f"{translated_name} {price}U    [{stock}{unit}]"
@@ -5425,9 +5542,9 @@ Refresh Time: {refresh_time}
             # 使用统一后的分类，如果没有则回退到原leixing
             category = agent_price_info.get('category') if agent_price_info else (prod.get('leixing') or AGENT_PROTOCOL_CATEGORY_UNIFIED)
             
-            # ✅ 完全按照总部的简洁格式
+            # ✅ 完全按照总部的简洁格式，支持年份前缀翻译
             raw_product_name = prod.get('projectname', 'N/A')
-            translated_product_name = self.core.translate_category(uid, raw_product_name)
+            translated_product_name = self.core.translate_product_name(uid, raw_product_name)
             product_name = self.H(translated_product_name)
             unit = self.core.t(uid, 'common.unit')
             
@@ -5473,9 +5590,9 @@ Refresh Time: {refresh_time}
         
         lang = self.core.get_user_language(uid)
         
-        # ✅ 翻译商品名称
+        # ✅ 翻译商品名称，支持年份前缀
         raw_product_name = prod['projectname']
-        translated_product_name = self.core.translate_category(uid, raw_product_name)
+        translated_product_name = self.core.translate_product_name(uid, raw_product_name)
         
         # ✅ 完全按照总部的格式
         if lang == 'zh':
@@ -5550,9 +5667,9 @@ Refresh Time: {refresh_time}
         chat_id = uid
         lang = self.core.get_user_language(uid)
         
-        # ✅ 翻译商品名称
+        # ✅ 翻译商品名称，支持年份前缀
         raw_product_name = prod['projectname']
-        translated_product_name = self.core.translate_category(uid, raw_product_name)
+        translated_product_name = self.core.translate_product_name(uid, raw_product_name)
         
         # ✅ 先删除"请输入数量"的消息
         if 'input_msg_id' in st:
@@ -6468,8 +6585,8 @@ Refresh Time: {refresh_time}
                 stock = p['stock']
                 nowuid = p['nowuid']
                 
-                # ✅ 翻译商品名称
-                translated_name = self.core.translate_category(uid, name)
+                # ✅ 翻译商品名称（支持年份前缀）
+                translated_name = self.core.translate_product_name(uid, name)
                 
                 # 截断商品名避免按钮太长
                 if len(translated_name) > 25:
@@ -6722,7 +6839,9 @@ Refresh Time: {refresh_time}
             
             # 提取订单信息
             lang = self.core.get_user_language(uid)
-            product_name = order.get('projectname', self.core.t(uid, 'products.not_exist') if lang == 'en' else '未知商品')
+            raw_product_name = order.get('projectname', self.core.t(uid, 'products.not_exist') if lang == 'en' else '未知商品')
+            # 翻译产品名称（支持年份前缀）
+            product_name = self.core.translate_product_name(uid, raw_product_name)
             quantity = order.get('count', 1)
             total_amount = float(order.get('ts', 0))
             unit_price = total_amount / max(quantity, 1)
