@@ -56,16 +56,16 @@ class MultiBotDistributionSystem:
     """多机器人分销系统管理类"""
     
     def __init__(self):
-        # 直接设置你的用户ID为管理员
-        self.master_admin_ids = [5991190607]
-        print(f"🤖 设置管理员ID: {self.master_admin_ids}")
+        # 管理员配置现在从环境变量ADMIN_IDS读取
         print("🤖 多机器人分销系统核心初始化完成")
+        # Note: ADMIN_IDS will be loaded later when .env is processed
         
     def is_master_admin(self, user_id):
         """检查是否为总部管理员"""
-        # 直接检查你的用户ID
-        print(f"🔍 权限检查: 用户ID {user_id}, 管理员IDs: {self.master_admin_ids}")
-        return user_id == 5991190607
+        # 使用环境变量配置的管理员列表
+        result = is_admin(user_id)
+        print(f"🔍 权限检查: 用户ID {user_id}, 是管理员: {result}")
+        return result
     
     def create_agent_bot(self, agent_name, agent_token, agent_username, creator_id, commission_rate=0.3):
         """创建代理机器人"""
@@ -644,9 +644,9 @@ def start_verified_user(update: Update, context: CallbackContext, user_id: int):
     # 拼接完整文本
     full_text = welcome_line + welcome_text
 
-    # 营业状态限制
+    # 营业状态限制 - 当业务关闭(0)时，只允许管理员访问，普通用户无法使用
     business_status = shangtext.find_one({'projectname': '营业状态'})['text']
-    if business_status == 0 and state != '4':
+    if business_status == 0 and not is_admin(user_id):
         return
 
     # 构建自定义菜单
@@ -1389,9 +1389,9 @@ def start(update: Update, context: CallbackContext):
         nowuid = args[1][4:]
         return gmsp(update, context, nowuid=nowuid)
 
-    # 营业状态限制
+    # 营业状态限制 - 当业务关闭(0)时，只允许管理员访问，普通用户无法使用
     business_status = shangtext.find_one({'projectname': '营业状态'})['text']
-    if business_status == 0 and state != '4':
+    if business_status == 0 and not is_admin(user_id):
         return
 
     # 已验证用户直接显示主菜单
@@ -1627,13 +1627,14 @@ def admin_remove(update: Update, context: CallbackContext):
 
 def admin(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
-    uinfo = user.find_one({'user_id': user_id})
-
-    # 权限判断
-    if not uinfo or str(uinfo.get('state')) != '4':
+    
+    # 权限判断 - 使用env配置的管理员列表
+    if not is_admin(user_id):
+        logging.info(f"Admin panel access denied for user_id={user_id}")
         context.bot.send_message(chat_id=user_id, text="无权限访问管理员面板")
         return
-
+    
+    logging.info(f"Admin panel accessed by user_id={user_id}")
     show_admin_panel(update, context, user_id)
 
 def diag_db(update: Update, context: CallbackContext):
@@ -1876,9 +1877,8 @@ def sales_dashboard(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2011,9 +2011,8 @@ def stock_alerts(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2132,9 +2131,8 @@ def data_export_menu(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2242,9 +2240,8 @@ def export_users_comprehensive(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2321,9 +2318,8 @@ def export_orders_comprehensive(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2388,9 +2384,8 @@ def export_financial_data(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2500,9 +2495,8 @@ def export_inventory_data(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -2628,9 +2622,8 @@ def multilang_management(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    # 权限检查
-    uinfo = user.find_one({'user_id': user_id})
-    if not uinfo or str(uinfo.get('state')) != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
@@ -7056,11 +7049,12 @@ def qrgaimai(update: Update, context: CallbackContext):
 购买数量: {gmsl}
 购买金额: {zxymoney}
             '''
-            for i in list(user.find({"state": '4'})):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
-                    context.bot.send_message(chat_id=i['user_id'], text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                    context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
             Timer(1, dabaohao,
                   args=[context, user_id, folder_names, '协议号', nowuid, erjiprojectname, fstext, timer]).start()
@@ -7144,11 +7138,12 @@ def qrgaimai(update: Update, context: CallbackContext):
 购买数量: {gmsl}
 购买金额: {zxymoney}
             '''
-            for i in list(user.find({"state": '4'})):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
-                    context.bot.send_message(chat_id=i['user_id'], text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                    context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
 
         elif fhtype == 'API':
@@ -7199,11 +7194,12 @@ def qrgaimai(update: Update, context: CallbackContext):
 购买数量: {gmsl}
 购买金额: {zxymoney}
             '''
-            for i in list(user.find({"state": '4'})):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
-                    context.bot.send_message(chat_id=i['user_id'], text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                    context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
         elif fhtype == '会员链接':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
@@ -7248,11 +7244,12 @@ def qrgaimai(update: Update, context: CallbackContext):
 购买数量: {gmsl}
 购买金额: {zxymoney}
             '''
-            for i in list(user.find({"state": '4'})):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
-                    context.bot.send_message(chat_id=i['user_id'], text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                    context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
         else:
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
@@ -7294,11 +7291,12 @@ def qrgaimai(update: Update, context: CallbackContext):
 购买数量: {gmsl}
 购买金额: {zxymoney}
             '''
-            for i in list(user.find({"state": '4'})):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
-                    context.bot.send_message(chat_id=i['user_id'], text=fstext, parse_mode='HTML')
-                except:
-                    pass
+                    context.bot.send_message(chat_id=admin_id, text=fstext, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send admin notification to {admin_id}: {e}")
 
             Timer(1, dabaohao,
                   args=[context, user_id, folder_names, '直登号', nowuid, erjiprojectname, fstext, timer]).start()
@@ -7545,7 +7543,8 @@ def textkeyboard(update: Update, context: CallbackContext):
         zxh = update.message.text_html
         yyzt = shangtext.find_one({'projectname': '营业状态'})['text']
         if yyzt == 0:
-            if state != '4':
+            # 营业状态为关闭时，只允许管理员访问
+            if not is_admin(user_id):
                 return
 
         get_key_list = get_key.find({})
@@ -8672,11 +8671,11 @@ def textkeyboard(update: Update, context: CallbackContext):
                         timer11.start()
         else:
             if text == '开始营业':
-                if state == '4':
+                if is_admin(user_id):
                     shangtext.update_one({'projectname': '营业状态'}, {"$set": {"text": 1}})
                     context.bot.send_message(chat_id=user_id, text='开始营业')
             elif text == '停止营业':
-                if state == '4':
+                if is_admin(user_id):
                     shangtext.update_one({'projectname': '营业状态'}, {"$set": {"text": 0}})
                     context.bot.send_message(chat_id=user_id, text='停止营业')
 
@@ -11043,16 +11042,17 @@ def jiexi(context: CallbackContext):
 充值: {today_money} USDT
 <a href="https://tronscan.org/#/transaction/{txid}">充值详细</a>
             '''
-            for admin in user.find({'state': '4'}):
+            # 通知所有管理员 - 使用env配置的管理员列表
+            for admin_id in get_admin_ids():
                 try:
                     context.bot.send_message(
-                        chat_id=admin['user_id'],
+                        chat_id=admin_id,
                         text=admin_text,
                         parse_mode='HTML',
                         disable_web_page_preview=True
                     )
-                except:
-                    continue
+                except Exception as e:
+                    logging.warning(f"Failed to send recharge notification to admin {admin_id}: {e}")
 
             # 删除订单消息，更新订单状态为成功
             existing_order = topup.find_one({'user_id': user_id, 'status': 'pending'})
@@ -11365,12 +11365,9 @@ def fbgg(update: Update, context: CallbackContext):
         return
 
     user_id = chat.id
-    user_data = user.find_one({'user_id': user_id})
-
-    if not user_data:
-        context.bot.send_message(chat_id=user_id, text="❌ 你还未注册，无法使用该功能")
-        return
-    if user_data.get('state') != '4':
+    
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         context.bot.send_message(chat_id=user_id, text="⛔ 你没有权限执行 /gg 命令")
         return
 
@@ -11476,8 +11473,8 @@ def adm(update: Update, context: CallbackContext):
     text = update.message.text
     text_parts = text.split(' ')
 
-    user_data = user.find_one({'user_id': user_id})
-    if not user_data or user_data.get('state') != '4':
+    # 权限检查 - 使用env配置的管理员列表
+    if not is_admin(user_id):
         return
 
     if len(text_parts) != 3:
@@ -11565,8 +11562,8 @@ def cha(update: Update, context: CallbackContext):
         text1 = text.split(' ')
         user_list = user.find_one({'user_id': user_id})
         USDT = user_list['USDT']
-        state = user_list['state']
-        if state == '4':
+        # 权限检查 - 使用env配置的管理员列表
+        if is_admin(user_id):
             if len(text1) == 2:
                 jieguo = text1[1]
                 if is_number(jieguo):
@@ -11663,10 +11660,13 @@ def agent_bot_management(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
     
-    # 检查是否为总部管理员
+    # 检查是否为总部管理员 - 使用env配置的管理员列表
     if not multi_bot_system.is_master_admin(user_id):
+        logging.info(f"Agent bot management access denied for user_id={user_id}")
         query.edit_message_text("❌ 您没有权限访问代理机器人管理")
         return
+    
+    logging.info(f"Agent bot management accessed by user_id={user_id}")
     
     # 获取统计数据
     try:
