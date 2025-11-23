@@ -1978,9 +1978,9 @@ class AgentBotCore:
                         chat_id=user_id,
                         document=f,
                         caption=(f"📁 <b>{self._h(product_name)}</b>\n"
-                                 f"📦 批量发货文件包\n"
+                                # f"📦 批量发货文件包\n"
                                  f"🔢 商品数量: {len(items)} 个\n"
-                                 f"📂 文件总数: {files_added} 个\n"
+                                # f"📂 文件总数: {files_added} 个\n"
                                  f"⏰ 发货时间: {self._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')}"),
                         parse_mode=ParseMode.HTML
                     )
@@ -2510,14 +2510,14 @@ class AgentBotHandlers:
                     else:
                         text = (
                             "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                            "「快送商品区」-「热选择所需商品」\n\n"
+                            "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
                             "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
                             "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
                         )
                         
                         kb = []
                         for cat in categories:
-                            button_text = f"{cat['_id']}  [{cat['stock']}个]"
+                            button_text = f"{cat['_id']}  [{cat ['stock']}个]"
                             kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
                         
                         kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
@@ -2789,14 +2789,14 @@ class AgentBotHandlers:
             
             text = (
                 "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                "「快送商品区」-「热选择所需商品」\n\n"
+                "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
                 "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
                 "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
             )
             
             kb = []
             for cat in categories:
-                button_text = f"{cat['_id']}  [{cat['stock']}个]"
+                button_text = f"{cat['_id']}  [{cat ['stock']}个]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
             
             kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
@@ -3052,7 +3052,7 @@ class AgentBotHandlers:
                 stock = p['stock']
                 
                 # ✅ 按钮格式
-                button_text = f"{name} {price}U   [{stock}个]"
+                button_text = f"{name} {price}U    [{stock}个]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 如果没有有库存的商品
