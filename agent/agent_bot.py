@@ -2905,11 +2905,13 @@ class AgentBotCore:
             "【1-2年】阿尔及利亚" -> ("【1-2年】", "阿尔及利亚")
             "【3-8年】美国" -> ("【3-8年】", "美国")
             "阿尔及利亚" -> ("", "阿尔及利亚")
+            "【新品】商品" -> ("", "【新品】商品")  # 不匹配非年份前缀
         """
         try:
             name = name.strip()
-            # 匹配 【...】 格式的前缀
-            match = re.match(r'^(【[^】]*】)(.*)$', name)
+            # 匹配年份格式的前缀：【数字-数字年】或【数字年】
+            # 更严格的正则，只匹配包含"年"字的数字范围前缀
+            match = re.match(r'^(【\d+(?:-\d+)?年】)(.*)$', name)
             if match:
                 prefix = match.group(1)
                 core_name = match.group(2).strip()
@@ -2931,7 +2933,7 @@ class AgentBotCore:
         Returns:
             翻译后的前缀
             - 中文: 保持原样
-            - 英文: 将 "年" 替换为 " years"
+            - 英文: 将 "年" 替换为 " years"（仅当包含"年"时）
         
         Examples:
             "【1-2年】", "zh" -> "【1-2年】"
@@ -2946,10 +2948,15 @@ class AgentBotCore:
                 # 中文保持原样
                 return prefix
             elif lang == "en":
-                # 英文：替换 "年" 为 " years"
-                translated = prefix.replace("年", " years")
-                logger.debug(f"🌐 年份前缀翻译: '{prefix}' -> '{translated}' (lang={lang})")
-                return translated
+                # 英文：仅当包含"年"时才替换为" years"
+                if "年" in prefix:
+                    translated = prefix.replace("年", " years")
+                    logger.debug(f"🌐 年份前缀翻译: '{prefix}' -> '{translated}' (lang={lang})")
+                    return translated
+                else:
+                    # 如果不包含"年"，保持原样（虽然这种情况理论上不应该发生）
+                    logger.debug(f"🌐 年份前缀无需翻译: '{prefix}' (lang={lang}, 不包含'年')")
+                    return prefix
             else:
                 # 其他语言保持原样
                 return prefix
