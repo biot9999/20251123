@@ -90,6 +90,2109 @@ AGENT_RESTOCK_NOTIFY_CHAT_ID = os.getenv("AGENT_RESTOCK_NOTIFY_CHAT_ID")
 AGENT_PROTOCOL_CATEGORY_UNIFIED = os.getenv("AGENT_PROTOCOL_CATEGORY_UNIFIED", "🔥二次协议号（session+json）")
 AGENT_PROTOCOL_CATEGORY_ALIASES = os.getenv("AGENT_PROTOCOL_CATEGORY_ALIASES", "协议号,未分类,,🔥二手TG协议号（session+json）,二手TG协议号（session+json）,二次协议号（session+json）")
 
+# ================= 国际化配置 =================
+DEFAULT_LANGUAGE = "zh"
+
+I18N = {
+    "zh": {
+        "common": {
+            "back_main": "🏠 主菜单",
+            "back": "🔙 返回",
+            "not_set": "未设置",
+            "back_to_main": "🏠 返回主菜单",
+            "refresh": "🔄 刷新",
+            "cancel": "🔙 取消",
+            "prev_page": "⬅️ 上一页",
+            "next_page": "➡️ 下一页",
+            "init_failed": "初始化失败，请稍后重试",
+            "latest_state": "界面已是最新状态",
+            "refresh_failed": "刷新失败，请重试",
+            "interface_latest": "界面已是最新",
+            "operation_exception": "操作异常",
+            "no_permission": "无权限",
+            "cancelled": "已取消",
+            "unit": "个"
+        },
+        "start": {
+            "welcome": "🎉 欢迎使用 {agent_name}！",
+            "user_info": "👤 用户信息",
+            "user_id": "• ID: {uid}",
+            "username": "• 用户名: @{username}",
+            "nickname": "• 昵称: {nickname}",
+            "select_function": "请选择功能："
+        },
+        "main_menu": {
+            "title": "🏠 主菜单",
+            "current_time": "当前时间: {time}"
+        },
+        "btn": {
+            "products": "🛍️ 商品中心",
+            "profile": "👤 个人中心",
+            "recharge": "💰 充值余额",
+            "orders": "📊 订单历史",
+            "support": "📞 联系客服",
+            "help": "❓ 使用帮助",
+            "price_management": "💰 价格管理",
+            "system_reports": "📊 系统报表",
+            "profit_center": "💸 利润提现",
+            "language": "🌐 语言 / Language",
+            "back_main": "🏠 主菜单",
+            "back_to_list": "🔙 返回列表",
+            "back_to_management": "🔙 返回管理",
+            "back_to_edit": "🔙 返回编辑"
+        },
+        "lang": {
+            "menu_title": "🌐 语言选择 / Language Selection",
+            "zh_label": "🇨🇳 中文",
+            "en_label": "🇬🇧 English",
+            "set_ok": "✅ 语言已切换"
+        },
+        "products": {
+            "center": "🛍️ 商品中心",
+            "view": "🧾 查看商品",
+            "categories": {
+                "title": "🛒 商品分类 - 请选择所需商品：",
+                "search_tip": "❗快速查找商品，输入区号查找（例：+54）",
+                "first_purchase_tip": "❗️首次购买请先少量测试，避免纠纷！",
+                "inactive_tip": "❗️长期未使用账户可能会出现问题，联系客服处理。",
+                "no_categories": "❌ 暂无可用商品分类"
+            },
+            "not_exist": "❌ 商品不存在",
+            "back_to_list": "🔙 返回商品列表",
+            "price_not_set": "❌ 商品价格未设置",
+            "buy": "✅ 购买",
+            "confirm_purchase": "✅ 确认购买",
+            "continue_shopping": "🛍️ 继续购买",
+            "purchase_success": "✅ 购买成功！",
+            "purchase_failed": "❌ 购买失败: {res}",
+            "no_products_wait": "暂无商品耐心等待",
+            "insufficient_stock": "❌ 库存不足（当前 {stock}）",
+            "no_products_to_manage": "❌ 暂无商品可管理",
+            "cannot_find": "❌ 无法找到商品信息",
+            "no_longer_exists": "❌ 商品已不存在",
+            "file_not_found": "⚠️ 未找到原始商品文件，正在尝试重新获取...",
+            "purchasing": "🛒 购买商品",
+            "out_of_stock": "⚠️ 商品缺货",
+            "purchase_status": "✅您正在购买：",
+            "price_label": "💰 价格: {price:.2f} USDT",
+            "stock_label": "📦 库存: {stock}个",
+            "purchase_warning": "❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！",
+            "country_list": "🌍 {title}商品列表 ({codes_display})",
+            "country_product": "{name} | {price}U | [{stock}个]",
+            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540"
+        },
+        "orders": {
+            "title": "📊 订单历史",
+            "purchase_records": "📦 购买记录",
+            "no_records": "暂无购买记录",
+            "cancel_order": "❌ 取消订单",
+            "not_exist": "❌ 订单不存在或无权访问",
+            "details": "📋 订单详情",
+            "load_failed": "❌ 加载订单详情失败",
+            "overview": "📊 记录概览",
+            "total_orders": "• 总订单数：{total}",
+            "current_page": "• 当前页显示：{count}",
+            "recent_update": "• 最近更新：{time}",
+            "operation_guide": "💡 操作说明",
+            "operation_tip": "点击下面按钮查看订单详情或重新下载商品"
+        },
+        "recharge": {
+            "title": "💰 充值余额",
+            "balance_recharge": "💰 余额充值",
+            "records": "📜 充值记录",
+            "recent_records_empty": "📜 最近充值记录\n\n暂无记录",
+            "recent_records": "📜 最近充值记录（最新优先）",
+            "back_to_recharge": "🔙 返回充值",
+            "exceed_balance": "❌ 超出可提现余额 {balance:.2f}，请重新输入",
+            "insufficient_balance": "❌ 余额不足，需: {total_cost:.2f}U 当前: {bal:.2f}U",
+            "amount_generated": "已生成识别金额，请按应付金额转账"
+        },
+        "profit": {
+            "center": "💸 利润中心",
+            "apply_withdrawal": "📝 申请提现",
+            "application_records": "📋 申请记录",
+            "no_withdrawable": "⚠️ 当前无可提现利润",
+            "back_to_center": "💸 返回利润中心",
+            "budget": "📊 利润预算",
+            "calculator": "📊 利润计算器 - {name}\n总部: {op}U（实时价格）",
+            "withdrawal_apply": "📝 申请提现",
+            "withdrawal_records_empty": "📋 提现记录\n\n暂无申请",
+            "withdrawal_records": "📋 提现记录（最新优先）",
+            "withdrawal_success": "✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{address}\n状态：待审核",
+            "amount_recorded": "✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）"
+        },
+        "price": {
+            "management": "💰 价格管理（第{page}页）",
+            "config_not_exist": "❌ 代理价格配置不存在",
+            "invalid_price": "❌ 请输入有效的价格数字",
+            "below_hq_price": "❌ 代理价格不能低于总部价格 {op} USDT",
+            "set_rate": "设置 {rate}%({new_agent_price})",
+            "update_success": "价格更新成功！加价 {new_markup:.2f}U，利润率 {profit_rate:.1f}%（基于当前总部价 {op}U）",
+            "no_change": "无变化",
+            "below_hq_error": "代理价格不能低于总部价格 {op} USDT（当前总部价），您输入的 {new_agent_price} USDT 低于总部价",
+            "product_not_exist": "原始商品不存在",
+            "hq_label": "总部",
+            "markup_label": "加价",
+            "agent_label": "代理价",
+            "profit_label": "利润率",
+            "stock_label": "库",
+            "edit_product_price": "📝 编辑商品价格",
+            "product_label": "🏷️ 商品",
+            "stock_full": "📦 库存",
+            "product_id": "💼 编号",
+            "current_price": "💰 当前价格",
+            "hq_price": "• 总部",
+            "markup_price": "• 加价",
+            "agent_price": "• 代理价",
+            "profit_rate": "• 利润率",
+            "price_input_hint": "请直接发送新的代理价格数字，例如: {price:.2f}",
+            "toggle_status": "🔄 切换状态",
+            "profit_calc": "📊 利润预算",
+            "back_to_management": "🔙 返回管理",
+            "calc_header": "📊 利润计算器 - {name}\n总部: {op}U（实时价格）\n\n",
+            "calc_rate_line": "{rate}% → {price:.2f}U (加价:{markup:.2f})\n"
+        },
+        "reports": {
+            "center": "📊 系统报表中心",
+            "sales": "📈 销售报表（{days}天）",
+            "sales_30d": "📈 销售报表(30天)",
+            "user_report": "👥 用户报表",
+            "user_stats": "👥 用户统计报表",
+            "product_report": "📦 商品报表",
+            "product_stats": "📦 商品统计报表",
+            "financial": "💰 财务报表（{days}天）",
+            "financial_30d": "💰 财务报表(30天)",
+            "overview": "📊 系统概览报表(30天)",
+            "overview_btn": "📊 综合概览",
+            "refresh": "🔄 刷新数据",
+            "back_to_reports": "🔙 返回报表",
+            "7days": "📅 7天",
+            "30days": "📅 30天",
+            "90days": "📅 90天"
+        },
+        "user": {
+            "profile": "👤 个人中心",
+            "contact": "👤 联系用户",
+            "info_not_exist": "❌ 用户信息不存在",
+            "admin_reloaded": "✅ 管理员列表已重新加载\n\n当前管理员用户ID:\n{admin_list}",
+            "admin_reload_no_config": "⚠️ 管理员列表已重新加载，但当前无管理员配置"
+        },
+        "support": {
+            "title": "📞 联系客服",
+            "contact": "💬 联系客服",
+            "description": "📞 客服 {display}\n请描述问题 + 用户ID/订单号，便于快速处理。",
+            "file_send_failed": "❌ 文件发送失败，请联系客服"
+        },
+        "help": {
+            "title": "❓ 使用帮助",
+            "instructions": "❗使用说明",
+            "instructions_simple": "使用说明"
+        },
+        "error": {
+            "load_failed": "❌ 加载失败，请重试",
+            "no_permission": "❌ 无权限",
+            "invalid_amount": "❌ 金额必须大于0，请重新输入",
+            "invalid_format": "❌ 金额格式错误，请输入数字",
+            "invalid_address": "❌ 地址长度不正确，请重新输入",
+            "close": "❌ 关闭",
+            "cancel_transaction": "❌ 取消交易",
+            "invalid_integer": "❌ 请输入有效整数",
+            "quantity_required": "❌ 数量需 > 0",
+            "download_failed": "❌ 下载失败，请稍后重试",
+            "invalid_number": "❌ 金额格式错误，请输入数字（例如 12 或 12.5）",
+            "processing_error": "❌ 处理异常，请重试",
+            "search_expired": "搜索已过期，请重新搜索",
+            "operation_failed": "操作失败",
+            "invalid_params": "参数错误",
+            "amount_format_error": "金额格式错误",
+            "cannot_cancel": "无法取消（已过期/已支付/不存在）",
+            "cancel_failed": "取消失败",
+            "unknown_operation": "❓ 未知操作"
+        },
+        "success": {
+            "file_resent": "✅ 文件已重新发送，请查收！"
+        },
+        "general": {
+            "view_transaction": "🔎 查看交易",
+            "view_address": "📬 查看地址",
+            "toggle_status": "🔄 切换状态",
+            "announcement": "<b>📢 最新公告</b>\n\n{message_text}"
+        }
+    },
+    "en": {
+        "common": {
+            "back_main": "🏠 Main Menu",
+            "back": "🔙 Back",
+            "not_set": "Not set",
+            "back_to_main": "🏠 Back to Main",
+            "refresh": "🔄 Refresh",
+            "cancel": "🔙 Cancel",
+            "prev_page": "⬅️ Previous",
+            "next_page": "➡️ Next",
+            "init_failed": "Initialization failed, please try again later",
+            "latest_state": "Interface is up to date",
+            "refresh_failed": "Refresh failed, please try again",
+            "interface_latest": "Interface is latest",
+            "operation_exception": "Operation exception",
+            "no_permission": "No permission",
+            "cancelled": "Cancelled",
+            "unit": "pcs"
+        },
+        "start": {
+            "welcome": "🎉 Welcome to {agent_name}!",
+            "user_info": "👤 User Information",
+            "user_id": "• ID: {uid}",
+            "username": "• Username: @{username}",
+            "nickname": "• Nickname: {nickname}",
+            "select_function": "Please select a function:"
+        },
+        "main_menu": {
+            "title": "🏠 Main Menu",
+            "current_time": "Current time: {time}"
+        },
+        "btn": {
+            "products": "🛍️ Products",
+            "profile": "👤 Profile",
+            "recharge": "💰 Recharge",
+            "orders": "📊 Orders",
+            "support": "📞 Support",
+            "help": "❓ Help",
+            "price_management": "💰 Price Management",
+            "system_reports": "📊 System Reports",
+            "profit_center": "💸 Profit Center",
+            "language": "🌐 语言 / Language",
+            "back_main": "🏠 Main Menu",
+            "back_to_list": "🔙 Back to List",
+            "back_to_management": "🔙 Back to Management",
+            "back_to_edit": "🔙 Back to Edit"
+        },
+        "lang": {
+            "menu_title": "🌐 语言选择 / Language Selection",
+            "zh_label": "🇨🇳 中文",
+            "en_label": "🇬🇧 English",
+            "set_ok": "✅ Language switched"
+        },
+        "products": {
+            "center": "🛍️ Product Center",
+            "view": "🧾 View Product",
+            "categories": {
+                "title": "🛒 Product Categories - Please select:",
+                "search_tip": "❗Quick search by country code (e.g., +54)",
+                "first_purchase_tip": "❗️First-time buyers please test with small quantities!",
+                "inactive_tip": "❗️Long-inactive accounts may have issues. Contact support.",
+                "no_categories": "❌ No product categories available"
+            },
+            "not_exist": "❌ Product does not exist",
+            "back_to_list": "🔙 Back to Product List",
+            "price_not_set": "❌ Product price not set",
+            "buy": "✅ Buy",
+            "confirm_purchase": "✅ Confirm Purchase",
+            "continue_shopping": "🛍️ Continue Shopping",
+            "purchase_success": "✅ Purchase successful!",
+            "purchase_failed": "❌ Purchase failed: {res}",
+            "no_products_wait": "No products available, please wait",
+            "insufficient_stock": "❌ Insufficient stock (current {stock})",
+            "no_products_to_manage": "❌ No products to manage",
+            "cannot_find": "❌ Cannot find product information",
+            "no_longer_exists": "❌ Product no longer exists",
+            "file_not_found": "⚠️ Original product file not found, attempting to retrieve...",
+            "purchasing": "🛒 Purchasing Product",
+            "out_of_stock": "⚠️ Out of stock",
+            "purchase_status": "✅You are purchasing:",
+            "price_label": "💰 Price: {price:.2f} USDT",
+            "stock_label": "📦 Stock: {stock} pcs",
+            "purchase_warning": "❗For first-time purchases from our store, please buy in small quantities for testing to avoid unnecessary disputes! Thank you for your cooperation!",
+            "country_list": "🌍 {title} Product List ({codes_display})",
+            "country_product": "{name} | {price}U | [{stock} pcs]",
+            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540"
+        },
+        "orders": {
+            "title": "📊 Order History",
+            "purchase_records": "📦 Purchase Records",
+            "no_records": "No purchase records",
+            "cancel_order": "❌ Cancel Order",
+            "not_exist": "❌ Order does not exist or no access",
+            "details": "📋 Order Details",
+            "load_failed": "❌ Failed to load order details",
+            "overview": "📊 Records Overview",
+            "total_orders": "• Total Orders: {total}",
+            "current_page": "• Current Page: {count}",
+            "recent_update": "• Recent Update: {time}",
+            "operation_guide": "💡 Operation Guide",
+            "operation_tip": "Click the buttons below to view order details or re-download products"
+        },
+        "recharge": {
+            "title": "💰 Recharge Balance",
+            "balance_recharge": "💰 Balance Recharge",
+            "records": "📜 Recharge Records",
+            "recent_records_empty": "📜 Recent Recharge Records\n\nNo records",
+            "recent_records": "📜 Recent Recharge Records (Latest First)",
+            "back_to_recharge": "🔙 Back to Recharge",
+            "exceed_balance": "❌ Exceeds withdrawable balance {balance:.2f}, please re-enter",
+            "insufficient_balance": "❌ Insufficient balance, need: {total_cost:.2f}U current: {bal:.2f}U",
+            "amount_generated": "Amount generated, please transfer according to the payable amount"
+        },
+        "profit": {
+            "center": "💸 Profit Center",
+            "apply_withdrawal": "📝 Apply for Withdrawal",
+            "application_records": "📋 Application Records",
+            "no_withdrawable": "⚠️ No withdrawable profit currently",
+            "back_to_center": "💸 Back to Profit Center",
+            "budget": "📊 Profit Budget",
+            "calculator": "📊 Profit Calculator - {name}\nHQ: {op}U (Real-time Price)",
+            "withdrawal_apply": "📝 Apply for Withdrawal",
+            "withdrawal_records_empty": "📋 Withdrawal Records\n\nNo applications",
+            "withdrawal_records": "📋 Withdrawal Records (Latest First)",
+            "withdrawal_success": "✅ Withdrawal application successful\nAmount: {amt:.2f} USDT\nAddress: {address}\nStatus: Pending Review",
+            "amount_recorded": "✅ Amount recorded: {amt:.2f} USDT\nPlease send receiving address (TRON or ERC20)"
+        },
+        "price": {
+            "management": "💰 Price Management (Page {page})",
+            "config_not_exist": "❌ Agent price configuration does not exist",
+            "invalid_price": "❌ Please enter a valid price number",
+            "below_hq_price": "❌ Agent price cannot be lower than HQ price {op} USDT",
+            "set_rate": "Set {rate}%({new_agent_price})",
+            "update_success": "Price update successful! Markup {new_markup:.2f}U, profit rate {profit_rate:.1f}% (based on current HQ price {op}U)",
+            "no_change": "No change",
+            "below_hq_error": "Agent price cannot be lower than HQ price {op} USDT (current HQ price), your input {new_agent_price} USDT is below HQ price",
+            "product_not_exist": "Original product does not exist",
+            "hq_label": "HQ",
+            "markup_label": "Markup",
+            "agent_label": "Agent",
+            "profit_label": "Profit",
+            "stock_label": "Stock",
+            "edit_product_price": "📝 Edit Product Price",
+            "product_label": "🏷️ Product",
+            "stock_full": "📦 Stock",
+            "product_id": "💼 ID",
+            "current_price": "💰 Current Price",
+            "hq_price": "• HQ",
+            "markup_price": "• Markup",
+            "agent_price": "• Agent Price",
+            "profit_rate": "• Profit Rate",
+            "price_input_hint": "Please directly send the new agent price number, e.g.: {price:.2f}",
+            "toggle_status": "🔄 Toggle Status",
+            "profit_calc": "📊 Profit Budget",
+            "back_to_management": "🔙 Back to Management",
+            "calc_header": "📊 Profit Calculator - {name}\nHQ: {op}U (Real-time Price)\n\n",
+            "calc_rate_line": "{rate}% → {price:.2f}U (Markup:{markup:.2f})\n"
+        },
+        "reports": {
+            "center": "📊 System Reports Center",
+            "sales": "📈 Sales Report ({days} days)",
+            "sales_30d": "📈 Sales Report (30 days)",
+            "user_report": "👥 User Report",
+            "user_stats": "👥 User Statistics Report",
+            "product_report": "📦 Product Report",
+            "product_stats": "📦 Product Statistics Report",
+            "financial": "💰 Financial Report ({days} days)",
+            "financial_30d": "💰 Financial Report (30 days)",
+            "overview": "📊 System Overview Report (30 days)",
+            "overview_btn": "📊 Comprehensive Overview",
+            "refresh": "🔄 Refresh Data",
+            "back_to_reports": "🔙 Back to Reports",
+            "7days": "📅 7 Days",
+            "30days": "📅 30 Days",
+            "90days": "📅 90 Days"
+        },
+        "user": {
+            "profile": "👤 Profile",
+            "contact": "👤 Contact User",
+            "info_not_exist": "❌ User information does not exist",
+            "admin_reloaded": "✅ Admin list reloaded\n\nCurrent admin user IDs:\n{admin_list}",
+            "admin_reload_no_config": "⚠️ Admin list reloaded, but no admin configured"
+        },
+        "support": {
+            "title": "📞 Contact Support",
+            "contact": "💬 Contact Support",
+            "description": "📞 Support {display}\nPlease describe the issue + User ID/Order No. for quick processing.",
+            "file_send_failed": "❌ File send failed, please contact support"
+        },
+        "help": {
+            "title": "❓ Help",
+            "instructions": "❗Instructions",
+            "instructions_simple": "Instructions"
+        },
+        "error": {
+            "load_failed": "❌ Load failed, please try again",
+            "no_permission": "❌ No permission",
+            "invalid_amount": "❌ Amount must be greater than 0, please re-enter",
+            "invalid_format": "❌ Invalid format, please enter a number",
+            "invalid_address": "❌ Incorrect address length, please re-enter",
+            "close": "❌ Close",
+            "cancel_transaction": "❌ Cancel Transaction",
+            "invalid_integer": "❌ Please enter a valid integer",
+            "quantity_required": "❌ Quantity must be > 0",
+            "download_failed": "❌ Download failed, please try again later",
+            "invalid_number": "❌ Invalid format, please enter a number (e.g., 12 or 12.5)",
+            "processing_error": "❌ Processing error, please try again",
+            "search_expired": "Search expired, please search again",
+            "operation_failed": "Operation failed",
+            "invalid_params": "Invalid parameters",
+            "amount_format_error": "Amount format error",
+            "cannot_cancel": "Cannot cancel (expired/paid/does not exist)",
+            "cancel_failed": "Cancel failed",
+            "unknown_operation": "❓ Unknown operation"
+        },
+        "success": {
+            "file_resent": "✅ File resent successfully, please check!"
+        },
+        "general": {
+            "view_transaction": "🔎 View Transaction",
+            "view_address": "📬 View Address",
+            "toggle_status": "🔄 Toggle Status",
+            "announcement": "<b>📢 Latest Announcement</b>\n\n{message_text}"
+        }
+    }
+}
+
+# ================= 商品分类名称翻译映射 =================
+# 常见分类名称的中英文对照（包含所有国家/地区）
+CATEGORY_TRANSLATIONS = {
+    "zh": {
+        "一级分类": "一级分类",
+        "二次协议号": "二次协议号",
+        "🔥二次协议号（session+json）": "🔥二次协议号（session+json）",
+        "二次协议号（session+json）": "二次协议号（session+json）",
+        "✈️【1-8年】协议老号（session+json）": "✈️【1-8年】协议老号（session+json）",
+        "🔥二手TG协议号（session+json）": "🔥二手TG协议号（session+json）",
+        "二手TG协议号（session+json）": "二手TG协议号（session+json）",
+        "美国/加拿大🇺🇸+1（有密码）": "美国/加拿大🇺🇸+1（有密码）",
+        "美国/加拿大🇺🇸+1（无密码）": "美国/加拿大🇺🇸+1（无密码）",
+        "美国/加拿大+1 有密码": "美国/加拿大+1 有密码",
+        "美国/加拿大+1无密码": "美国/加拿大+1无密码",
+        "俄罗斯/哈萨克斯坦🇷🇺+7（有密码）": "俄罗斯/哈萨克斯坦🇷🇺+7（有密码）",
+        "俄罗斯/哈萨克斯坦🇷🇺+7（无密码）": "俄罗斯/哈萨克斯坦🇷🇺+7（无密码）",
+        "俄罗斯/哈萨克斯坦+7 有密码": "俄罗斯/哈萨克斯坦+7 有密码",
+        "俄罗斯/哈萨克斯坦+7无密码": "俄罗斯/哈萨克斯坦+7无密码",
+        "埃及🇪🇬+20（有密码）": "埃及🇪🇬+20（有密码）",
+        "埃及🇪🇬+20（无密码）": "埃及🇪🇬+20（无密码）",
+        "埃及+20 有密码": "埃及+20 有密码",
+        "埃及+20无密码": "埃及+20无密码",
+        "南非🇿🇦+27（有密码）": "南非🇿🇦+27（有密码）",
+        "南非🇿🇦+27（无密码）": "南非🇿🇦+27（无密码）",
+        "南非+27 有密码": "南非+27 有密码",
+        "南非+27无密码": "南非+27无密码",
+        "希腊🇬🇷+30（有密码）": "希腊🇬🇷+30（有密码）",
+        "希腊🇬🇷+30（无密码）": "希腊🇬🇷+30（无密码）",
+        "希腊+30 有密码": "希腊+30 有密码",
+        "希腊+30无密码": "希腊+30无密码",
+        "荷兰🇳🇱+31（有密码）": "荷兰🇳🇱+31（有密码）",
+        "荷兰🇳🇱+31（无密码）": "荷兰🇳🇱+31（无密码）",
+        "荷兰+31 有密码": "荷兰+31 有密码",
+        "荷兰+31无密码": "荷兰+31无密码",
+        "比利时🇧🇪+32（有密码）": "比利时🇧🇪+32（有密码）",
+        "比利时🇧🇪+32（无密码）": "比利时🇧🇪+32（无密码）",
+        "比利时+32 有密码": "比利时+32 有密码",
+        "比利时+32无密码": "比利时+32无密码",
+        "法国🇫🇷+33（有密码）": "法国🇫🇷+33（有密码）",
+        "法国🇫🇷+33（无密码）": "法国🇫🇷+33（无密码）",
+        "法国+33 有密码": "法国+33 有密码",
+        "法国+33无密码": "法国+33无密码",
+        "西班牙🇪🇸+34（有密码）": "西班牙🇪🇸+34（有密码）",
+        "西班牙🇪🇸+34（无密码）": "西班牙🇪🇸+34（无密码）",
+        "西班牙+34 有密码": "西班牙+34 有密码",
+        "西班牙+34无密码": "西班牙+34无密码",
+        "匈牙利🇭🇺+36（有密码）": "匈牙利🇭🇺+36（有密码）",
+        "匈牙利🇭🇺+36（无密码）": "匈牙利🇭🇺+36（无密码）",
+        "匈牙利+36 有密码": "匈牙利+36 有密码",
+        "匈牙利+36无密码": "匈牙利+36无密码",
+        "意大利🇮🇹+39（有密码）": "意大利🇮🇹+39（有密码）",
+        "意大利🇮🇹+39（无密码）": "意大利🇮🇹+39（无密码）",
+        "意大利+39 有密码": "意大利+39 有密码",
+        "意大利+39无密码": "意大利+39无密码",
+        "罗马尼亚🇷🇴+40（有密码）": "罗马尼亚🇷🇴+40（有密码）",
+        "罗马尼亚🇷🇴+40（无密码）": "罗马尼亚🇷🇴+40（无密码）",
+        "罗马尼亚+40 有密码": "罗马尼亚+40 有密码",
+        "罗马尼亚+40无密码": "罗马尼亚+40无密码",
+        "瑞士🇨🇭+41（有密码）": "瑞士🇨🇭+41（有密码）",
+        "瑞士🇨🇭+41（无密码）": "瑞士🇨🇭+41（无密码）",
+        "瑞士+41 有密码": "瑞士+41 有密码",
+        "瑞士+41无密码": "瑞士+41无密码",
+        "奥地利🇦🇹+43（有密码）": "奥地利🇦🇹+43（有密码）",
+        "奥地利🇦🇹+43（无密码）": "奥地利🇦🇹+43（无密码）",
+        "奥地利+43 有密码": "奥地利+43 有密码",
+        "奥地利+43无密码": "奥地利+43无密码",
+        "英国🇬🇧+44（有密码）": "英国🇬🇧+44（有密码）",
+        "英国🇬🇧+44（无密码）": "英国🇬🇧+44（无密码）",
+        "英国+44 有密码": "英国+44 有密码",
+        "英国+44无密码": "英国+44无密码",
+        "丹麦🇩🇰+45（有密码）": "丹麦🇩🇰+45（有密码）",
+        "丹麦🇩🇰+45（无密码）": "丹麦🇩🇰+45（无密码）",
+        "丹麦+45 有密码": "丹麦+45 有密码",
+        "丹麦+45无密码": "丹麦+45无密码",
+        "瑞典🇸🇪+46（有密码）": "瑞典🇸🇪+46（有密码）",
+        "瑞典🇸🇪+46（无密码）": "瑞典🇸🇪+46（无密码）",
+        "瑞典+46 有密码": "瑞典+46 有密码",
+        "瑞典+46无密码": "瑞典+46无密码",
+        "挪威🇳🇴+47（有密码）": "挪威🇳🇴+47（有密码）",
+        "挪威🇳🇴+47（无密码）": "挪威🇳🇴+47（无密码）",
+        "挪威+47 有密码": "挪威+47 有密码",
+        "挪威+47无密码": "挪威+47无密码",
+        "波兰🇵🇱+48（有密码）": "波兰🇵🇱+48（有密码）",
+        "波兰🇵🇱+48（无密码）": "波兰🇵🇱+48（无密码）",
+        "波兰+48 有密码": "波兰+48 有密码",
+        "波兰+48无密码": "波兰+48无密码",
+        "德国🇩🇪+49（有密码）": "德国🇩🇪+49（有密码）",
+        "德国🇩🇪+49（无密码）": "德国🇩🇪+49（无密码）",
+        "德国+49 有密码": "德国+49 有密码",
+        "德国+49无密码": "德国+49无密码",
+        "秘鲁🇵🇪+51（有密码）": "秘鲁🇵🇪+51（有密码）",
+        "秘鲁🇵🇪+51（无密码）": "秘鲁🇵🇪+51（无密码）",
+        "秘鲁+51 有密码": "秘鲁+51 有密码",
+        "秘鲁+51无密码": "秘鲁+51无密码",
+        "墨西哥🇲🇽+52（有密码）": "墨西哥🇲🇽+52（有密码）",
+        "墨西哥🇲🇽+52（无密码）": "墨西哥🇲🇽+52（无密码）",
+        "墨西哥+52 有密码": "墨西哥+52 有密码",
+        "墨西哥+52无密码": "墨西哥+52无密码",
+        "古巴🇨🇺+53（有密码）": "古巴🇨🇺+53（有密码）",
+        "古巴🇨🇺+53（无密码）": "古巴🇨🇺+53（无密码）",
+        "古巴+53 有密码": "古巴+53 有密码",
+        "古巴+53无密码": "古巴+53无密码",
+        "阿根廷🇦🇷+54（有密码）": "阿根廷🇦🇷+54（有密码）",
+        "阿根廷🇦🇷+54（无密码）": "阿根廷🇦🇷+54（无密码）",
+        "阿根廷+54 有密码": "阿根廷+54 有密码",
+        "阿根廷+54无密码": "阿根廷+54无密码",
+        "巴西🇧🇷+55（有密码）": "巴西🇧🇷+55（有密码）",
+        "巴西🇧🇷+55（无密码）": "巴西🇧🇷+55（无密码）",
+        "巴西+55 有密码": "巴西+55 有密码",
+        "巴西+55无密码": "巴西+55无密码",
+        "智利🇨🇱+56（有密码）": "智利🇨🇱+56（有密码）",
+        "智利🇨🇱+56（无密码）": "智利🇨🇱+56（无密码）",
+        "智利+56 有密码": "智利+56 有密码",
+        "智利+56无密码": "智利+56无密码",
+        "哥伦比亚🇨🇴+57（有密码）": "哥伦比亚🇨🇴+57（有密码）",
+        "哥伦比亚🇨🇴+57（无密码）": "哥伦比亚🇨🇴+57（无密码）",
+        "哥伦比亚+57 有密码": "哥伦比亚+57 有密码",
+        "哥伦比亚+57无密码": "哥伦比亚+57无密码",
+        "委内瑞拉🇻🇪+58（有密码）": "委内瑞拉🇻🇪+58（有密码）",
+        "委内瑞拉🇻🇪+58（无密码）": "委内瑞拉🇻🇪+58（无密码）",
+        "委内瑞拉+58 有密码": "委内瑞拉+58 有密码",
+        "委内瑞拉+58无密码": "委内瑞拉+58无密码",
+        "马来西亚🇲🇾+60（有密码）": "马来西亚🇲🇾+60（有密码）",
+        "马来西亚🇲🇾+60（无密码）": "马来西亚🇲🇾+60（无密码）",
+        "马来西亚+60 有密码": "马来西亚+60 有密码",
+        "马来西亚+60无密码": "马来西亚+60无密码",
+        "澳大利亚🇦🇺+61（有密码）": "澳大利亚🇦🇺+61（有密码）",
+        "澳大利亚🇦🇺+61（无密码）": "澳大利亚🇦🇺+61（无密码）",
+        "澳大利亚+61 有密码": "澳大利亚+61 有密码",
+        "澳大利亚+61无密码": "澳大利亚+61无密码",
+        "印度尼西亚🇮🇩+62（有密码）": "印度尼西亚🇮🇩+62（有密码）",
+        "印度尼西亚🇮🇩+62（无密码）": "印度尼西亚🇮🇩+62（无密码）",
+        "印度尼西亚+62 有密码": "印度尼西亚+62 有密码",
+        "印度尼西亚+62无密码": "印度尼西亚+62无密码",
+        "菲律宾🇵🇭+63（有密码）": "菲律宾🇵🇭+63（有密码）",
+        "菲律宾🇵🇭+63（无密码）": "菲律宾🇵🇭+63（无密码）",
+        "菲律宾+63 有密码": "菲律宾+63 有密码",
+        "菲律宾+63无密码": "菲律宾+63无密码",
+        "新西兰🇳🇿+64（有密码）": "新西兰🇳🇿+64（有密码）",
+        "新西兰🇳🇿+64（无密码）": "新西兰🇳🇿+64（无密码）",
+        "新西兰+64 有密码": "新西兰+64 有密码",
+        "新西兰+64无密码": "新西兰+64无密码",
+        "新加坡🇸🇬+65（有密码）": "新加坡🇸🇬+65（有密码）",
+        "新加坡🇸🇬+65（无密码）": "新加坡🇸🇬+65（无密码）",
+        "新加坡+65 有密码": "新加坡+65 有密码",
+        "新加坡+65无密码": "新加坡+65无密码",
+        "泰国🇹🇭+66（有密码）": "泰国🇹🇭+66（有密码）",
+        "泰国🇹🇭+66（无密码）": "泰国🇹🇭+66（无密码）",
+        "泰国+66 有密码": "泰国+66 有密码",
+        "泰国+66无密码": "泰国+66无密码",
+        "日本🇯🇵+81（有密码）": "日本🇯🇵+81（有密码）",
+        "日本🇯🇵+81（无密码）": "日本🇯🇵+81（无密码）",
+        "日本+81 有密码": "日本+81 有密码",
+        "日本+81无密码": "日本+81无密码",
+        "韩国🇰🇷+82（有密码）": "韩国🇰🇷+82（有密码）",
+        "韩国🇰🇷+82（无密码）": "韩国🇰🇷+82（无密码）",
+        "韩国+82 有密码": "韩国+82 有密码",
+        "韩国+82无密码": "韩国+82无密码",
+        "越南🇻🇳+84（有密码）": "越南🇻🇳+84（有密码）",
+        "越南🇻🇳+84（无密码）": "越南🇻🇳+84（无密码）",
+        "越南+84 有密码": "越南+84 有密码",
+        "越南+84无密码": "越南+84无密码",
+        "中国🇨🇳+86（有密码）": "中国🇨🇳+86（有密码）",
+        "中国🇨🇳+86（无密码）": "中国🇨🇳+86（无密码）",
+        "中国+86 有密码": "中国+86 有密码",
+        "中国+86无密码": "中国+86无密码",
+        "土耳其🇹🇷+90（有密码）": "土耳其🇹🇷+90（有密码）",
+        "土耳其🇹🇷+90（无密码）": "土耳其🇹🇷+90（无密码）",
+        "土耳其+90 有密码": "土耳其+90 有密码",
+        "土耳其+90无密码": "土耳其+90无密码",
+        "印度🇮🇳+91（有密码）": "印度🇮🇳+91（有密码）",
+        "印度🇮🇳+91（无密码）": "印度🇮🇳+91（无密码）",
+        "印度+91 有密码": "印度+91 有密码",
+        "印度+91无密码": "印度+91无密码",
+        "巴基斯坦🇵🇰+92（有密码）": "巴基斯坦🇵🇰+92（有密码）",
+        "巴基斯坦🇵🇰+92（无密码）": "巴基斯坦🇵🇰+92（无密码）",
+        "巴基斯坦+92 有密码": "巴基斯坦+92 有密码",
+        "巴基斯坦+92无密码": "巴基斯坦+92无密码",
+        "阿富汗🇦🇫+93（有密码）": "阿富汗🇦🇫+93（有密码）",
+        "阿富汗🇦🇫+93（无密码）": "阿富汗🇦🇫+93（无密码）",
+        "阿富汗+93 有密码": "阿富汗+93 有密码",
+        "阿富汗+93无密码": "阿富汗+93无密码",
+        "斯里兰卡🇱🇰+94（有密码）": "斯里兰卡🇱🇰+94（有密码）",
+        "斯里兰卡🇱🇰+94（无密码）": "斯里兰卡🇱🇰+94（无密码）",
+        "斯里兰卡+94 有密码": "斯里兰卡+94 有密码",
+        "斯里兰卡+94无密码": "斯里兰卡+94无密码",
+        "缅甸🇲🇲+95（有密码）": "缅甸🇲🇲+95（有密码）",
+        "缅甸🇲🇲+95（无密码）": "缅甸🇲🇲+95（无密码）",
+        "缅甸+95 有密码": "缅甸+95 有密码",
+        "缅甸+95无密码": "缅甸+95无密码",
+        "伊朗🇮🇷+98（有密码）": "伊朗🇮🇷+98（有密码）",
+        "伊朗🇮🇷+98（无密码）": "伊朗🇮🇷+98（无密码）",
+        "伊朗+98 有密码": "伊朗+98 有密码",
+        "伊朗+98无密码": "伊朗+98无密码",
+        "摩洛哥🇲🇦+212（有密码）": "摩洛哥🇲🇦+212（有密码）",
+        "摩洛哥🇲🇦+212（无密码）": "摩洛哥🇲🇦+212（无密码）",
+        "摩洛哥+212 有密码": "摩洛哥+212 有密码",
+        "摩洛哥+212无密码": "摩洛哥+212无密码",
+        "阿尔及利亚🇩🇿+213（有密码）": "阿尔及利亚🇩🇿+213（有密码）",
+        "阿尔及利亚🇩🇿+213（无密码）": "阿尔及利亚🇩🇿+213（无密码）",
+        "阿尔及利亚+213 有密码": "阿尔及利亚+213 有密码",
+        "阿尔及利亚+213无密码": "阿尔及利亚+213无密码",
+        "突尼斯🇹🇳+216（有密码）": "突尼斯🇹🇳+216（有密码）",
+        "突尼斯🇹🇳+216（无密码）": "突尼斯🇹🇳+216（无密码）",
+        "突尼斯+216 有密码": "突尼斯+216 有密码",
+        "突尼斯+216无密码": "突尼斯+216无密码",
+        "利比亚🇱🇾+218（有密码）": "利比亚🇱🇾+218（有密码）",
+        "利比亚🇱🇾+218（无密码）": "利比亚🇱🇾+218（无密码）",
+        "利比亚+218 有密码": "利比亚+218 有密码",
+        "利比亚+218无密码": "利比亚+218无密码",
+        "冈比亚🇬🇲+220（有密码）": "冈比亚🇬🇲+220（有密码）",
+        "冈比亚🇬🇲+220（无密码）": "冈比亚🇬🇲+220（无密码）",
+        "冈比亚+220 有密码": "冈比亚+220 有密码",
+        "冈比亚+220无密码": "冈比亚+220无密码",
+        "塞内加尔🇸🇳+221（有密码）": "塞内加尔🇸🇳+221（有密码）",
+        "塞内加尔🇸🇳+221（无密码）": "塞内加尔🇸🇳+221（无密码）",
+        "塞内加尔+221 有密码": "塞内加尔+221 有密码",
+        "塞内加尔+221无密码": "塞内加尔+221无密码",
+        "马里🇲🇱+223（有密码）": "马里🇲🇱+223（有密码）",
+        "马里🇲🇱+223（无密码）": "马里🇲🇱+223（无密码）",
+        "马里+223 有密码": "马里+223 有密码",
+        "马里+223无密码": "马里+223无密码",
+        "几内亚🇬🇳+224（有密码）": "几内亚🇬🇳+224（有密码）",
+        "几内亚🇬🇳+224（无密码）": "几内亚🇬🇳+224（无密码）",
+        "几内亚+224 有密码": "几内亚+224 有密码",
+        "几内亚+224无密码": "几内亚+224无密码",
+        "科特迪瓦🇨🇮+225（有密码）": "科特迪瓦🇨🇮+225（有密码）",
+        "科特迪瓦🇨🇮+225（无密码）": "科特迪瓦🇨🇮+225（无密码）",
+        "科特迪瓦+225 有密码": "科特迪瓦+225 有密码",
+        "科特迪瓦+225无密码": "科特迪瓦+225无密码",
+        "布基纳法索🇧🇫+226（有密码）": "布基纳法索🇧🇫+226（有密码）",
+        "布基纳法索🇧🇫+226（无密码）": "布基纳法索🇧🇫+226（无密码）",
+        "布基纳法索+226 有密码": "布基纳法索+226 有密码",
+        "布基纳法索+226无密码": "布基纳法索+226无密码",
+        "尼日尔🇳🇪+227（有密码）": "尼日尔🇳🇪+227（有密码）",
+        "尼日尔🇳🇪+227（无密码）": "尼日尔🇳🇪+227（无密码）",
+        "尼日尔+227 有密码": "尼日尔+227 有密码",
+        "尼日尔+227无密码": "尼日尔+227无密码",
+        "多哥🇹🇬+228（有密码）": "多哥🇹🇬+228（有密码）",
+        "多哥🇹🇬+228（无密码）": "多哥🇹🇬+228（无密码）",
+        "多哥+228 有密码": "多哥+228 有密码",
+        "多哥+228无密码": "多哥+228无密码",
+        "贝宁🇧🇯+229（有密码）": "贝宁🇧🇯+229（有密码）",
+        "贝宁🇧🇯+229（无密码）": "贝宁🇧🇯+229（无密码）",
+        "贝宁+229 有密码": "贝宁+229 有密码",
+        "贝宁+229无密码": "贝宁+229无密码",
+        "毛里求斯🇲🇺+230（有密码）": "毛里求斯🇲🇺+230（有密码）",
+        "毛里求斯🇲🇺+230（无密码）": "毛里求斯🇲🇺+230（无密码）",
+        "毛里求斯+230 有密码": "毛里求斯+230 有密码",
+        "毛里求斯+230无密码": "毛里求斯+230无密码",
+        "利比里亚🇱🇷+231（有密码）": "利比里亚🇱🇷+231（有密码）",
+        "利比里亚🇱🇷+231（无密码）": "利比里亚🇱🇷+231（无密码）",
+        "利比里亚+231 有密码": "利比里亚+231 有密码",
+        "利比里亚+231无密码": "利比里亚+231无密码",
+        "塞拉利昂🇸🇱+232（有密码）": "塞拉利昂🇸🇱+232（有密码）",
+        "塞拉利昂🇸🇱+232（无密码）": "塞拉利昂🇸🇱+232（无密码）",
+        "塞拉利昂+232 有密码": "塞拉利昂+232 有密码",
+        "塞拉利昂+232无密码": "塞拉利昂+232无密码",
+        "加纳🇬🇭+233（有密码）": "加纳🇬🇭+233（有密码）",
+        "加纳🇬🇭+233（无密码）": "加纳🇬🇭+233（无密码）",
+        "加纳+233 有密码": "加纳+233 有密码",
+        "加纳+233无密码": "加纳+233无密码",
+        "尼日利亚🇳🇬+234（有密码）": "尼日利亚🇳🇬+234（有密码）",
+        "尼日利亚🇳🇬+234（无密码）": "尼日利亚🇳🇬+234（无密码）",
+        "尼日利亚+234 有密码": "尼日利亚+234 有密码",
+        "尼日利亚+234无密码": "尼日利亚+234无密码",
+        "乍得🇹🇩+235（有密码）": "乍得🇹🇩+235（有密码）",
+        "乍得🇹🇩+235（无密码）": "乍得🇹🇩+235（无密码）",
+        "乍得+235 有密码": "乍得+235 有密码",
+        "乍得+235无密码": "乍得+235无密码",
+        "中非🇨🇫+236（有密码）": "中非🇨🇫+236（有密码）",
+        "中非🇨🇫+236（无密码）": "中非🇨🇫+236（无密码）",
+        "中非+236 有密码": "中非+236 有密码",
+        "中非+236无密码": "中非+236无密码",
+        "喀麦隆🇨🇲+237（有密码）": "喀麦隆🇨🇲+237（有密码）",
+        "喀麦隆🇨🇲+237（无密码）": "喀麦隆🇨🇲+237（无密码）",
+        "喀麦隆+237 有密码": "喀麦隆+237 有密码",
+        "喀麦隆+237无密码": "喀麦隆+237无密码",
+        "佛得角🇨🇻+238（有密码）": "佛得角🇨🇻+238（有密码）",
+        "佛得角🇨🇻+238（无密码）": "佛得角🇨🇻+238（无密码）",
+        "佛得角+238 有密码": "佛得角+238 有密码",
+        "佛得角+238无密码": "佛得角+238无密码",
+        "圣多美和普林西比🇸🇹+239（有密码）": "圣多美和普林西比🇸🇹+239（有密码）",
+        "圣多美和普林西比🇸🇹+239（无密码）": "圣多美和普林西比🇸🇹+239（无密码）",
+        "圣多美和普林西比+239 有密码": "圣多美和普林西比+239 有密码",
+        "圣多美和普林西比+239无密码": "圣多美和普林西比+239无密码",
+        "赤道几内亚🇬🇶+240（有密码）": "赤道几内亚🇬🇶+240（有密码）",
+        "赤道几内亚🇬🇶+240（无密码）": "赤道几内亚🇬🇶+240（无密码）",
+        "赤道几内亚+240 有密码": "赤道几内亚+240 有密码",
+        "赤道几内亚+240无密码": "赤道几内亚+240无密码",
+        "加蓬🇬🇦+241（有密码）": "加蓬🇬🇦+241（有密码）",
+        "加蓬🇬🇦+241（无密码）": "加蓬🇬🇦+241（无密码）",
+        "加蓬+241 有密码": "加蓬+241 有密码",
+        "加蓬+241无密码": "加蓬+241无密码",
+        "刚果��🇬+242（有密码）": "刚果��🇬+242（有密码）",
+        "刚果��🇬+242（无密码）": "刚果��🇬+242（无密码）",
+        "刚果+242 有密码": "刚果+242 有密码",
+        "刚果+242无密码": "刚果+242无密码",
+        "刚果民主共和国🇨🇩+243（有密码）": "刚果民主共和国🇨🇩+243（有密码）",
+        "刚果民主共和国🇨🇩+243（无密码）": "刚果民主共和国🇨🇩+243（无密码）",
+        "刚果民主共和国+243 有密码": "刚果民主共和国+243 有密码",
+        "刚果民主共和国+243无密码": "刚果民主共和国+243无密码",
+        "安哥拉🇦🇴+244（有密码）": "安哥拉🇦🇴+244（有密码）",
+        "安哥拉🇦🇴+244（无密码）": "安哥拉🇦🇴+244（无密码）",
+        "安哥拉+244 有密码": "安哥拉+244 有密码",
+        "安哥拉+244无密码": "安哥拉+244无密码",
+        "几内亚比绍🇬🇼+245（有密码）": "几内亚比绍🇬🇼+245（有密码）",
+        "几内亚比绍🇬🇼+245（无密码）": "几内亚比绍🇬🇼+245（无密码）",
+        "几内亚比绍+245 有密码": "几内亚比绍+245 有密码",
+        "几内亚比绍+245无密码": "几内亚比绍+245无密码",
+        "英属印度洋领地🇮��+246（有密码）": "英属印度洋领地🇮��+246（有密码）",
+        "英属印度洋领地🇮��+246（无密码）": "英属印度洋领地🇮��+246（无密码）",
+        "英属印度洋领地+246 有密码": "英属印度洋领地+246 有密码",
+        "英属印度洋领地+246无密码": "英属印度洋领地+246无密码",
+        "塞舌尔🇸🇨+248（有密码）": "塞舌尔🇸🇨+248（有密码）",
+        "塞舌尔🇸🇨+248（无密码）": "塞舌尔🇸🇨+248（无密码）",
+        "塞舌尔+248 有密码": "塞舌尔+248 有密码",
+        "塞舌尔+248无密码": "塞舌尔+248无密码",
+        "苏丹🇸🇩+249（有密码）": "苏丹🇸🇩+249（有密码）",
+        "苏丹🇸🇩+249（无密码）": "苏丹🇸🇩+249（无密码）",
+        "苏丹+249 有密码": "苏丹+249 有密码",
+        "苏丹+249无密码": "苏丹+249无密码",
+        "卢旺达🇷🇼+250（有密码）": "卢旺达🇷🇼+250（有密码）",
+        "卢旺达🇷🇼+250（无密码）": "卢旺达🇷🇼+250（无密码）",
+        "卢旺达+250 有密码": "卢旺达+250 有密码",
+        "卢旺达+250无密码": "卢旺达+250无密码",
+        "埃塞俄比亚🇪🇹+251（有密码）": "埃塞俄比亚🇪🇹+251（有密码）",
+        "埃塞俄比亚🇪🇹+251（无密码）": "埃塞俄比亚🇪🇹+251（无密码）",
+        "埃塞俄比亚+251 有密码": "埃塞俄比亚+251 有密码",
+        "埃塞俄比亚+251无密码": "埃塞俄比亚+251无密码",
+        "索马里🇸🇴+252（有密码）": "索马里🇸🇴+252（有密码）",
+        "索马里🇸🇴+252（无密码）": "索马里🇸🇴+252（无密码）",
+        "索马里+252 有密码": "索马里+252 有密码",
+        "索马里+252无密码": "索马里+252无密码",
+        "吉布提🇩🇯+253（有密码）": "吉布提🇩🇯+253（有密码）",
+        "吉布提🇩🇯+253（无密码）": "吉布提🇩🇯+253（无密码）",
+        "吉布提+253 有密码": "吉布提+253 有密码",
+        "吉布提+253无密码": "吉布提+253无密码",
+        "肯尼亚🇰🇪+254（有密码）": "肯尼亚🇰🇪+254（有密码）",
+        "肯尼亚🇰🇪+254（无密码）": "肯尼亚🇰🇪+254（无密码）",
+        "肯尼亚+254 有密码": "肯尼亚+254 有密码",
+        "肯尼亚+254无密码": "肯尼亚+254无密码",
+        "坦桑尼亚🇹🇿+255（有密码）": "坦桑尼亚🇹🇿+255（有密码）",
+        "坦桑尼亚🇹🇿+255（无密码）": "坦桑尼亚🇹🇿+255（无密码）",
+        "坦桑尼亚+255 有密码": "坦桑尼亚+255 有密码",
+        "坦桑尼亚+255无密码": "坦桑尼亚+255无密码",
+        "乌干达🇺🇬+256（有密码）": "乌干达🇺🇬+256（有密码）",
+        "乌干达🇺🇬+256（无密码）": "乌干达🇺🇬+256（无密码）",
+        "乌干达+256 有密码": "乌干达+256 有密码",
+        "乌干达+256无密码": "乌干达+256无密码",
+        "布隆迪🇧🇮+257（有密码）": "布隆迪🇧🇮+257（有密码）",
+        "布隆迪🇧🇮+257（无密码）": "布隆迪🇧🇮+257（无密码）",
+        "布隆迪+257 有密码": "布隆迪+257 有密码",
+        "布隆迪+257无密码": "布隆迪+257无密码",
+        "莫桑比克🇲🇿+258（有密码）": "莫桑比克🇲🇿+258（有密码）",
+        "莫桑比克🇲🇿+258（无密码）": "莫桑比克🇲🇿+258（无密码）",
+        "莫桑比克+258 有密码": "莫桑比克+258 有密码",
+        "莫桑比克+258无密码": "莫桑比克+258无密码",
+        "赞比亚🇿🇲+260（有密码）": "赞比亚🇿🇲+260（有密码）",
+        "赞比亚🇿🇲+260（无密码）": "赞比亚🇿🇲+260（无密码）",
+        "赞比亚+260 有密码": "赞比亚+260 有密码",
+        "赞比亚+260无密码": "赞比亚+260无密码",
+        "马达加斯加🇲🇬+261（有密码）": "马达加斯加🇲🇬+261（有密码）",
+        "马达加斯加🇲🇬+261（无密码）": "马达加斯加🇲🇬+261（无密码）",
+        "马达加斯加+261 有密码": "马达加斯加+261 有密码",
+        "马达加斯加+261无密码": "马达加斯加+261无密码",
+        "留尼汪🇷🇪+262（有密码）": "留尼汪🇷🇪+262（有密码）",
+        "留尼汪🇷🇪+262（无密码）": "留尼汪🇷🇪+262（无密码）",
+        "留尼汪+262 有密码": "留尼汪+262 有密码",
+        "留尼汪+262无密码": "留尼汪+262无密码",
+        "津巴布韦🇿🇼+263（有密码）": "津巴布韦🇿🇼+263（有密码）",
+        "津巴布韦🇿🇼+263（无密码）": "津巴布韦🇿🇼+263（无密码）",
+        "津巴布韦+263 有密码": "津巴布韦+263 有密码",
+        "津巴布韦+263无密码": "津巴布韦+263无密码",
+        "纳米比亚🇳🇦+264（有密码）": "纳米比亚🇳🇦+264（有密码）",
+        "纳米比亚🇳🇦+264（无密码）": "纳米比亚🇳🇦+264（无密码）",
+        "纳米比亚+264 有密码": "纳米比亚+264 有密码",
+        "纳米比亚+264无密码": "纳米比亚+264无密码",
+        "马拉维🇲🇼+265（有密码）": "马拉维🇲🇼+265（有密码）",
+        "马拉维🇲🇼+265（无密码）": "马拉维🇲🇼+265（无密码）",
+        "马拉维+265 有密码": "马拉维+265 有密码",
+        "马拉维+265无密码": "马拉维+265无密码",
+        "莱索托🇱🇸+266（有密码）": "莱索托🇱🇸+266（有密码）",
+        "莱索托🇱🇸+266（无密码）": "莱索托🇱🇸+266（无密码）",
+        "莱索托+266 有密码": "莱索托+266 有密码",
+        "莱索托+266无密码": "莱索托+266无密码",
+        "博茨瓦纳🇧🇼+267（有密码）": "博茨瓦纳🇧🇼+267（有密码）",
+        "博茨瓦纳🇧🇼+267（无密码）": "博茨瓦纳🇧🇼+267（无密码）",
+        "博茨瓦纳+267 有密码": "博茨瓦纳+267 有密码",
+        "博茨瓦纳+267无密码": "博茨瓦纳+267无密码",
+        "斯威士兰🇸🇿+268（有密码）": "斯威士兰🇸🇿+268（有密码）",
+        "斯威士兰🇸🇿+268（无密码）": "斯威士兰🇸🇿+268（无密码）",
+        "斯威士兰+268 有密码": "斯威士兰+268 有密码",
+        "斯威士兰+268无密码": "斯威士兰+268无密码",
+        "科摩罗🇰🇲+269（有密码）": "科摩罗🇰🇲+269（有密码）",
+        "科摩罗🇰🇲+269（无密码）": "科摩罗🇰🇲+269（无密码）",
+        "科摩罗+269 有密码": "科摩罗+269 有密码",
+        "科摩罗+269无密码": "科摩罗+269无密码",
+        "圣赫勒拿🇸🇭+290（有密码）": "圣赫勒拿🇸🇭+290（有密码）",
+        "圣赫勒拿🇸🇭+290（无密码）": "圣赫勒拿🇸🇭+290（无密码）",
+        "圣赫勒拿+290 有密码": "圣赫勒拿+290 有密码",
+        "圣赫勒拿+290无密码": "圣赫勒拿+290无密码",
+        "厄立特里亚🇪🇷+291（有密码）": "厄立特里亚🇪🇷+291（有密码）",
+        "厄立特里亚🇪🇷+291（无密码）": "厄立特里亚🇪🇷+291（无密码）",
+        "厄立特里亚+291 有密码": "厄立特里亚+291 有密码",
+        "厄立特里亚+291无密码": "厄立特里亚+291无密码",
+        "阿鲁巴🇦🇼+297（有密码）": "阿鲁巴🇦🇼+297（有密码）",
+        "阿鲁巴🇦🇼+297（无密码）": "阿鲁巴🇦🇼+297（无密码）",
+        "阿鲁巴+297 有密码": "阿鲁巴+297 有密码",
+        "阿鲁巴+297无密码": "阿鲁巴+297无密码",
+        "法罗群岛🇫🇴+298（有密码）": "法罗群岛🇫🇴+298（有密码）",
+        "法罗群岛🇫🇴+298（无密码）": "法罗群岛🇫🇴+298（无密码）",
+        "法罗群岛+298 有密码": "法罗群岛+298 有密码",
+        "法罗群岛+298无密码": "法罗群岛+298无密码",
+        "格陵兰🇬🇱+299（有密码）": "格陵兰🇬🇱+299（有密码）",
+        "格陵兰🇬🇱+299（无密码）": "格陵兰🇬🇱+299（无密码）",
+        "格陵兰+299 有密码": "格陵兰+299 有密码",
+        "格陵兰+299无密码": "格陵兰+299无密码",
+        "直布罗陀🇬🇮+350（有密码）": "直布罗陀🇬🇮+350（有密码）",
+        "直布罗陀🇬🇮+350（无密码）": "直布罗陀🇬🇮+350（无密码）",
+        "直布罗陀+350 有密码": "直布罗陀+350 有密码",
+        "直布罗陀+350无密码": "直布罗陀+350无密码",
+        "葡萄牙🇵🇹+351（有密码）": "葡萄牙🇵🇹+351（有密码）",
+        "葡萄牙🇵🇹+351（无密码）": "葡萄牙🇵🇹+351（无密码）",
+        "葡萄牙+351 有密码": "葡萄牙+351 有密码",
+        "葡萄牙+351无密码": "葡萄牙+351无密码",
+        "卢森堡🇱🇺+352（有密码）": "卢森堡🇱🇺+352（有密码）",
+        "卢森堡🇱🇺+352（无密码）": "卢森堡🇱🇺+352（无密码）",
+        "卢森堡+352 有密码": "卢森堡+352 有密码",
+        "卢森堡+352无密码": "卢森堡+352无密码",
+        "爱尔兰🇮🇪+353（有密码）": "爱尔兰🇮🇪+353（有密码）",
+        "爱尔兰🇮🇪+353（无密码）": "爱尔兰🇮🇪+353（无密码）",
+        "爱尔兰+353 有密码": "爱尔兰+353 有密码",
+        "爱尔兰+353无密码": "爱尔兰+353无密码",
+        "冰岛🇮🇸+354（有密码）": "冰岛🇮🇸+354（有密码）",
+        "冰岛🇮🇸+354（无密码）": "冰岛🇮🇸+354（无密码）",
+        "冰岛+354 有密码": "冰岛+354 有密码",
+        "冰岛+354无密码": "冰岛+354无密码",
+        "阿尔巴尼亚🇦🇱+355（有密码）": "阿尔巴尼亚🇦🇱+355（有密码）",
+        "阿尔巴尼亚🇦🇱+355（无密码）": "阿尔巴尼亚🇦🇱+355（无密码）",
+        "阿尔巴尼亚+355 有密码": "阿尔巴尼亚+355 有密码",
+        "阿尔巴尼亚+355无密码": "阿尔巴尼亚+355无密码",
+        "马耳他🇲🇹+356（有密码）": "马耳他🇲🇹+356（有密码）",
+        "马耳他🇲🇹+356（无密码）": "马耳他🇲🇹+356（无密码）",
+        "马耳他+356 有密码": "马耳他+356 有密码",
+        "马耳他+356无密码": "马耳他+356无密码",
+        "塞浦路斯🇨🇾+357（有密码）": "塞浦路斯🇨🇾+357（有密码）",
+        "塞浦路斯🇨🇾+357（无密码）": "塞浦路斯🇨🇾+357（无密码）",
+        "塞浦路斯+357 有密码": "塞浦路斯+357 有密码",
+        "塞浦路斯+357无密码": "塞浦路斯+357无密码",
+        "芬兰🇫🇮+358（有密码）": "芬兰🇫🇮+358（有密码）",
+        "芬兰🇫🇮+358（无密码）": "芬兰🇫🇮+358（无密码）",
+        "芬兰+358 有密码": "芬兰+358 有密码",
+        "芬兰+358无密码": "芬兰+358无密码",
+        "保加利亚🇧🇬+359（有密码）": "保加利亚🇧🇬+359（有密码）",
+        "保加利亚🇧🇬+359（无密码）": "保加利亚🇧🇬+359（无密码）",
+        "保加利亚+359 有密码": "保加利亚+359 有密码",
+        "保加利亚+359无密码": "保加利亚+359无密码",
+        "立陶宛🇱🇹+370（有密码）": "立陶宛🇱🇹+370（有密码）",
+        "立陶宛🇱🇹+370（无密码）": "立陶宛🇱🇹+370（无密码）",
+        "立陶宛+370 有密码": "立陶宛+370 有密码",
+        "立陶宛+370无密码": "立陶宛+370无密码",
+        "拉脱维亚🇱🇻+371（有密码）": "拉脱维亚🇱🇻+371（有密码）",
+        "拉脱维亚🇱🇻+371（无密码）": "拉脱维亚🇱🇻+371（无密码）",
+        "拉脱维亚+371 有密码": "拉脱维亚+371 有密码",
+        "拉脱维亚+371无密码": "拉脱维亚+371无密码",
+        "爱沙尼亚🇪🇪+372（有密码）": "爱沙尼亚🇪🇪+372（有密码）",
+        "爱沙尼亚🇪🇪+372（无密码）": "爱沙尼亚🇪🇪+372（无密码）",
+        "爱沙尼亚+372 有密码": "爱沙尼亚+372 有密码",
+        "爱沙尼亚+372无密码": "爱沙尼亚+372无密码",
+        "摩尔多瓦🇲🇩+373（有密码）": "摩尔多瓦🇲🇩+373（有密码）",
+        "摩尔多瓦🇲🇩+373（无密码）": "摩尔多瓦🇲🇩+373（无密码）",
+        "摩尔多瓦+373 有密码": "摩尔多瓦+373 有密码",
+        "摩尔多瓦+373无密码": "摩尔多瓦+373无密码",
+        "亚美尼亚🇦🇲+374（有密码）": "亚美尼亚🇦🇲+374（有密码）",
+        "亚美尼亚🇦🇲+374（无密码）": "亚美尼亚🇦🇲+374（无密码）",
+        "亚美尼亚+374 有密码": "亚美尼亚+374 有密码",
+        "亚美尼亚+374无密码": "亚美尼亚+374无密码",
+        "白俄罗斯🇧🇾+375（有密码）": "白俄罗斯🇧🇾+375（有密码）",
+        "白俄罗斯🇧🇾+375（无密码）": "白俄罗斯🇧🇾+375（无密码）",
+        "白俄罗斯+375 有密码": "白俄罗斯+375 有密码",
+        "白俄罗斯+375无密码": "白俄罗斯+375无密码",
+        "安道尔🇦🇩+376（有密码）": "安道尔🇦🇩+376（有密码）",
+        "安道尔🇦🇩+376（无密码）": "安道尔🇦🇩+376（无密码）",
+        "安道尔+376 有密码": "安道尔+376 有密码",
+        "安道尔+376无密码": "安道尔+376无密码",
+        "摩纳哥🇲🇨+377（有密码）": "摩纳哥🇲🇨+377（有密码）",
+        "摩纳哥🇲🇨+377（无密码）": "摩纳哥🇲🇨+377（无密码）",
+        "摩纳哥+377 有密码": "摩纳哥+377 有密码",
+        "摩纳哥+377无密码": "摩纳哥+377无密码",
+        "圣马力诺🇸🇲+378（有密码）": "圣马力诺🇸🇲+378（有密码）",
+        "圣马力诺🇸🇲+378（无密码）": "圣马力诺🇸🇲+378（无密码）",
+        "圣马力诺+378 有密码": "圣马力诺+378 有密码",
+        "圣马力诺+378无密码": "圣马力诺+378无密码",
+        "乌克兰🇺🇦+380（有密码）": "乌克兰🇺🇦+380（有密码）",
+        "乌克兰🇺🇦+380（无密码）": "乌克兰🇺🇦+380（无密码）",
+        "乌克兰+380 有密码": "乌克兰+380 有密码",
+        "乌克兰+380无密码": "乌克兰+380无密码",
+        "塞尔维亚🇷🇸+381（有密码）": "塞尔维亚🇷🇸+381（有密码）",
+        "塞尔维亚🇷🇸+381（无密码）": "塞尔维亚🇷🇸+381（无密码）",
+        "塞尔维亚+381 有密码": "塞尔维亚+381 有密码",
+        "塞尔维亚+381无密码": "塞尔维亚+381无密码",
+        "黑山🇲🇪+382（有密码）": "黑山🇲🇪+382（有密码）",
+        "黑山🇲🇪+382（无密码）": "黑山🇲🇪+382（无密码）",
+        "黑山+382 有密码": "黑山+382 有密码",
+        "黑山+382无密码": "黑山+382无密码",
+        "科索沃🇽🇰+383（有密码）": "科索沃🇽🇰+383（有密码）",
+        "科索沃🇽🇰+383（无密码）": "科索沃🇽🇰+383（无密码）",
+        "科索沃+383 有密码": "科索沃+383 有密码",
+        "科索沃+383无密码": "科索沃+383无密码",
+        "克罗地亚🇭🇷+385（有密码）": "克罗地亚🇭🇷+385（有密码）",
+        "克罗地亚🇭🇷+385（无密码）": "克罗地亚🇭🇷+385（无密码）",
+        "克罗地亚+385 有密码": "克罗地亚+385 有密码",
+        "克罗地亚+385无密码": "克罗地亚+385无密码",
+        "斯洛文尼亚🇸🇮+386（有密码）": "斯洛文尼亚🇸🇮+386（有密码）",
+        "斯洛文尼亚🇸🇮+386（无密码）": "斯洛文尼亚🇸🇮+386（无密码）",
+        "斯洛文尼亚+386 有密码": "斯洛文尼亚+386 有密码",
+        "斯洛文尼亚+386无密码": "斯洛文尼亚+386无密码",
+        "波黑🇧🇦+387（有密码）": "波黑🇧🇦+387（有密码）",
+        "波黑🇧🇦+387（无密码）": "波黑🇧🇦+387（无密码）",
+        "波黑+387 有密码": "波黑+387 有密码",
+        "波黑+387无密码": "波黑+387无密码",
+        "北马其顿🇲🇰+389（有密码）": "北马其顿🇲🇰+389（有密码）",
+        "北马其顿🇲🇰+389（无密码）": "北马其顿🇲🇰+389（无密码）",
+        "北马其顿+389 有密码": "北马其顿+389 有密码",
+        "北马其顿+389无密码": "北马其顿+389无密码",
+        "捷克🇨🇿+420（有密码）": "捷克🇨🇿+420（有密码）",
+        "捷克🇨🇿+420（无密码）": "捷克🇨🇿+420（无密码）",
+        "捷克+420 有密码": "捷克+420 有密码",
+        "捷克+420无密码": "捷克+420无密码",
+        "斯洛伐克🇸🇰+421（有密码）": "斯洛伐克🇸🇰+421（有密码）",
+        "斯洛伐克🇸🇰+421（无密码）": "斯洛伐克🇸🇰+421（无密码）",
+        "斯洛伐克+421 有密码": "斯洛伐克+421 有密码",
+        "斯洛伐克+421无密码": "斯洛伐克+421无密码",
+        "列支敦士登🇱🇮+423（有密码）": "列支敦士登🇱🇮+423（有密码）",
+        "列支敦士登🇱🇮+423（无密码）": "列支敦士登🇱🇮+423（无密码）",
+        "列支敦士登+423 有密码": "列支敦士登+423 有密码",
+        "列支敦士登+423无密码": "列支敦士登+423无密码",
+        "福克兰群岛🇫🇰+500（有密码）": "福克兰群岛🇫🇰+500（有密码）",
+        "福克兰群岛🇫🇰+500（无密码）": "福克兰群岛🇫🇰+500（无密码）",
+        "福克兰群岛+500 有密码": "福克兰群岛+500 有密码",
+        "福克兰群岛+500无密码": "福克兰群岛+500无密码",
+        "伯利兹🇧🇿+501（有密码）": "伯利兹🇧🇿+501（有密码）",
+        "伯利兹🇧🇿+501（无密码）": "伯利兹🇧🇿+501（无密码）",
+        "伯利兹+501 有密码": "伯利兹+501 有密码",
+        "伯利兹+501无密码": "伯利兹+501无密码",
+        "危地马拉🇬🇹+502（有密码）": "危地马拉🇬🇹+502（有密码）",
+        "危地马拉🇬🇹+502（无密码）": "危地马拉🇬🇹+502（无密码）",
+        "危地马拉+502 有密码": "危地马拉+502 有密码",
+        "危地马拉+502无密码": "危地马拉+502无密码",
+        "萨尔瓦多🇸🇻+503（有密码）": "萨尔瓦多🇸🇻+503（有密码）",
+        "萨尔瓦多🇸🇻+503（无密码）": "萨尔瓦多🇸🇻+503（无密码）",
+        "萨尔瓦多+503 有密码": "萨尔瓦多+503 有密码",
+        "萨尔瓦多+503无密码": "萨尔瓦多+503无密码",
+        "洪都拉斯🇭🇳+504（有密码）": "洪都拉斯🇭🇳+504（有密码）",
+        "洪都拉斯🇭🇳+504（无密码）": "洪都拉斯🇭🇳+504（无密码）",
+        "洪都拉斯+504 有密码": "洪都拉斯+504 有密码",
+        "洪都拉斯+504无密码": "洪都拉斯+504无密码",
+        "尼加拉瓜🇳🇮+505（有密码）": "尼加拉瓜🇳🇮+505（有密码）",
+        "尼加拉瓜🇳🇮+505（无密码）": "尼加拉瓜🇳🇮+505（无密码）",
+        "尼加拉瓜+505 有密码": "尼加拉瓜+505 有密码",
+        "尼加拉瓜+505无密码": "尼加拉瓜+505无密码",
+        "哥斯达黎加🇨🇷+506（有密码）": "哥斯达黎加🇨🇷+506（有密码）",
+        "哥斯达黎加🇨🇷+506（无密码）": "哥斯达黎加🇨🇷+506（无密码）",
+        "哥斯达黎加+506 有密码": "哥斯达黎加+506 有密码",
+        "哥斯达黎加+506无密码": "哥斯达黎加+506无密码",
+        "巴拿马🇵🇦+507（有密码）": "巴拿马🇵🇦+507（有密码）",
+        "巴拿马🇵🇦+507（无密码）": "巴拿马🇵🇦+507（无密码）",
+        "巴拿马+507 有密码": "巴拿马+507 有密码",
+        "巴拿马+507无密码": "巴拿马+507无密码",
+        "圣皮埃尔和密克隆🇵🇲+508（有密码）": "圣皮埃尔和密克隆🇵🇲+508（有密码）",
+        "圣皮埃尔和密克隆🇵🇲+508（无密码）": "圣皮埃尔和密克隆🇵🇲+508（无密码）",
+        "圣皮埃尔和密克隆+508 有密码": "圣皮埃尔和密克隆+508 有密码",
+        "圣皮埃尔和密克隆+508无密码": "圣皮埃尔和密克隆+508无密码",
+        "海地🇭🇹+509（有密码）": "海地🇭🇹+509（有密码）",
+        "海地🇭🇹+509（无密码）": "海地🇭🇹+509（无密码）",
+        "海地+509 有密码": "海地+509 有密码",
+        "海地+509无密码": "海地+509无密码",
+        "瓜德罗普🇬🇵+590（有密码）": "瓜德罗普🇬🇵+590（有密码）",
+        "瓜德罗普🇬🇵+590（无密码）": "瓜德罗普🇬🇵+590（无密码）",
+        "瓜德罗普+590 有密码": "瓜德罗普+590 有密码",
+        "瓜德罗普+590无密码": "瓜德罗普+590无密码",
+        "玻利维亚🇧🇴+591（有密码）": "玻利维亚🇧🇴+591（有密码）",
+        "玻利维亚🇧🇴+591（无密码）": "玻利维亚🇧🇴+591（无密码）",
+        "玻利维亚+591 有密码": "玻利维亚+591 有密码",
+        "玻利维亚+591无密码": "玻利维亚+591无密码",
+        "圭亚那🇬🇾+592（有密码）": "圭亚那🇬🇾+592（有密码）",
+        "圭亚那🇬🇾+592（无密码）": "圭亚那🇬🇾+592（无密码）",
+        "圭亚那+592 有密码": "圭亚那+592 有密码",
+        "圭亚那+592无密码": "圭亚那+592无密码",
+        "厄瓜多尔🇪🇨+593（有密码）": "厄瓜多尔🇪🇨+593（有密码）",
+        "厄瓜多尔🇪🇨+593（无密码）": "厄瓜多尔🇪🇨+593（无密码）",
+        "厄瓜多尔+593 有密码": "厄瓜多尔+593 有密码",
+        "厄瓜多尔+593无密码": "厄瓜多尔+593无密码",
+        "法属圭亚那🇬🇫+594（有密码）": "法属圭亚那🇬🇫+594（有密码）",
+        "法属圭亚那🇬🇫+594（无密码）": "法属圭亚那🇬🇫+594（无密码）",
+        "法属圭亚那+594 有密码": "法属圭亚那+594 有密码",
+        "法属圭亚那+594无密码": "法属圭亚那+594无密码",
+        "巴拉圭🇵🇾+595（有密码）": "巴拉圭🇵🇾+595（有密码）",
+        "巴拉圭🇵🇾+595（无密码）": "巴拉圭🇵🇾+595（无密码）",
+        "巴拉圭+595 有密码": "巴拉圭+595 有密码",
+        "巴拉圭+595无密码": "巴拉圭+595无密码",
+        "马提尼克🇲🇶+596（有密码）": "马提尼克🇲🇶+596（有密码）",
+        "马提尼克🇲🇶+596（无密码）": "马提尼克🇲🇶+596（无密码）",
+        "马提尼克+596 有密码": "马提尼克+596 有密码",
+        "马提尼克+596无密码": "马提尼克+596无密码",
+        "苏里南🇸🇷+597（有密码）": "苏里南🇸🇷+597（有密码）",
+        "苏里南🇸🇷+597（无密码）": "苏里南🇸🇷+597（无密码）",
+        "苏里南+597 有密码": "苏里南+597 有密码",
+        "苏里南+597无密码": "苏里南+597无密码",
+        "乌拉圭🇺🇾+598（有密码）": "乌拉圭🇺🇾+598（有密码）",
+        "乌拉圭🇺🇾+598（无密码）": "乌拉圭🇺🇾+598（无密码）",
+        "乌拉圭+598 有密码": "乌拉圭+598 有密码",
+        "乌拉圭+598无密码": "乌拉圭+598无密码",
+        "荷属安的列斯🇨🇼+599（有密码）": "荷属安的列斯🇨🇼+599（有密码）",
+        "荷属安的列斯🇨🇼+599（无密码）": "荷属安的列斯🇨🇼+599（无密码）",
+        "荷属安的列斯+599 有密码": "荷属安的列斯+599 有密码",
+        "荷属安的列斯+599无密码": "荷属安的列斯+599无密码",
+        "东帝汶🇹🇱+670（有密码）": "东帝汶🇹🇱+670（有密码）",
+        "东帝汶🇹🇱+670（无密码）": "东帝汶🇹🇱+670（无密码）",
+        "东帝汶+670 有密码": "东帝汶+670 有密码",
+        "东帝汶+670无密码": "东帝汶+670无密码",
+        "南极洲🇦🇶+672（有密码）": "南极洲🇦🇶+672（有密码）",
+        "南极洲🇦🇶+672（无密码）": "南极洲🇦🇶+672（无密码）",
+        "南极洲+672 有密码": "南极洲+672 有密码",
+        "南极洲+672无密码": "南极洲+672无密码",
+        "文莱🇧🇳+673（有密码）": "文莱🇧🇳+673（有密码）",
+        "文莱🇧🇳+673（无密码）": "文莱🇧🇳+673（无密码）",
+        "文莱+673 有密码": "文莱+673 有密码",
+        "文莱+673无密码": "文莱+673无密码",
+        "瑙鲁🇳🇷+674（有密码）": "瑙鲁🇳🇷+674（有密码）",
+        "瑙鲁🇳🇷+674（无密码）": "瑙鲁🇳🇷+674（无密码）",
+        "瑙鲁+674 有密码": "瑙鲁+674 有密码",
+        "瑙鲁+674无密码": "瑙鲁+674无密码",
+        "巴布亚新几内亚🇵🇬+675（有密码）": "巴布亚新几内亚🇵🇬+675（有密码）",
+        "巴布亚新几内亚🇵🇬+675（无密码）": "巴布亚新几内亚🇵🇬+675（无密码）",
+        "巴布亚新几内亚+675 有密码": "巴布亚新几内亚+675 有密码",
+        "巴布亚新几内亚+675无密码": "巴布亚新几内亚+675无密码",
+        "汤加🇹🇴+676（有密码）": "汤加🇹🇴+676（有密码）",
+        "汤加🇹🇴+676（无密码）": "汤加🇹🇴+676（无密码）",
+        "汤加+676 有密码": "汤加+676 有密码",
+        "汤加+676无密码": "汤加+676无密码",
+        "所罗门群岛🇸🇧+677（有密码）": "所罗门群岛🇸🇧+677（有密码）",
+        "所罗门群岛🇸🇧+677（无密码）": "所罗门群岛🇸🇧+677（无密码）",
+        "所罗门群岛+677 有密码": "所罗门群岛+677 有密码",
+        "所罗门群岛+677无密码": "所罗门群岛+677无密码",
+        "瓦努阿图🇻🇺+678（有密码）": "瓦努阿图🇻🇺+678（有密码）",
+        "瓦努阿图🇻🇺+678（无密码）": "瓦努阿图🇻🇺+678（无密码）",
+        "瓦努阿图+678 有密码": "瓦努阿图+678 有密码",
+        "瓦努阿图+678无密码": "瓦努阿图+678无密码",
+        "斐济🇫🇯+679（有密码）": "斐济🇫🇯+679（有密码）",
+        "斐济🇫🇯+679（无密码）": "斐济🇫🇯+679（无密码）",
+        "斐济+679 有密码": "斐济+679 有密码",
+        "斐济+679无密码": "斐济+679无密码",
+        "帕劳🇵🇼+680（有密码）": "帕劳🇵🇼+680（有密码）",
+        "帕劳🇵🇼+680（无密码）": "帕劳🇵🇼+680（无密码）",
+        "帕劳+680 有密码": "帕劳+680 有密码",
+        "帕劳+680无密码": "帕劳+680无密码",
+        "瓦利斯和富图纳🇼🇫+681（有密码）": "瓦利斯和富图纳🇼🇫+681（有密码）",
+        "瓦利斯和富图纳🇼🇫+681（无密码）": "瓦利斯和富图纳🇼🇫+681（无密码）",
+        "瓦利斯和富图纳+681 有密码": "瓦利斯和富图纳+681 有密码",
+        "瓦利斯和富图纳+681无密码": "瓦利斯和富图纳+681无密码",
+        "库克群岛🇨🇰+682（有密码）": "库克群岛🇨🇰+682（有密码）",
+        "库克群岛🇨🇰+682（无密码）": "库克群岛🇨🇰+682（无密码）",
+        "库克群岛+682 有密码": "库克群岛+682 有密码",
+        "库克群岛+682无密码": "库克群岛+682无密码",
+        "纽埃🇳🇺+683（有密码）": "纽埃🇳🇺+683（有密码）",
+        "纽埃🇳🇺+683（无密码）": "纽埃🇳🇺+683（无密码）",
+        "纽埃+683 有密码": "纽埃+683 有密码",
+        "纽埃+683无密码": "纽埃+683无密码",
+        "萨摩亚🇼🇸+685（有密码）": "萨摩亚🇼🇸+685（有密码）",
+        "萨摩亚🇼🇸+685（无密码）": "萨摩亚🇼🇸+685（无密码）",
+        "萨摩亚+685 有密码": "萨摩亚+685 有密码",
+        "萨摩亚+685无密码": "萨摩亚+685无密码",
+        "基里巴斯🇰🇮+686（有密码）": "基里巴斯🇰🇮+686（有密码）",
+        "基里巴斯🇰🇮+686（无密码）": "基里巴斯🇰🇮+686（无密码）",
+        "基里巴斯+686 有密码": "基里巴斯+686 有密码",
+        "基里巴斯+686无密码": "基里巴斯+686无密码",
+        "新喀里多尼亚🇳🇨+687（有密码）": "新喀里多尼亚🇳🇨+687（有密码）",
+        "新喀里多尼亚🇳🇨+687（无密码）": "新喀里多尼亚🇳🇨+687（无密码）",
+        "新喀里多尼亚+687 有密码": "新喀里多尼亚+687 有密码",
+        "新喀里多尼亚+687无密码": "新喀里多尼亚+687无密码",
+        "图瓦卢🇹🇻+688（有密码）": "图瓦卢🇹🇻+688（有密码）",
+        "图瓦卢🇹🇻+688（无密码）": "图瓦卢🇹🇻+688（无密码）",
+        "图瓦卢+688 有密码": "图瓦卢+688 有密码",
+        "图瓦卢+688无密码": "图瓦卢+688无密码",
+        "法属波利尼西亚🇵🇫+689（有密码）": "法属波利尼西亚🇵🇫+689（有密码）",
+        "法属波利尼西亚🇵🇫+689（无密码）": "法属波利尼西亚🇵🇫+689（无密码）",
+        "法属波利尼西亚+689 有密码": "法属波利尼西亚+689 有密码",
+        "法属波利尼西亚+689无密码": "法属波利尼西亚+689无密码",
+        "托克劳🇹🇰+690（有密码）": "托克劳🇹🇰+690（有密码）",
+        "托克劳🇹🇰+690（无密码）": "托克劳🇹🇰+690（无密码）",
+        "托克劳+690 有密码": "托克劳+690 有密码",
+        "托克劳+690无密码": "托克劳+690无密码",
+        "密克罗尼西亚🇫🇲+691（有密码）": "密克罗尼西亚🇫🇲+691（有密码）",
+        "密克罗尼西亚🇫🇲+691（无密码）": "密克罗尼西亚🇫🇲+691（无密码）",
+        "密克罗尼西亚+691 有密码": "密克罗尼西亚+691 有密码",
+        "密克罗尼西亚+691无密码": "密克罗尼西亚+691无密码",
+        "马绍尔群岛🇲🇭+692（有密码）": "马绍尔群岛🇲🇭+692（有密码）",
+        "马绍尔群岛🇲🇭+692（无密码）": "马绍尔群岛🇲🇭+692（无密码）",
+        "马绍尔群岛+692 有密码": "马绍尔群岛+692 有密码",
+        "马绍尔群岛+692无密码": "马绍尔群岛+692无密码",
+        "朝鲜🇰🇵+850（有密码）": "朝鲜🇰🇵+850（有密码）",
+        "朝鲜🇰🇵+850（无密码）": "朝鲜🇰🇵+850（无密码）",
+        "朝鲜+850 有密码": "朝鲜+850 有密码",
+        "朝鲜+850无密码": "朝鲜+850无密码",
+        "香港🇭🇰+852（有密码）": "香港🇭🇰+852（有密码）",
+        "香港🇭🇰+852（无密码）": "香港🇭🇰+852（无密码）",
+        "香港+852 有密码": "香港+852 有密码",
+        "香港+852无密码": "香港+852无密码",
+        "澳门🇲🇴+853（有密码）": "澳门🇲🇴+853（有密码）",
+        "澳门🇲🇴+853（无密码）": "澳门🇲🇴+853（无密码）",
+        "澳门+853 有密码": "澳门+853 有密码",
+        "澳门+853无密码": "澳门+853无密码",
+        "柬埔寨🇰🇭+855（有密码）": "柬埔寨🇰🇭+855（有密码）",
+        "柬埔寨🇰🇭+855（无密码）": "柬埔寨🇰🇭+855（无密码）",
+        "柬埔寨+855 有密码": "柬埔寨+855 有密码",
+        "柬埔寨+855无密码": "柬埔寨+855无密码",
+        "老挝🇱🇦+856（有密码）": "老挝🇱🇦+856（有密码）",
+        "老挝🇱🇦+856（无密码）": "老挝🇱🇦+856（无密码）",
+        "老挝+856 有密码": "老挝+856 有密码",
+        "老挝+856无密码": "老挝+856无密码",
+        "孟加拉国🇧🇩+880（有密码）": "孟加拉国🇧🇩+880（有密码）",
+        "孟加拉国🇧🇩+880（无密码）": "孟加拉国🇧🇩+880（无密码）",
+        "孟加拉国+880 有密码": "孟加拉国+880 有密码",
+        "孟加拉国+880无密码": "孟加拉国+880无密码",
+        "台湾🇹🇼+886（有密码）": "台湾🇹🇼+886（有密码）",
+        "台湾🇹🇼+886（无密码）": "台湾🇹🇼+886（无密码）",
+        "台湾+886 有密码": "台湾+886 有密码",
+        "台湾+886无密码": "台湾+886无密码",
+        "马尔代夫🇲🇻+960（有密码）": "马尔代夫🇲🇻+960（有密码）",
+        "马尔代夫🇲🇻+960（无密码）": "马尔代夫🇲🇻+960（无密码）",
+        "马尔代夫+960 有密码": "马尔代夫+960 有密码",
+        "马尔代夫+960无密码": "马尔代夫+960无密码",
+        "黎巴嫩🇱🇧+961（有密码）": "黎巴嫩🇱🇧+961（有密码）",
+        "黎巴嫩🇱🇧+961（无密码）": "黎巴嫩🇱🇧+961（无密码）",
+        "黎巴嫩+961 有密码": "黎巴嫩+961 有密码",
+        "黎巴嫩+961无密码": "黎巴嫩+961无密码",
+        "约旦🇯🇴+962（有密码）": "约旦🇯🇴+962（有密码）",
+        "约旦🇯🇴+962（无密码）": "约旦🇯🇴+962（无密码）",
+        "约旦+962 有密码": "约旦+962 有密码",
+        "约旦+962无密码": "约旦+962无密码",
+        "叙利亚🇸🇾+963（有密码）": "叙利亚🇸🇾+963（有密码）",
+        "叙利亚🇸🇾+963（无密码）": "叙利亚🇸🇾+963（无密码）",
+        "叙利亚+963 有密码": "叙利亚+963 有密码",
+        "叙利亚+963无密码": "叙利亚+963无密码",
+        "伊拉克🇮🇶+964（有密码）": "伊拉克🇮🇶+964（有密码）",
+        "伊拉克🇮🇶+964（无密码）": "伊拉克🇮🇶+964（无密码）",
+        "伊拉克+964 有密码": "伊拉克+964 有密码",
+        "伊拉克+964无密码": "伊拉克+964无密码",
+        "科威特🇰🇼+965（有密码）": "科威特🇰🇼+965（有密码）",
+        "科威特🇰🇼+965（无密码）": "科威特🇰🇼+965（无密码）",
+        "科威特+965 有密码": "科威特+965 有密码",
+        "科威特+965无密码": "科威特+965无密码",
+        "沙特阿拉伯🇸🇦+966（有密码）": "沙特阿拉伯🇸🇦+966（有密码）",
+        "沙特阿拉伯🇸🇦+966（无密码）": "沙特阿拉伯🇸🇦+966（无密码）",
+        "沙特阿拉伯+966 有密码": "沙特阿拉伯+966 有密码",
+        "沙特阿拉伯+966无密码": "沙特阿拉伯+966无密码",
+        "也门🇾🇪+967（有密码）": "也门🇾🇪+967（有密码）",
+        "也门🇾🇪+967（无密码）": "也门🇾🇪+967（无密码）",
+        "也门+967 有密码": "也门+967 有密码",
+        "也门+967无密码": "也门+967无密码",
+        "阿曼🇴🇲+968（有密码）": "阿曼🇴🇲+968（有密码）",
+        "阿曼🇴🇲+968（无密码）": "阿曼🇴🇲+968（无密码）",
+        "阿曼+968 有密码": "阿曼+968 有密码",
+        "阿曼+968无密码": "阿曼+968无密码",
+        "巴勒斯坦🇵🇸+970（有密码）": "巴勒斯坦🇵🇸+970（有密码）",
+        "巴勒斯坦🇵🇸+970（无密码）": "巴勒斯坦🇵🇸+970（无密码）",
+        "巴勒斯坦+970 有密码": "巴勒斯坦+970 有密码",
+        "巴勒斯坦+970无密码": "巴勒斯坦+970无密码",
+        "阿联酋🇦🇪+971（有密码）": "阿联酋🇦🇪+971（有密码）",
+        "阿联酋🇦🇪+971（无密码）": "阿联酋🇦🇪+971（无密码）",
+        "阿联酋+971 有密码": "阿联酋+971 有密码",
+        "阿联酋+971无密码": "阿联酋+971无密码",
+        "以色列🇮🇱+972（有密码）": "以色列🇮🇱+972（有密码）",
+        "以色列🇮🇱+972（无密码）": "以色列🇮🇱+972（无密码）",
+        "以色列+972 有密码": "以色列+972 有密码",
+        "以色列+972无密码": "以色列+972无密码",
+        "巴林🇧��+973（有密码）": "巴林🇧��+973（有密码）",
+        "巴林🇧��+973（无密码）": "巴林🇧��+973（无密码）",
+        "巴林+973 有密码": "巴林+973 有密码",
+        "巴林+973无密码": "巴林+973无密码",
+        "卡塔尔🇶🇦+974（有密码）": "卡塔尔🇶🇦+974（有密码）",
+        "卡塔尔🇶🇦+974（无密码）": "卡塔尔🇶🇦+974（无密码）",
+        "卡塔尔+974 有密码": "卡塔尔+974 有密码",
+        "卡塔尔+974无密码": "卡塔尔+974无密码",
+        "不丹🇧🇹+975（有密码）": "不丹🇧🇹+975（有密码）",
+        "不丹🇧🇹+975（无密码）": "不丹🇧🇹+975（无密码）",
+        "不丹+975 有密码": "不丹+975 有密码",
+        "不丹+975无密码": "不丹+975无密码",
+        "蒙古🇲🇳+976（有密码）": "蒙古🇲🇳+976（有密码）",
+        "蒙古🇲🇳+976（无密码）": "蒙古🇲🇳+976（无密码）",
+        "蒙古+976 有密码": "蒙古+976 有密码",
+        "蒙古+976无密码": "蒙古+976无密码",
+        "尼泊尔🇳🇵+977（有密码）": "尼泊尔🇳🇵+977（有密码）",
+        "尼泊尔🇳🇵+977（无密码）": "尼泊尔🇳🇵+977（无密码）",
+        "尼泊尔+977 有密码": "尼泊尔+977 有密码",
+        "尼泊尔+977无密码": "尼泊尔+977无密码",
+        "塔吉克斯坦🇹🇯+992（有密码）": "塔吉克斯坦🇹🇯+992（有密码）",
+        "塔吉克斯坦🇹🇯+992（无密码）": "塔吉克斯坦🇹🇯+992（无密码）",
+        "塔吉克斯坦+992 有密码": "塔吉克斯坦+992 有密码",
+        "塔吉克斯坦+992无密码": "塔吉克斯坦+992无密码",
+        "土库曼斯坦🇹🇲+993（有密码）": "土库曼斯坦🇹🇲+993（有密码）",
+        "土库曼斯坦🇹🇲+993（无密码）": "土库曼斯坦🇹🇲+993（无密码）",
+        "土库曼斯坦+993 有密码": "土库曼斯坦+993 有密码",
+        "土库曼斯坦+993无密码": "土库曼斯坦+993无密码",
+        "阿塞拜疆🇦🇿+994（有密码）": "阿塞拜疆🇦🇿+994（有密码）",
+        "阿塞拜疆🇦🇿+994（无密码）": "阿塞拜疆🇦🇿+994（无密码）",
+        "阿塞拜疆+994 有密码": "阿塞拜疆+994 有密码",
+        "阿塞拜疆+994无密码": "阿塞拜疆+994无密码",
+        "格鲁吉亚🇬🇪+995（有密码）": "格鲁吉亚🇬🇪+995（有密码）",
+        "格鲁吉亚🇬🇪+995（无密码）": "格鲁吉亚🇬🇪+995（无密码）",
+        "格鲁吉亚+995 有密码": "格鲁吉亚+995 有密码",
+        "格鲁吉亚+995无密码": "格鲁吉亚+995无密码",
+        "吉尔吉斯斯坦🇰🇬+996（有密码）": "吉尔吉斯斯坦🇰🇬+996（有密码）",
+        "吉尔吉斯斯坦🇰🇬+996（无密码）": "吉尔吉斯斯坦🇰🇬+996（无密码）",
+        "吉尔吉斯斯坦+996 有密码": "吉尔吉斯斯坦+996 有密码",
+        "吉尔吉斯斯坦+996无密码": "吉尔吉斯斯坦+996无密码",
+        "乌兹别克斯坦🇺🇿+998（有密码）": "乌兹别克斯坦🇺🇿+998（有密码）",
+        "乌兹别克斯坦🇺🇿+998（无密码）": "乌兹别克斯坦🇺🇿+998（无密码）",
+        "乌兹别克斯坦+998 有密码": "乌兹别克斯坦+998 有密码",
+        "乌兹别克斯坦+998无密码": "乌兹别克斯坦+998无密码"
+    },
+    "en": {
+        "一级分类": "Primary Category",
+        "二次协议号": "Secondary Protocol",
+        "🔥二次协议号（session+json）": "🔥Secondary Protocol (session+json)",
+        "二次协议号（session+json）": "Secondary Protocol (session+json)",
+        "✈️【1-8年】协议老号（session+json）": "✈️【1-8 years】Old Protocol (session+json)",
+        "🔥二手TG协议号（session+json）": "🔥Second-hand TG Protocol (session+json)",
+        "二手TG协议号（session+json）": "Second-hand TG Protocol (session+json)",
+        "美国/加拿大🇺🇸+1（有密码）": "USA/Canada🇺🇸+1 (w/ Password)",
+        "美国/加拿大🇺🇸+1（无密码）": "USA/Canada🇺🇸+1 (w/o Password)",
+        "美国/加拿大+1 有密码": "USA/Canada+1 w/ Password",
+        "美国/加拿大+1无密码": "USA/Canada+1 w/o Password",
+        "俄罗斯/哈萨克斯坦🇷🇺+7（有密码）": "Russia/Kazakhstan🇷🇺+7 (w/ Password)",
+        "俄罗斯/哈萨克斯坦🇷🇺+7（无密码）": "Russia/Kazakhstan🇷🇺+7 (w/o Password)",
+        "俄罗斯/哈萨克斯坦+7 有密码": "Russia/Kazakhstan+7 w/ Password",
+        "俄罗斯/哈萨克斯坦+7无密码": "Russia/Kazakhstan+7 w/o Password",
+        "埃及🇪🇬+20（有密码）": "Egypt🇪🇬+20 (w/ Password)",
+        "埃及🇪🇬+20（无密码）": "Egypt🇪🇬+20 (w/o Password)",
+        "埃及+20 有密码": "Egypt+20 w/ Password",
+        "埃及+20无密码": "Egypt+20 w/o Password",
+        "南非🇿🇦+27（有密码）": "South Africa🇿🇦+27 (w/ Password)",
+        "南非🇿🇦+27（无密码）": "South Africa🇿🇦+27 (w/o Password)",
+        "南非+27 有密码": "South Africa+27 w/ Password",
+        "南非+27无密码": "South Africa+27 w/o Password",
+        "希腊🇬🇷+30（有密码）": "Greece🇬🇷+30 (w/ Password)",
+        "希腊🇬🇷+30（无密码）": "Greece🇬🇷+30 (w/o Password)",
+        "希腊+30 有密码": "Greece+30 w/ Password",
+        "希腊+30无密码": "Greece+30 w/o Password",
+        "荷兰🇳🇱+31（有密码）": "Netherlands🇳🇱+31 (w/ Password)",
+        "荷兰🇳🇱+31（无密码）": "Netherlands🇳🇱+31 (w/o Password)",
+        "荷兰+31 有密码": "Netherlands+31 w/ Password",
+        "荷兰+31无密码": "Netherlands+31 w/o Password",
+        "比利时🇧🇪+32（有密码）": "Belgium🇧🇪+32 (w/ Password)",
+        "比利时🇧🇪+32（无密码）": "Belgium🇧🇪+32 (w/o Password)",
+        "比利时+32 有密码": "Belgium+32 w/ Password",
+        "比利时+32无密码": "Belgium+32 w/o Password",
+        "法国🇫🇷+33（有密码）": "France🇫🇷+33 (w/ Password)",
+        "法国🇫🇷+33（无密码）": "France🇫🇷+33 (w/o Password)",
+        "法国+33 有密码": "France+33 w/ Password",
+        "法国+33无密码": "France+33 w/o Password",
+        "西班牙🇪🇸+34（有密码）": "Spain🇪🇸+34 (w/ Password)",
+        "西班牙🇪🇸+34（无密码）": "Spain🇪🇸+34 (w/o Password)",
+        "西班牙+34 有密码": "Spain+34 w/ Password",
+        "西班牙+34无密码": "Spain+34 w/o Password",
+        "匈牙利🇭🇺+36（有密码）": "Hungary🇭🇺+36 (w/ Password)",
+        "匈牙利🇭🇺+36（无密码）": "Hungary🇭🇺+36 (w/o Password)",
+        "匈牙利+36 有密码": "Hungary+36 w/ Password",
+        "匈牙利+36无密码": "Hungary+36 w/o Password",
+        "意大利🇮🇹+39（有密码）": "Italy🇮🇹+39 (w/ Password)",
+        "意大利🇮🇹+39（无密码）": "Italy🇮🇹+39 (w/o Password)",
+        "意大利+39 有密码": "Italy+39 w/ Password",
+        "意大利+39无密码": "Italy+39 w/o Password",
+        "罗马尼亚🇷🇴+40（有密码）": "Romania🇷🇴+40 (w/ Password)",
+        "罗马尼亚🇷🇴+40（无密码）": "Romania🇷🇴+40 (w/o Password)",
+        "罗马尼亚+40 有密码": "Romania+40 w/ Password",
+        "罗马尼亚+40无密码": "Romania+40 w/o Password",
+        "瑞士🇨🇭+41（有密码）": "Switzerland🇨🇭+41 (w/ Password)",
+        "瑞士🇨🇭+41（无密码）": "Switzerland🇨🇭+41 (w/o Password)",
+        "瑞士+41 有密码": "Switzerland+41 w/ Password",
+        "瑞士+41无密码": "Switzerland+41 w/o Password",
+        "奥地利🇦🇹+43（有密码）": "Austria🇦🇹+43 (w/ Password)",
+        "奥地利🇦🇹+43（无密码）": "Austria🇦🇹+43 (w/o Password)",
+        "奥地利+43 有密码": "Austria+43 w/ Password",
+        "奥地利+43无密码": "Austria+43 w/o Password",
+        "英国🇬🇧+44（有密码）": "UK🇬🇧+44 (w/ Password)",
+        "英国🇬🇧+44（无密码）": "UK🇬🇧+44 (w/o Password)",
+        "英国+44 有密码": "UK+44 w/ Password",
+        "英国+44无密码": "UK+44 w/o Password",
+        "丹麦🇩🇰+45（有密码）": "Denmark🇩🇰+45 (w/ Password)",
+        "丹麦🇩🇰+45（无密码）": "Denmark🇩🇰+45 (w/o Password)",
+        "丹麦+45 有密码": "Denmark+45 w/ Password",
+        "丹麦+45无密码": "Denmark+45 w/o Password",
+        "瑞典🇸🇪+46（有密码）": "Sweden🇸🇪+46 (w/ Password)",
+        "瑞典🇸🇪+46（无密码）": "Sweden🇸🇪+46 (w/o Password)",
+        "瑞典+46 有密码": "Sweden+46 w/ Password",
+        "瑞典+46无密码": "Sweden+46 w/o Password",
+        "挪威🇳🇴+47（有密码）": "Norway🇳🇴+47 (w/ Password)",
+        "挪威🇳🇴+47（无密码）": "Norway🇳🇴+47 (w/o Password)",
+        "挪威+47 有密码": "Norway+47 w/ Password",
+        "挪威+47无密码": "Norway+47 w/o Password",
+        "波兰🇵🇱+48（有密码）": "Poland🇵🇱+48 (w/ Password)",
+        "波兰🇵🇱+48（无密码）": "Poland🇵🇱+48 (w/o Password)",
+        "波兰+48 有密码": "Poland+48 w/ Password",
+        "波兰+48无密码": "Poland+48 w/o Password",
+        "德国🇩🇪+49（有密码）": "Germany🇩🇪+49 (w/ Password)",
+        "德国🇩🇪+49（无密码）": "Germany🇩🇪+49 (w/o Password)",
+        "德国+49 有密码": "Germany+49 w/ Password",
+        "德国+49无密码": "Germany+49 w/o Password",
+        "秘鲁🇵🇪+51（有密码）": "Peru🇵🇪+51 (w/ Password)",
+        "秘鲁🇵🇪+51（无密码）": "Peru🇵🇪+51 (w/o Password)",
+        "秘鲁+51 有密码": "Peru+51 w/ Password",
+        "秘鲁+51无密码": "Peru+51 w/o Password",
+        "墨西哥🇲🇽+52（有密码）": "Mexico🇲🇽+52 (w/ Password)",
+        "墨西哥🇲🇽+52（无密码）": "Mexico🇲🇽+52 (w/o Password)",
+        "墨西哥+52 有密码": "Mexico+52 w/ Password",
+        "墨西哥+52无密码": "Mexico+52 w/o Password",
+        "古巴🇨🇺+53（有密码）": "Cuba🇨🇺+53 (w/ Password)",
+        "古巴🇨🇺+53（无密码）": "Cuba🇨🇺+53 (w/o Password)",
+        "古巴+53 有密码": "Cuba+53 w/ Password",
+        "古巴+53无密码": "Cuba+53 w/o Password",
+        "阿根廷🇦🇷+54（有密码）": "Argentina🇦🇷+54 (w/ Password)",
+        "阿根廷🇦🇷+54（无密码）": "Argentina🇦🇷+54 (w/o Password)",
+        "阿根廷+54 有密码": "Argentina+54 w/ Password",
+        "阿根廷+54无密码": "Argentina+54 w/o Password",
+        "巴西🇧🇷+55（有密码）": "Brazil🇧🇷+55 (w/ Password)",
+        "巴西🇧🇷+55（无密码）": "Brazil🇧🇷+55 (w/o Password)",
+        "巴西+55 有密码": "Brazil+55 w/ Password",
+        "巴西+55无密码": "Brazil+55 w/o Password",
+        "智利🇨🇱+56（有密码）": "Chile🇨🇱+56 (w/ Password)",
+        "智利🇨🇱+56（无密码）": "Chile🇨🇱+56 (w/o Password)",
+        "智利+56 有密码": "Chile+56 w/ Password",
+        "智利+56无密码": "Chile+56 w/o Password",
+        "哥伦比亚🇨🇴+57（有密码）": "Colombia🇨🇴+57 (w/ Password)",
+        "哥伦比亚🇨🇴+57（无密码）": "Colombia🇨🇴+57 (w/o Password)",
+        "哥伦比亚+57 有密码": "Colombia+57 w/ Password",
+        "哥伦比亚+57无密码": "Colombia+57 w/o Password",
+        "委内瑞拉🇻🇪+58（有密码）": "Venezuela🇻🇪+58 (w/ Password)",
+        "委内瑞拉🇻🇪+58（无密码）": "Venezuela🇻🇪+58 (w/o Password)",
+        "委内瑞拉+58 有密码": "Venezuela+58 w/ Password",
+        "委内瑞拉+58无密码": "Venezuela+58 w/o Password",
+        "马来西亚🇲🇾+60（有密码）": "Malaysia🇲🇾+60 (w/ Password)",
+        "马来西亚🇲🇾+60（无密码）": "Malaysia🇲🇾+60 (w/o Password)",
+        "马来西亚+60 有密码": "Malaysia+60 w/ Password",
+        "马来西亚+60无密码": "Malaysia+60 w/o Password",
+        "澳大利亚🇦🇺+61（有密码）": "Australia🇦🇺+61 (w/ Password)",
+        "澳大利亚🇦🇺+61（无密码）": "Australia🇦🇺+61 (w/o Password)",
+        "澳大利亚+61 有密码": "Australia+61 w/ Password",
+        "澳大利亚+61无密码": "Australia+61 w/o Password",
+        "印度尼西亚🇮🇩+62（有密码）": "Indonesia🇮🇩+62 (w/ Password)",
+        "印度尼西亚🇮🇩+62（无密码）": "Indonesia🇮🇩+62 (w/o Password)",
+        "印度尼西亚+62 有密码": "Indonesia+62 w/ Password",
+        "印度尼西亚+62无密码": "Indonesia+62 w/o Password",
+        "菲律宾🇵🇭+63（有密码）": "Philippines🇵🇭+63 (w/ Password)",
+        "菲律宾🇵🇭+63（无密码）": "Philippines🇵🇭+63 (w/o Password)",
+        "菲律宾+63 有密码": "Philippines+63 w/ Password",
+        "菲律宾+63无密码": "Philippines+63 w/o Password",
+        "新西兰🇳🇿+64（有密码）": "New Zealand🇳🇿+64 (w/ Password)",
+        "新西兰🇳🇿+64（无密码）": "New Zealand🇳🇿+64 (w/o Password)",
+        "新西兰+64 有密码": "New Zealand+64 w/ Password",
+        "新西兰+64无密码": "New Zealand+64 w/o Password",
+        "新加坡🇸🇬+65（有密码）": "Singapore🇸🇬+65 (w/ Password)",
+        "新加坡🇸🇬+65（无密码）": "Singapore🇸🇬+65 (w/o Password)",
+        "新加坡+65 有密码": "Singapore+65 w/ Password",
+        "新加坡+65无密码": "Singapore+65 w/o Password",
+        "泰国🇹🇭+66（有密码）": "Thailand🇹🇭+66 (w/ Password)",
+        "泰国🇹🇭+66（无密码）": "Thailand🇹🇭+66 (w/o Password)",
+        "泰国+66 有密码": "Thailand+66 w/ Password",
+        "泰国+66无密码": "Thailand+66 w/o Password",
+        "日本🇯🇵+81（有密码）": "Japan🇯🇵+81 (w/ Password)",
+        "日本🇯🇵+81（无密码）": "Japan🇯🇵+81 (w/o Password)",
+        "日本+81 有密码": "Japan+81 w/ Password",
+        "日本+81无密码": "Japan+81 w/o Password",
+        "韩国🇰🇷+82（有密码）": "South Korea🇰🇷+82 (w/ Password)",
+        "韩国🇰🇷+82（无密码）": "South Korea🇰🇷+82 (w/o Password)",
+        "韩国+82 有密码": "South Korea+82 w/ Password",
+        "韩国+82无密码": "South Korea+82 w/o Password",
+        "越南🇻🇳+84（有密码）": "Vietnam🇻🇳+84 (w/ Password)",
+        "越南🇻🇳+84（无密码）": "Vietnam🇻🇳+84 (w/o Password)",
+        "越南+84 有密码": "Vietnam+84 w/ Password",
+        "越南+84无密码": "Vietnam+84 w/o Password",
+        "中国🇨🇳+86（有密码）": "China🇨🇳+86 (w/ Password)",
+        "中国🇨🇳+86（无密码）": "China🇨🇳+86 (w/o Password)",
+        "中国+86 有密码": "China+86 w/ Password",
+        "中国+86无密码": "China+86 w/o Password",
+        "土耳其🇹🇷+90（有密码）": "Turkey🇹🇷+90 (w/ Password)",
+        "土耳其🇹🇷+90（无密码）": "Turkey🇹🇷+90 (w/o Password)",
+        "土耳其+90 有密码": "Turkey+90 w/ Password",
+        "土耳其+90无密码": "Turkey+90 w/o Password",
+        "印度🇮🇳+91（有密码）": "India🇮🇳+91 (w/ Password)",
+        "印度🇮🇳+91（无密码）": "India🇮🇳+91 (w/o Password)",
+        "印度+91 有密码": "India+91 w/ Password",
+        "印度+91无密码": "India+91 w/o Password",
+        "巴基斯坦🇵🇰+92（有密码）": "Pakistan🇵🇰+92 (w/ Password)",
+        "巴基斯坦🇵🇰+92（无密码）": "Pakistan🇵🇰+92 (w/o Password)",
+        "巴基斯坦+92 有密码": "Pakistan+92 w/ Password",
+        "巴基斯坦+92无密码": "Pakistan+92 w/o Password",
+        "阿富汗🇦🇫+93（有密码）": "Afghanistan🇦🇫+93 (w/ Password)",
+        "阿富汗🇦🇫+93（无密码）": "Afghanistan🇦🇫+93 (w/o Password)",
+        "阿富汗+93 有密码": "Afghanistan+93 w/ Password",
+        "阿富汗+93无密码": "Afghanistan+93 w/o Password",
+        "斯里兰卡🇱🇰+94（有密码）": "Sri Lanka🇱🇰+94 (w/ Password)",
+        "斯里兰卡🇱🇰+94（无密码）": "Sri Lanka🇱🇰+94 (w/o Password)",
+        "斯里兰卡+94 有密码": "Sri Lanka+94 w/ Password",
+        "斯里兰卡+94无密码": "Sri Lanka+94 w/o Password",
+        "缅甸🇲🇲+95（有密码）": "Myanmar🇲🇲+95 (w/ Password)",
+        "缅甸🇲🇲+95（无密码）": "Myanmar🇲🇲+95 (w/o Password)",
+        "缅甸+95 有密码": "Myanmar+95 w/ Password",
+        "缅甸+95无密码": "Myanmar+95 w/o Password",
+        "伊朗🇮🇷+98（有密码）": "Iran🇮🇷+98 (w/ Password)",
+        "伊朗🇮🇷+98（无密码）": "Iran🇮🇷+98 (w/o Password)",
+        "伊朗+98 有密码": "Iran+98 w/ Password",
+        "伊朗+98无密码": "Iran+98 w/o Password",
+        "摩洛哥🇲🇦+212（有密码）": "Morocco🇲🇦+212 (w/ Password)",
+        "摩洛哥🇲🇦+212（无密码）": "Morocco🇲🇦+212 (w/o Password)",
+        "摩洛哥+212 有密码": "Morocco+212 w/ Password",
+        "摩洛哥+212无密码": "Morocco+212 w/o Password",
+        "阿尔及利亚🇩🇿+213（有密码）": "Algeria🇩🇿+213 (w/ Password)",
+        "阿尔及利亚🇩🇿+213（无密码）": "Algeria🇩🇿+213 (w/o Password)",
+        "阿尔及利亚+213 有密码": "Algeria+213 w/ Password",
+        "阿尔及利亚+213无密码": "Algeria+213 w/o Password",
+        "突尼斯🇹🇳+216（有密码）": "Tunisia🇹🇳+216 (w/ Password)",
+        "突尼斯🇹🇳+216（无密码）": "Tunisia🇹🇳+216 (w/o Password)",
+        "突尼斯+216 有密码": "Tunisia+216 w/ Password",
+        "突尼斯+216无密码": "Tunisia+216 w/o Password",
+        "利比亚🇱🇾+218（有密码）": "Libya🇱🇾+218 (w/ Password)",
+        "利比亚🇱🇾+218（无密码）": "Libya🇱🇾+218 (w/o Password)",
+        "利比亚+218 有密码": "Libya+218 w/ Password",
+        "利比亚+218无密码": "Libya+218 w/o Password",
+        "冈比亚🇬🇲+220（有密码）": "Gambia🇬🇲+220 (w/ Password)",
+        "冈比亚🇬🇲+220（无密码）": "Gambia🇬🇲+220 (w/o Password)",
+        "冈比亚+220 有密码": "Gambia+220 w/ Password",
+        "冈比亚+220无密码": "Gambia+220 w/o Password",
+        "塞内加尔🇸🇳+221（有密码）": "Senegal🇸🇳+221 (w/ Password)",
+        "塞内加尔🇸🇳+221（无密码）": "Senegal🇸🇳+221 (w/o Password)",
+        "塞内加尔+221 有密码": "Senegal+221 w/ Password",
+        "塞内加尔+221无密码": "Senegal+221 w/o Password",
+        "马里🇲🇱+223（有密码）": "Mali🇲🇱+223 (w/ Password)",
+        "马里🇲🇱+223（无密码）": "Mali🇲🇱+223 (w/o Password)",
+        "马里+223 有密码": "Mali+223 w/ Password",
+        "马里+223无密码": "Mali+223 w/o Password",
+        "几内亚🇬🇳+224（有密码）": "Guinea🇬🇳+224 (w/ Password)",
+        "几内亚🇬🇳+224（无密码）": "Guinea🇬🇳+224 (w/o Password)",
+        "几内亚+224 有密码": "Guinea+224 w/ Password",
+        "几内亚+224无密码": "Guinea+224 w/o Password",
+        "科特迪瓦🇨🇮+225（有密码）": "Ivory Coast🇨🇮+225 (w/ Password)",
+        "科特迪瓦🇨🇮+225（无密码）": "Ivory Coast🇨🇮+225 (w/o Password)",
+        "科特迪瓦+225 有密码": "Ivory Coast+225 w/ Password",
+        "科特迪瓦+225无密码": "Ivory Coast+225 w/o Password",
+        "布基纳法索🇧🇫+226（有密码）": "Burkina Faso🇧🇫+226 (w/ Password)",
+        "布基纳法索🇧🇫+226（无密码）": "Burkina Faso🇧🇫+226 (w/o Password)",
+        "布基纳法索+226 有密码": "Burkina Faso+226 w/ Password",
+        "布基纳法索+226无密码": "Burkina Faso+226 w/o Password",
+        "尼日尔🇳🇪+227（有密码）": "Niger🇳🇪+227 (w/ Password)",
+        "尼日尔🇳🇪+227（无密码）": "Niger🇳🇪+227 (w/o Password)",
+        "尼日尔+227 有密码": "Niger+227 w/ Password",
+        "尼日尔+227无密码": "Niger+227 w/o Password",
+        "多哥🇹🇬+228（有密码）": "Togo🇹🇬+228 (w/ Password)",
+        "多哥🇹🇬+228（无密码）": "Togo🇹🇬+228 (w/o Password)",
+        "多哥+228 有密码": "Togo+228 w/ Password",
+        "多哥+228无密码": "Togo+228 w/o Password",
+        "贝宁🇧🇯+229（有密码）": "Benin🇧🇯+229 (w/ Password)",
+        "贝宁🇧🇯+229（无密码）": "Benin🇧🇯+229 (w/o Password)",
+        "贝宁+229 有密码": "Benin+229 w/ Password",
+        "贝宁+229无密码": "Benin+229 w/o Password",
+        "毛里求斯🇲🇺+230（有密码）": "Mauritius🇲🇺+230 (w/ Password)",
+        "毛里求斯🇲🇺+230（无密码）": "Mauritius🇲🇺+230 (w/o Password)",
+        "毛里求斯+230 有密码": "Mauritius+230 w/ Password",
+        "毛里求斯+230无密码": "Mauritius+230 w/o Password",
+        "利比里亚🇱🇷+231（有密码）": "Liberia🇱🇷+231 (w/ Password)",
+        "利比里亚🇱🇷+231（无密码）": "Liberia🇱🇷+231 (w/o Password)",
+        "利比里亚+231 有密码": "Liberia+231 w/ Password",
+        "利比里亚+231无密码": "Liberia+231 w/o Password",
+        "塞拉利昂🇸🇱+232（有密码）": "Sierra Leone🇸🇱+232 (w/ Password)",
+        "塞拉利昂🇸🇱+232（无密码）": "Sierra Leone🇸🇱+232 (w/o Password)",
+        "塞拉利昂+232 有密码": "Sierra Leone+232 w/ Password",
+        "塞拉利昂+232无密码": "Sierra Leone+232 w/o Password",
+        "加纳🇬🇭+233（有密码）": "Ghana🇬🇭+233 (w/ Password)",
+        "加纳🇬🇭+233（无密码）": "Ghana🇬🇭+233 (w/o Password)",
+        "加纳+233 有密码": "Ghana+233 w/ Password",
+        "加纳+233无密码": "Ghana+233 w/o Password",
+        "尼日利亚🇳🇬+234（有密码）": "Nigeria🇳🇬+234 (w/ Password)",
+        "尼日利亚🇳🇬+234（无密码）": "Nigeria🇳🇬+234 (w/o Password)",
+        "尼日利亚+234 有密码": "Nigeria+234 w/ Password",
+        "尼日利亚+234无密码": "Nigeria+234 w/o Password",
+        "乍得🇹🇩+235（有密码）": "Chad🇹🇩+235 (w/ Password)",
+        "乍得🇹🇩+235（无密码）": "Chad🇹🇩+235 (w/o Password)",
+        "乍得+235 有密码": "Chad+235 w/ Password",
+        "乍得+235无密码": "Chad+235 w/o Password",
+        "中非🇨🇫+236（有密码）": "Central African Republic🇨🇫+236 (w/ Password)",
+        "中非🇨🇫+236（无密码）": "Central African Republic🇨🇫+236 (w/o Password)",
+        "中非+236 有密码": "Central African Republic+236 w/ Password",
+        "中非+236无密码": "Central African Republic+236 w/o Password",
+        "喀麦隆🇨🇲+237（有密码）": "Cameroon🇨🇲+237 (w/ Password)",
+        "喀麦隆🇨🇲+237（无密码）": "Cameroon🇨🇲+237 (w/o Password)",
+        "喀麦隆+237 有密码": "Cameroon+237 w/ Password",
+        "喀麦隆+237无密码": "Cameroon+237 w/o Password",
+        "佛得角🇨🇻+238（有密码）": "Cape Verde🇨🇻+238 (w/ Password)",
+        "佛得角🇨🇻+238（无密码）": "Cape Verde🇨🇻+238 (w/o Password)",
+        "佛得角+238 有密码": "Cape Verde+238 w/ Password",
+        "佛得角+238无密码": "Cape Verde+238 w/o Password",
+        "圣多美和普林西比🇸🇹+239（有密码）": "Sao Tome and Principe🇸🇹+239 (w/ Password)",
+        "圣多美和普林西比🇸🇹+239（无密码）": "Sao Tome and Principe🇸🇹+239 (w/o Password)",
+        "圣多美和普林西比+239 有密码": "Sao Tome and Principe+239 w/ Password",
+        "圣多美和普林西比+239无密码": "Sao Tome and Principe+239 w/o Password",
+        "赤道几内亚🇬🇶+240（有密码）": "Equatorial Guinea🇬🇶+240 (w/ Password)",
+        "赤道几内亚🇬🇶+240（无密码）": "Equatorial Guinea🇬🇶+240 (w/o Password)",
+        "赤道几内亚+240 有密码": "Equatorial Guinea+240 w/ Password",
+        "赤道几内亚+240无密码": "Equatorial Guinea+240 w/o Password",
+        "加蓬🇬🇦+241（有密码）": "Gabon🇬🇦+241 (w/ Password)",
+        "加蓬🇬🇦+241（无密码）": "Gabon🇬🇦+241 (w/o Password)",
+        "加蓬+241 有密码": "Gabon+241 w/ Password",
+        "加蓬+241无密码": "Gabon+241 w/o Password",
+        "刚果��🇬+242（有密码）": "Congo��🇬+242 (w/ Password)",
+        "刚果��🇬+242（无密码）": "Congo��🇬+242 (w/o Password)",
+        "刚果+242 有密码": "Congo+242 w/ Password",
+        "刚果+242无密码": "Congo+242 w/o Password",
+        "刚果民主共和国🇨🇩+243（有密码）": "DR Congo🇨🇩+243 (w/ Password)",
+        "刚果民主共和国🇨🇩+243（无密码）": "DR Congo🇨🇩+243 (w/o Password)",
+        "刚果民主共和国+243 有密码": "DR Congo+243 w/ Password",
+        "刚果民主共和国+243无密码": "DR Congo+243 w/o Password",
+        "安哥拉🇦🇴+244（有密码）": "Angola🇦🇴+244 (w/ Password)",
+        "安哥拉🇦🇴+244（无密码）": "Angola🇦🇴+244 (w/o Password)",
+        "安哥拉+244 有密码": "Angola+244 w/ Password",
+        "安哥拉+244无密码": "Angola+244 w/o Password",
+        "几内亚比绍🇬🇼+245（有密码）": "Guinea-Bissau🇬🇼+245 (w/ Password)",
+        "几内亚比绍🇬🇼+245（无密码）": "Guinea-Bissau🇬🇼+245 (w/o Password)",
+        "几内亚比绍+245 有密码": "Guinea-Bissau+245 w/ Password",
+        "几内亚比绍+245无密码": "Guinea-Bissau+245 w/o Password",
+        "英属印度洋领地🇮��+246（有密码）": "British Indian Ocean Territory🇮��+246 (w/ Password)",
+        "英属印度洋领地🇮��+246（无密码）": "British Indian Ocean Territory🇮��+246 (w/o Password)",
+        "英属印度洋领地+246 有密码": "British Indian Ocean Territory+246 w/ Password",
+        "英属印度洋领地+246无密码": "British Indian Ocean Territory+246 w/o Password",
+        "塞舌尔🇸🇨+248（有密码）": "Seychelles🇸🇨+248 (w/ Password)",
+        "塞舌尔🇸🇨+248（无密码）": "Seychelles🇸🇨+248 (w/o Password)",
+        "塞舌尔+248 有密码": "Seychelles+248 w/ Password",
+        "塞舌尔+248无密码": "Seychelles+248 w/o Password",
+        "苏丹🇸🇩+249（有密码）": "Sudan🇸🇩+249 (w/ Password)",
+        "苏丹🇸🇩+249（无密码）": "Sudan🇸🇩+249 (w/o Password)",
+        "苏丹+249 有密码": "Sudan+249 w/ Password",
+        "苏丹+249无密码": "Sudan+249 w/o Password",
+        "卢旺达🇷🇼+250（有密码）": "Rwanda🇷🇼+250 (w/ Password)",
+        "卢旺达🇷🇼+250（无密码）": "Rwanda🇷🇼+250 (w/o Password)",
+        "卢旺达+250 有密码": "Rwanda+250 w/ Password",
+        "卢旺达+250无密码": "Rwanda+250 w/o Password",
+        "埃塞俄比亚🇪🇹+251（有密码）": "Ethiopia🇪🇹+251 (w/ Password)",
+        "埃塞俄比亚🇪🇹+251（无密码）": "Ethiopia🇪🇹+251 (w/o Password)",
+        "埃塞俄比亚+251 有密码": "Ethiopia+251 w/ Password",
+        "埃塞俄比亚+251无密码": "Ethiopia+251 w/o Password",
+        "索马里🇸🇴+252（有密码）": "Somalia🇸🇴+252 (w/ Password)",
+        "索马里🇸🇴+252（无密码）": "Somalia🇸🇴+252 (w/o Password)",
+        "索马里+252 有密码": "Somalia+252 w/ Password",
+        "索马里+252无密码": "Somalia+252 w/o Password",
+        "吉布提🇩🇯+253（有密码）": "Djibouti🇩🇯+253 (w/ Password)",
+        "吉布提🇩🇯+253（无密码）": "Djibouti🇩🇯+253 (w/o Password)",
+        "吉布提+253 有密码": "Djibouti+253 w/ Password",
+        "吉布提+253无密码": "Djibouti+253 w/o Password",
+        "肯尼亚🇰🇪+254（有密码）": "Kenya🇰🇪+254 (w/ Password)",
+        "肯尼亚🇰🇪+254（无密码）": "Kenya🇰🇪+254 (w/o Password)",
+        "肯尼亚+254 有密码": "Kenya+254 w/ Password",
+        "肯尼亚+254无密码": "Kenya+254 w/o Password",
+        "坦桑尼亚🇹🇿+255（有密码）": "Tanzania🇹🇿+255 (w/ Password)",
+        "坦桑尼亚🇹🇿+255（无密码）": "Tanzania🇹🇿+255 (w/o Password)",
+        "坦桑尼亚+255 有密码": "Tanzania+255 w/ Password",
+        "坦桑尼亚+255无密码": "Tanzania+255 w/o Password",
+        "乌干达🇺🇬+256（有密码）": "Uganda🇺🇬+256 (w/ Password)",
+        "乌干达🇺🇬+256（无密码）": "Uganda🇺🇬+256 (w/o Password)",
+        "乌干达+256 有密码": "Uganda+256 w/ Password",
+        "乌干达+256无密码": "Uganda+256 w/o Password",
+        "布隆迪🇧🇮+257（有密码）": "Burundi🇧🇮+257 (w/ Password)",
+        "布隆迪🇧🇮+257（无密码）": "Burundi🇧🇮+257 (w/o Password)",
+        "布隆迪+257 有密码": "Burundi+257 w/ Password",
+        "布隆迪+257无密码": "Burundi+257 w/o Password",
+        "莫桑比克🇲🇿+258（有密码）": "Mozambique🇲🇿+258 (w/ Password)",
+        "莫桑比克🇲🇿+258（无密码）": "Mozambique🇲🇿+258 (w/o Password)",
+        "莫桑比克+258 有密码": "Mozambique+258 w/ Password",
+        "莫桑比克+258无密码": "Mozambique+258 w/o Password",
+        "赞比亚🇿🇲+260（有密码）": "Zambia🇿🇲+260 (w/ Password)",
+        "赞比亚🇿🇲+260（无密码）": "Zambia🇿🇲+260 (w/o Password)",
+        "赞比亚+260 有密码": "Zambia+260 w/ Password",
+        "赞比亚+260无密码": "Zambia+260 w/o Password",
+        "马达加斯加🇲🇬+261（有密码）": "Madagascar🇲🇬+261 (w/ Password)",
+        "马达加斯加🇲🇬+261（无密码）": "Madagascar🇲🇬+261 (w/o Password)",
+        "马达加斯加+261 有密码": "Madagascar+261 w/ Password",
+        "马达加斯加+261无密码": "Madagascar+261 w/o Password",
+        "留尼汪🇷🇪+262（有密码）": "Réunion🇷🇪+262 (w/ Password)",
+        "留尼汪🇷🇪+262（无密码）": "Réunion🇷🇪+262 (w/o Password)",
+        "留尼汪+262 有密码": "Réunion+262 w/ Password",
+        "留尼汪+262无密码": "Réunion+262 w/o Password",
+        "津巴布韦🇿🇼+263（有密码）": "Zimbabwe🇿🇼+263 (w/ Password)",
+        "津巴布韦🇿🇼+263（无密码）": "Zimbabwe🇿🇼+263 (w/o Password)",
+        "津巴布韦+263 有密码": "Zimbabwe+263 w/ Password",
+        "津巴布韦+263无密码": "Zimbabwe+263 w/o Password",
+        "纳米比亚🇳🇦+264（有密码）": "Namibia🇳🇦+264 (w/ Password)",
+        "纳米比亚🇳🇦+264（无密码）": "Namibia🇳🇦+264 (w/o Password)",
+        "纳米比亚+264 有密码": "Namibia+264 w/ Password",
+        "纳米比亚+264无密码": "Namibia+264 w/o Password",
+        "马拉维🇲🇼+265（有密码）": "Malawi🇲🇼+265 (w/ Password)",
+        "马拉维🇲🇼+265（无密码）": "Malawi🇲🇼+265 (w/o Password)",
+        "马拉维+265 有密码": "Malawi+265 w/ Password",
+        "马拉维+265无密码": "Malawi+265 w/o Password",
+        "莱索托🇱🇸+266（有密码）": "Lesotho🇱🇸+266 (w/ Password)",
+        "莱索托🇱🇸+266（无密码）": "Lesotho🇱🇸+266 (w/o Password)",
+        "莱索托+266 有密码": "Lesotho+266 w/ Password",
+        "莱索托+266无密码": "Lesotho+266 w/o Password",
+        "博茨瓦纳🇧🇼+267（有密码）": "Botswana🇧🇼+267 (w/ Password)",
+        "博茨瓦纳🇧🇼+267（无密码）": "Botswana🇧🇼+267 (w/o Password)",
+        "博茨瓦纳+267 有密码": "Botswana+267 w/ Password",
+        "博茨瓦纳+267无密码": "Botswana+267 w/o Password",
+        "斯威士兰🇸🇿+268（有密码）": "Eswatini🇸🇿+268 (w/ Password)",
+        "斯威士兰🇸🇿+268（无密码）": "Eswatini🇸🇿+268 (w/o Password)",
+        "斯威士兰+268 有密码": "Eswatini+268 w/ Password",
+        "斯威士兰+268无密码": "Eswatini+268 w/o Password",
+        "科摩罗🇰🇲+269（有密码）": "Comoros🇰🇲+269 (w/ Password)",
+        "科摩罗🇰🇲+269（无密码）": "Comoros🇰🇲+269 (w/o Password)",
+        "科摩罗+269 有密码": "Comoros+269 w/ Password",
+        "科摩罗+269无密码": "Comoros+269 w/o Password",
+        "圣赫勒拿🇸🇭+290（有密码）": "Saint Helena🇸🇭+290 (w/ Password)",
+        "圣赫勒拿🇸🇭+290（无密码）": "Saint Helena🇸🇭+290 (w/o Password)",
+        "圣赫勒拿+290 有密码": "Saint Helena+290 w/ Password",
+        "圣赫勒拿+290无密码": "Saint Helena+290 w/o Password",
+        "厄立特里亚🇪🇷+291（有密码）": "Eritrea🇪🇷+291 (w/ Password)",
+        "厄立特里亚🇪🇷+291（无密码）": "Eritrea🇪🇷+291 (w/o Password)",
+        "厄立特里亚+291 有密码": "Eritrea+291 w/ Password",
+        "厄立特里亚+291无密码": "Eritrea+291 w/o Password",
+        "阿鲁巴🇦🇼+297（有密码）": "Aruba🇦🇼+297 (w/ Password)",
+        "阿鲁巴🇦🇼+297（无密码）": "Aruba🇦🇼+297 (w/o Password)",
+        "阿鲁巴+297 有密码": "Aruba+297 w/ Password",
+        "阿鲁巴+297无密码": "Aruba+297 w/o Password",
+        "法罗群岛🇫🇴+298（有密码）": "Faroe Islands🇫🇴+298 (w/ Password)",
+        "法罗群岛🇫🇴+298（无密码）": "Faroe Islands🇫🇴+298 (w/o Password)",
+        "法罗群岛+298 有密码": "Faroe Islands+298 w/ Password",
+        "法罗群岛+298无密码": "Faroe Islands+298 w/o Password",
+        "格陵兰🇬🇱+299（有密码）": "Greenland🇬🇱+299 (w/ Password)",
+        "格陵兰🇬🇱+299（无密码）": "Greenland🇬🇱+299 (w/o Password)",
+        "格陵兰+299 有密码": "Greenland+299 w/ Password",
+        "格陵兰+299无密码": "Greenland+299 w/o Password",
+        "直布罗陀🇬🇮+350（有密码）": "Gibraltar🇬🇮+350 (w/ Password)",
+        "直布罗陀🇬🇮+350（无密码）": "Gibraltar🇬🇮+350 (w/o Password)",
+        "直布罗陀+350 有密码": "Gibraltar+350 w/ Password",
+        "直布罗陀+350无密码": "Gibraltar+350 w/o Password",
+        "葡萄牙🇵🇹+351（有密码）": "Portugal🇵🇹+351 (w/ Password)",
+        "葡萄牙🇵🇹+351（无密码）": "Portugal🇵🇹+351 (w/o Password)",
+        "葡萄牙+351 有密码": "Portugal+351 w/ Password",
+        "葡萄牙+351无密码": "Portugal+351 w/o Password",
+        "卢森堡🇱🇺+352（有密码）": "Luxembourg🇱🇺+352 (w/ Password)",
+        "卢森堡🇱🇺+352（无密码）": "Luxembourg🇱🇺+352 (w/o Password)",
+        "卢森堡+352 有密码": "Luxembourg+352 w/ Password",
+        "卢森堡+352无密码": "Luxembourg+352 w/o Password",
+        "爱尔兰🇮🇪+353（有密码）": "Ireland🇮🇪+353 (w/ Password)",
+        "爱尔兰🇮🇪+353（无密码）": "Ireland🇮🇪+353 (w/o Password)",
+        "爱尔兰+353 有密码": "Ireland+353 w/ Password",
+        "爱尔兰+353无密码": "Ireland+353 w/o Password",
+        "冰岛🇮🇸+354（有密码）": "Iceland🇮🇸+354 (w/ Password)",
+        "冰岛🇮🇸+354（无密码）": "Iceland🇮🇸+354 (w/o Password)",
+        "冰岛+354 有密码": "Iceland+354 w/ Password",
+        "冰岛+354无密码": "Iceland+354 w/o Password",
+        "阿尔巴尼亚🇦🇱+355（有密码）": "Albania🇦🇱+355 (w/ Password)",
+        "阿尔巴尼亚🇦🇱+355（无密码）": "Albania🇦🇱+355 (w/o Password)",
+        "阿尔巴尼亚+355 有密码": "Albania+355 w/ Password",
+        "阿尔巴尼亚+355无密码": "Albania+355 w/o Password",
+        "马耳他🇲🇹+356（有密码）": "Malta🇲🇹+356 (w/ Password)",
+        "马耳他🇲🇹+356（无密码）": "Malta🇲🇹+356 (w/o Password)",
+        "马耳他+356 有密码": "Malta+356 w/ Password",
+        "马耳他+356无密码": "Malta+356 w/o Password",
+        "塞浦路斯🇨🇾+357（有密码）": "Cyprus🇨🇾+357 (w/ Password)",
+        "塞浦路斯🇨🇾+357（无密码）": "Cyprus🇨🇾+357 (w/o Password)",
+        "塞浦路斯+357 有密码": "Cyprus+357 w/ Password",
+        "塞浦路斯+357无密码": "Cyprus+357 w/o Password",
+        "芬兰🇫🇮+358（有密码）": "Finland🇫🇮+358 (w/ Password)",
+        "芬兰🇫🇮+358（无密码）": "Finland🇫🇮+358 (w/o Password)",
+        "芬兰+358 有密码": "Finland+358 w/ Password",
+        "芬兰+358无密码": "Finland+358 w/o Password",
+        "保加利亚🇧🇬+359（有密码）": "Bulgaria🇧🇬+359 (w/ Password)",
+        "保加利亚🇧🇬+359（无密码）": "Bulgaria🇧🇬+359 (w/o Password)",
+        "保加利亚+359 有密码": "Bulgaria+359 w/ Password",
+        "保加利亚+359无密码": "Bulgaria+359 w/o Password",
+        "立陶宛🇱🇹+370（有密码）": "Lithuania🇱🇹+370 (w/ Password)",
+        "立陶宛🇱🇹+370（无密码）": "Lithuania🇱🇹+370 (w/o Password)",
+        "立陶宛+370 有密码": "Lithuania+370 w/ Password",
+        "立陶宛+370无密码": "Lithuania+370 w/o Password",
+        "拉脱维亚🇱🇻+371（有密码）": "Latvia🇱🇻+371 (w/ Password)",
+        "拉脱维亚🇱🇻+371（无密码）": "Latvia🇱🇻+371 (w/o Password)",
+        "拉脱维亚+371 有密码": "Latvia+371 w/ Password",
+        "拉脱维亚+371无密码": "Latvia+371 w/o Password",
+        "爱沙尼亚🇪🇪+372（有密码）": "Estonia🇪🇪+372 (w/ Password)",
+        "爱沙尼亚🇪🇪+372（无密码）": "Estonia🇪🇪+372 (w/o Password)",
+        "爱沙尼亚+372 有密码": "Estonia+372 w/ Password",
+        "爱沙尼亚+372无密码": "Estonia+372 w/o Password",
+        "摩尔多瓦🇲🇩+373（有密码）": "Moldova🇲🇩+373 (w/ Password)",
+        "摩尔多瓦🇲🇩+373（无密码）": "Moldova🇲🇩+373 (w/o Password)",
+        "摩尔多瓦+373 有密码": "Moldova+373 w/ Password",
+        "摩尔多瓦+373无密码": "Moldova+373 w/o Password",
+        "亚美尼亚🇦🇲+374（有密码）": "Armenia🇦🇲+374 (w/ Password)",
+        "亚美尼亚🇦🇲+374（无密码）": "Armenia🇦🇲+374 (w/o Password)",
+        "亚美尼亚+374 有密码": "Armenia+374 w/ Password",
+        "亚美尼亚+374无密码": "Armenia+374 w/o Password",
+        "白俄罗斯🇧🇾+375（有密码）": "Belarus🇧🇾+375 (w/ Password)",
+        "白俄罗斯🇧🇾+375（无密码）": "Belarus🇧🇾+375 (w/o Password)",
+        "白俄罗斯+375 有密码": "Belarus+375 w/ Password",
+        "白俄罗斯+375无密码": "Belarus+375 w/o Password",
+        "安道尔🇦🇩+376（有密码）": "Andorra🇦🇩+376 (w/ Password)",
+        "安道尔🇦🇩+376（无密码）": "Andorra🇦🇩+376 (w/o Password)",
+        "安道尔+376 有密码": "Andorra+376 w/ Password",
+        "安道尔+376无密码": "Andorra+376 w/o Password",
+        "摩纳哥🇲🇨+377（有密码）": "Monaco🇲🇨+377 (w/ Password)",
+        "摩纳哥🇲🇨+377（无密码）": "Monaco🇲🇨+377 (w/o Password)",
+        "摩纳哥+377 有密码": "Monaco+377 w/ Password",
+        "摩纳哥+377无密码": "Monaco+377 w/o Password",
+        "圣马力诺🇸🇲+378（有密码）": "San Marino🇸🇲+378 (w/ Password)",
+        "圣马力诺🇸🇲+378（无密码）": "San Marino🇸🇲+378 (w/o Password)",
+        "圣马力诺+378 有密码": "San Marino+378 w/ Password",
+        "圣马力诺+378无密码": "San Marino+378 w/o Password",
+        "乌克兰🇺🇦+380（有密码）": "Ukraine🇺🇦+380 (w/ Password)",
+        "乌克兰🇺🇦+380（无密码）": "Ukraine🇺🇦+380 (w/o Password)",
+        "乌克兰+380 有密码": "Ukraine+380 w/ Password",
+        "乌克兰+380无密码": "Ukraine+380 w/o Password",
+        "塞尔维亚🇷🇸+381（有密码）": "Serbia🇷🇸+381 (w/ Password)",
+        "塞尔维亚🇷🇸+381（无密码）": "Serbia🇷🇸+381 (w/o Password)",
+        "塞尔维亚+381 有密码": "Serbia+381 w/ Password",
+        "塞尔维亚+381无密码": "Serbia+381 w/o Password",
+        "黑山🇲🇪+382（有密码）": "Montenegro🇲🇪+382 (w/ Password)",
+        "黑山🇲🇪+382（无密码）": "Montenegro🇲🇪+382 (w/o Password)",
+        "黑山+382 有密码": "Montenegro+382 w/ Password",
+        "黑山+382无密码": "Montenegro+382 w/o Password",
+        "科索沃🇽🇰+383（有密码）": "Kosovo🇽🇰+383 (w/ Password)",
+        "科索沃🇽🇰+383（无密码）": "Kosovo🇽🇰+383 (w/o Password)",
+        "科索沃+383 有密码": "Kosovo+383 w/ Password",
+        "科索沃+383无密码": "Kosovo+383 w/o Password",
+        "克罗地亚🇭🇷+385（有密码）": "Croatia🇭🇷+385 (w/ Password)",
+        "克罗地亚🇭🇷+385（无密码）": "Croatia🇭🇷+385 (w/o Password)",
+        "克罗地亚+385 有密码": "Croatia+385 w/ Password",
+        "克罗地亚+385无密码": "Croatia+385 w/o Password",
+        "斯洛文尼亚🇸🇮+386（有密码）": "Slovenia🇸🇮+386 (w/ Password)",
+        "斯洛文尼亚🇸🇮+386（无密码）": "Slovenia🇸🇮+386 (w/o Password)",
+        "斯洛文尼亚+386 有密码": "Slovenia+386 w/ Password",
+        "斯洛文尼亚+386无密码": "Slovenia+386 w/o Password",
+        "波黑🇧🇦+387（有密码）": "Bosnia and Herzegovina🇧🇦+387 (w/ Password)",
+        "波黑🇧🇦+387（无密码）": "Bosnia and Herzegovina🇧🇦+387 (w/o Password)",
+        "波黑+387 有密码": "Bosnia and Herzegovina+387 w/ Password",
+        "波黑+387无密码": "Bosnia and Herzegovina+387 w/o Password",
+        "北马其顿🇲🇰+389（有密码）": "North Macedonia🇲🇰+389 (w/ Password)",
+        "北马其顿🇲🇰+389（无密码）": "North Macedonia🇲🇰+389 (w/o Password)",
+        "北马其顿+389 有密码": "North Macedonia+389 w/ Password",
+        "北马其顿+389无密码": "North Macedonia+389 w/o Password",
+        "捷克🇨🇿+420（有密码）": "Czech Republic🇨🇿+420 (w/ Password)",
+        "捷克🇨🇿+420（无密码）": "Czech Republic🇨🇿+420 (w/o Password)",
+        "捷克+420 有密码": "Czech Republic+420 w/ Password",
+        "捷克+420无密码": "Czech Republic+420 w/o Password",
+        "斯洛伐克🇸🇰+421（有密码）": "Slovakia🇸🇰+421 (w/ Password)",
+        "斯洛伐克🇸🇰+421（无密码）": "Slovakia🇸🇰+421 (w/o Password)",
+        "斯洛伐克+421 有密码": "Slovakia+421 w/ Password",
+        "斯洛伐克+421无密码": "Slovakia+421 w/o Password",
+        "列支敦士登🇱🇮+423（有密码）": "Liechtenstein🇱🇮+423 (w/ Password)",
+        "列支敦士登🇱🇮+423（无密码）": "Liechtenstein🇱🇮+423 (w/o Password)",
+        "列支敦士登+423 有密码": "Liechtenstein+423 w/ Password",
+        "列支敦士登+423无密码": "Liechtenstein+423 w/o Password",
+        "福克兰群岛🇫🇰+500（有密码）": "Falkland Islands🇫🇰+500 (w/ Password)",
+        "福克兰群岛🇫🇰+500（无密码）": "Falkland Islands🇫🇰+500 (w/o Password)",
+        "福克兰群岛+500 有密码": "Falkland Islands+500 w/ Password",
+        "福克兰群岛+500无密码": "Falkland Islands+500 w/o Password",
+        "伯利兹🇧🇿+501（有密码）": "Belize🇧🇿+501 (w/ Password)",
+        "伯利兹🇧🇿+501（无密码）": "Belize🇧🇿+501 (w/o Password)",
+        "伯利兹+501 有密码": "Belize+501 w/ Password",
+        "伯利兹+501无密码": "Belize+501 w/o Password",
+        "危地马拉🇬🇹+502（有密码）": "Guatemala🇬🇹+502 (w/ Password)",
+        "危地马拉🇬🇹+502（无密码）": "Guatemala🇬🇹+502 (w/o Password)",
+        "危地马拉+502 有密码": "Guatemala+502 w/ Password",
+        "危地马拉+502无密码": "Guatemala+502 w/o Password",
+        "萨尔瓦多🇸🇻+503（有密码）": "El Salvador🇸🇻+503 (w/ Password)",
+        "萨尔瓦多🇸🇻+503（无密码）": "El Salvador🇸🇻+503 (w/o Password)",
+        "萨尔瓦多+503 有密码": "El Salvador+503 w/ Password",
+        "萨尔瓦多+503无密码": "El Salvador+503 w/o Password",
+        "洪都拉斯🇭🇳+504（有密码）": "Honduras🇭🇳+504 (w/ Password)",
+        "洪都拉斯🇭🇳+504（无密码）": "Honduras🇭🇳+504 (w/o Password)",
+        "洪都拉斯+504 有密码": "Honduras+504 w/ Password",
+        "洪都拉斯+504无密码": "Honduras+504 w/o Password",
+        "尼加拉瓜🇳🇮+505（有密码）": "Nicaragua🇳🇮+505 (w/ Password)",
+        "尼加拉瓜🇳🇮+505（无密码）": "Nicaragua🇳🇮+505 (w/o Password)",
+        "尼加拉瓜+505 有密码": "Nicaragua+505 w/ Password",
+        "尼加拉瓜+505无密码": "Nicaragua+505 w/o Password",
+        "哥斯达黎加🇨🇷+506（有密码）": "Costa Rica🇨🇷+506 (w/ Password)",
+        "哥斯达黎加🇨🇷+506（无密码）": "Costa Rica🇨🇷+506 (w/o Password)",
+        "哥斯达黎加+506 有密码": "Costa Rica+506 w/ Password",
+        "哥斯达黎加+506无密码": "Costa Rica+506 w/o Password",
+        "巴拿马🇵🇦+507（有密码）": "Panama🇵🇦+507 (w/ Password)",
+        "巴拿马🇵🇦+507（无密码）": "Panama🇵🇦+507 (w/o Password)",
+        "巴拿马+507 有密码": "Panama+507 w/ Password",
+        "巴拿马+507无密码": "Panama+507 w/o Password",
+        "圣皮埃尔和密克隆🇵🇲+508（有密码）": "Saint Pierre and Miquelon🇵🇲+508 (w/ Password)",
+        "圣皮埃尔和密克隆🇵🇲+508（无密码）": "Saint Pierre and Miquelon🇵🇲+508 (w/o Password)",
+        "圣皮埃尔和密克隆+508 有密码": "Saint Pierre and Miquelon+508 w/ Password",
+        "圣皮埃尔和密克隆+508无密码": "Saint Pierre and Miquelon+508 w/o Password",
+        "海地🇭🇹+509（有密码）": "Haiti🇭🇹+509 (w/ Password)",
+        "海地🇭🇹+509（无密码）": "Haiti🇭🇹+509 (w/o Password)",
+        "海地+509 有密码": "Haiti+509 w/ Password",
+        "海地+509无密码": "Haiti+509 w/o Password",
+        "瓜德罗普🇬🇵+590（有密码）": "Guadeloupe🇬🇵+590 (w/ Password)",
+        "瓜德罗普🇬🇵+590（无密码）": "Guadeloupe🇬🇵+590 (w/o Password)",
+        "瓜德罗普+590 有密码": "Guadeloupe+590 w/ Password",
+        "瓜德罗普+590无密码": "Guadeloupe+590 w/o Password",
+        "玻利维亚🇧🇴+591（有密码）": "Bolivia🇧🇴+591 (w/ Password)",
+        "玻利维亚🇧🇴+591（无密码）": "Bolivia🇧🇴+591 (w/o Password)",
+        "玻利维亚+591 有密码": "Bolivia+591 w/ Password",
+        "玻利维亚+591无密码": "Bolivia+591 w/o Password",
+        "圭亚那🇬🇾+592（有密码）": "Guyana🇬🇾+592 (w/ Password)",
+        "圭亚那🇬🇾+592（无密码）": "Guyana🇬🇾+592 (w/o Password)",
+        "圭亚那+592 有密码": "Guyana+592 w/ Password",
+        "圭亚那+592无密码": "Guyana+592 w/o Password",
+        "厄瓜多尔🇪🇨+593（有密码）": "Ecuador🇪🇨+593 (w/ Password)",
+        "厄瓜多尔🇪🇨+593（无密码）": "Ecuador🇪🇨+593 (w/o Password)",
+        "厄瓜多尔+593 有密码": "Ecuador+593 w/ Password",
+        "厄瓜多尔+593无密码": "Ecuador+593 w/o Password",
+        "法属圭亚那🇬🇫+594（有密码）": "French Guiana🇬🇫+594 (w/ Password)",
+        "法属圭亚那🇬🇫+594（无密码）": "French Guiana🇬🇫+594 (w/o Password)",
+        "法属圭亚那+594 有密码": "French Guiana+594 w/ Password",
+        "法属圭亚那+594无密码": "French Guiana+594 w/o Password",
+        "巴拉圭🇵🇾+595（有密码）": "Paraguay🇵🇾+595 (w/ Password)",
+        "巴拉圭🇵🇾+595（无密码）": "Paraguay🇵🇾+595 (w/o Password)",
+        "巴拉圭+595 有密码": "Paraguay+595 w/ Password",
+        "巴拉圭+595无密码": "Paraguay+595 w/o Password",
+        "马提尼克🇲🇶+596（有密码）": "Martinique🇲🇶+596 (w/ Password)",
+        "马提尼克🇲🇶+596（无密码）": "Martinique🇲🇶+596 (w/o Password)",
+        "马提尼克+596 有密码": "Martinique+596 w/ Password",
+        "马提尼克+596无密码": "Martinique+596 w/o Password",
+        "苏里南🇸🇷+597（有密码）": "Suriname🇸🇷+597 (w/ Password)",
+        "苏里南🇸🇷+597（无密码）": "Suriname🇸🇷+597 (w/o Password)",
+        "苏里南+597 有密码": "Suriname+597 w/ Password",
+        "苏里南+597无密码": "Suriname+597 w/o Password",
+        "乌拉圭🇺🇾+598（有密码）": "Uruguay🇺🇾+598 (w/ Password)",
+        "乌拉圭🇺🇾+598（无密码）": "Uruguay🇺🇾+598 (w/o Password)",
+        "乌拉圭+598 有密码": "Uruguay+598 w/ Password",
+        "乌拉圭+598无密码": "Uruguay+598 w/o Password",
+        "荷属安的列斯🇨🇼+599（有密码）": "Netherlands Antilles🇨🇼+599 (w/ Password)",
+        "荷属安的列斯🇨🇼+599（无密码）": "Netherlands Antilles🇨🇼+599 (w/o Password)",
+        "荷属安的列斯+599 有密码": "Netherlands Antilles+599 w/ Password",
+        "荷属安的列斯+599无密码": "Netherlands Antilles+599 w/o Password",
+        "东帝汶🇹🇱+670（有密码）": "Timor-Leste🇹🇱+670 (w/ Password)",
+        "东帝汶🇹🇱+670（无密码）": "Timor-Leste🇹🇱+670 (w/o Password)",
+        "东帝汶+670 有密码": "Timor-Leste+670 w/ Password",
+        "东帝汶+670无密码": "Timor-Leste+670 w/o Password",
+        "南极洲🇦🇶+672（有密码）": "Antarctica🇦🇶+672 (w/ Password)",
+        "南极洲🇦🇶+672（无密码）": "Antarctica🇦🇶+672 (w/o Password)",
+        "南极洲+672 有密码": "Antarctica+672 w/ Password",
+        "南极洲+672无密码": "Antarctica+672 w/o Password",
+        "文莱🇧🇳+673（有密码）": "Brunei🇧🇳+673 (w/ Password)",
+        "文莱🇧🇳+673（无密码）": "Brunei🇧🇳+673 (w/o Password)",
+        "文莱+673 有密码": "Brunei+673 w/ Password",
+        "文莱+673无密码": "Brunei+673 w/o Password",
+        "瑙鲁🇳🇷+674（有密码）": "Nauru🇳🇷+674 (w/ Password)",
+        "瑙鲁🇳🇷+674（无密码）": "Nauru🇳🇷+674 (w/o Password)",
+        "瑙鲁+674 有密码": "Nauru+674 w/ Password",
+        "瑙鲁+674无密码": "Nauru+674 w/o Password",
+        "巴布亚新几内亚🇵🇬+675（有密码）": "Papua New Guinea🇵🇬+675 (w/ Password)",
+        "巴布亚新几内亚🇵🇬+675（无密码）": "Papua New Guinea🇵🇬+675 (w/o Password)",
+        "巴布亚新几内亚+675 有密码": "Papua New Guinea+675 w/ Password",
+        "巴布亚新几内亚+675无密码": "Papua New Guinea+675 w/o Password",
+        "汤加🇹🇴+676（有密码）": "Tonga🇹🇴+676 (w/ Password)",
+        "汤加🇹🇴+676（无密码）": "Tonga🇹🇴+676 (w/o Password)",
+        "汤加+676 有密码": "Tonga+676 w/ Password",
+        "汤加+676无密码": "Tonga+676 w/o Password",
+        "所罗门群岛🇸🇧+677（有密码）": "Solomon Islands🇸🇧+677 (w/ Password)",
+        "所罗门群岛🇸🇧+677（无密码）": "Solomon Islands🇸🇧+677 (w/o Password)",
+        "所罗门群岛+677 有密码": "Solomon Islands+677 w/ Password",
+        "所罗门群岛+677无密码": "Solomon Islands+677 w/o Password",
+        "瓦努阿图🇻🇺+678（有密码）": "Vanuatu🇻🇺+678 (w/ Password)",
+        "瓦努阿图🇻🇺+678（无密码）": "Vanuatu🇻🇺+678 (w/o Password)",
+        "瓦努阿图+678 有密码": "Vanuatu+678 w/ Password",
+        "瓦努阿图+678无密码": "Vanuatu+678 w/o Password",
+        "斐济🇫🇯+679（有密码）": "Fiji🇫🇯+679 (w/ Password)",
+        "斐济🇫🇯+679（无密码）": "Fiji🇫🇯+679 (w/o Password)",
+        "斐济+679 有密码": "Fiji+679 w/ Password",
+        "斐济+679无密码": "Fiji+679 w/o Password",
+        "帕劳🇵🇼+680（有密码）": "Palau🇵🇼+680 (w/ Password)",
+        "帕劳🇵🇼+680（无密码）": "Palau🇵🇼+680 (w/o Password)",
+        "帕劳+680 有密码": "Palau+680 w/ Password",
+        "帕劳+680无密码": "Palau+680 w/o Password",
+        "瓦利斯和富图纳🇼🇫+681（有密码）": "Wallis and Futuna🇼🇫+681 (w/ Password)",
+        "瓦利斯和富图纳🇼🇫+681（无密码）": "Wallis and Futuna🇼🇫+681 (w/o Password)",
+        "瓦利斯和富图纳+681 有密码": "Wallis and Futuna+681 w/ Password",
+        "瓦利斯和富图纳+681无密码": "Wallis and Futuna+681 w/o Password",
+        "库克群岛🇨🇰+682（有密码）": "Cook Islands🇨🇰+682 (w/ Password)",
+        "库克群岛🇨🇰+682（无密码）": "Cook Islands🇨🇰+682 (w/o Password)",
+        "库克群岛+682 有密码": "Cook Islands+682 w/ Password",
+        "库克群岛+682无密码": "Cook Islands+682 w/o Password",
+        "纽埃🇳🇺+683（有密码）": "Niue🇳🇺+683 (w/ Password)",
+        "纽埃🇳🇺+683（无密码）": "Niue🇳🇺+683 (w/o Password)",
+        "纽埃+683 有密码": "Niue+683 w/ Password",
+        "纽埃+683无密码": "Niue+683 w/o Password",
+        "萨摩亚🇼🇸+685（有密码）": "Samoa🇼🇸+685 (w/ Password)",
+        "萨摩亚🇼🇸+685（无密码）": "Samoa🇼🇸+685 (w/o Password)",
+        "萨摩亚+685 有密码": "Samoa+685 w/ Password",
+        "萨摩亚+685无密码": "Samoa+685 w/o Password",
+        "基里巴斯🇰🇮+686（有密码）": "Kiribati🇰🇮+686 (w/ Password)",
+        "基里巴斯🇰🇮+686（无密码）": "Kiribati🇰🇮+686 (w/o Password)",
+        "基里巴斯+686 有密码": "Kiribati+686 w/ Password",
+        "基里巴斯+686无密码": "Kiribati+686 w/o Password",
+        "新喀里多尼亚🇳🇨+687（有密码）": "New Caledonia🇳🇨+687 (w/ Password)",
+        "新喀里多尼亚🇳🇨+687（无密码）": "New Caledonia🇳🇨+687 (w/o Password)",
+        "新喀里多尼亚+687 有密码": "New Caledonia+687 w/ Password",
+        "新喀里多尼亚+687无密码": "New Caledonia+687 w/o Password",
+        "图瓦卢🇹🇻+688（有密码）": "Tuvalu🇹🇻+688 (w/ Password)",
+        "图瓦卢🇹🇻+688（无密码）": "Tuvalu🇹🇻+688 (w/o Password)",
+        "图瓦卢+688 有密码": "Tuvalu+688 w/ Password",
+        "图瓦卢+688无密码": "Tuvalu+688 w/o Password",
+        "法属波利尼西亚🇵🇫+689（有密码）": "French Polynesia🇵🇫+689 (w/ Password)",
+        "法属波利尼西亚🇵🇫+689（无密码）": "French Polynesia🇵🇫+689 (w/o Password)",
+        "法属波利尼西亚+689 有密码": "French Polynesia+689 w/ Password",
+        "法属波利尼西亚+689无密码": "French Polynesia+689 w/o Password",
+        "托克劳🇹🇰+690（有密码）": "Tokelau🇹🇰+690 (w/ Password)",
+        "托克劳🇹🇰+690（无密码）": "Tokelau🇹🇰+690 (w/o Password)",
+        "托克劳+690 有密码": "Tokelau+690 w/ Password",
+        "托克劳+690无密码": "Tokelau+690 w/o Password",
+        "密克罗尼西亚🇫🇲+691（有密码）": "Micronesia🇫🇲+691 (w/ Password)",
+        "密克罗尼西亚🇫🇲+691（无密码）": "Micronesia🇫🇲+691 (w/o Password)",
+        "密克罗尼西亚+691 有密码": "Micronesia+691 w/ Password",
+        "密克罗尼西亚+691无密码": "Micronesia+691 w/o Password",
+        "马绍尔群岛🇲🇭+692（有密码）": "Marshall Islands🇲🇭+692 (w/ Password)",
+        "马绍尔群岛🇲🇭+692（无密码）": "Marshall Islands🇲🇭+692 (w/o Password)",
+        "马绍尔群岛+692 有密码": "Marshall Islands+692 w/ Password",
+        "马绍尔群岛+692无密码": "Marshall Islands+692 w/o Password",
+        "朝鲜🇰🇵+850（有密码）": "North Korea🇰🇵+850 (w/ Password)",
+        "朝鲜🇰🇵+850（无密码）": "North Korea🇰🇵+850 (w/o Password)",
+        "朝鲜+850 有密码": "North Korea+850 w/ Password",
+        "朝鲜+850无密码": "North Korea+850 w/o Password",
+        "香港🇭🇰+852（有密码）": "Hong Kong🇭🇰+852 (w/ Password)",
+        "香港🇭🇰+852（无密码）": "Hong Kong🇭🇰+852 (w/o Password)",
+        "香港+852 有密码": "Hong Kong+852 w/ Password",
+        "香港+852无密码": "Hong Kong+852 w/o Password",
+        "澳门🇲🇴+853（有密码）": "Macau🇲🇴+853 (w/ Password)",
+        "澳门🇲🇴+853（无密码）": "Macau🇲🇴+853 (w/o Password)",
+        "澳门+853 有密码": "Macau+853 w/ Password",
+        "澳门+853无密码": "Macau+853 w/o Password",
+        "柬埔寨🇰🇭+855（有密码）": "Cambodia🇰🇭+855 (w/ Password)",
+        "柬埔寨🇰🇭+855（无密码）": "Cambodia🇰🇭+855 (w/o Password)",
+        "柬埔寨+855 有密码": "Cambodia+855 w/ Password",
+        "柬埔寨+855无密码": "Cambodia+855 w/o Password",
+        "老挝🇱🇦+856（有密码）": "Laos🇱🇦+856 (w/ Password)",
+        "老挝🇱🇦+856（无密码）": "Laos🇱🇦+856 (w/o Password)",
+        "老挝+856 有密码": "Laos+856 w/ Password",
+        "老挝+856无密码": "Laos+856 w/o Password",
+        "孟加拉国🇧🇩+880（有密码）": "Bangladesh🇧🇩+880 (w/ Password)",
+        "孟加拉国🇧🇩+880（无密码）": "Bangladesh🇧🇩+880 (w/o Password)",
+        "孟加拉国+880 有密码": "Bangladesh+880 w/ Password",
+        "孟加拉国+880无密码": "Bangladesh+880 w/o Password",
+        "台湾🇹🇼+886（有密码）": "Taiwan🇹🇼+886 (w/ Password)",
+        "台湾🇹🇼+886（无密码）": "Taiwan🇹🇼+886 (w/o Password)",
+        "台湾+886 有密码": "Taiwan+886 w/ Password",
+        "台湾+886无密码": "Taiwan+886 w/o Password",
+        "马尔代夫🇲🇻+960（有密码）": "Maldives🇲🇻+960 (w/ Password)",
+        "马尔代夫🇲🇻+960（无密码）": "Maldives🇲🇻+960 (w/o Password)",
+        "马尔代夫+960 有密码": "Maldives+960 w/ Password",
+        "马尔代夫+960无密码": "Maldives+960 w/o Password",
+        "黎巴嫩🇱🇧+961（有密码）": "Lebanon🇱🇧+961 (w/ Password)",
+        "黎巴嫩🇱🇧+961（无密码）": "Lebanon🇱🇧+961 (w/o Password)",
+        "黎巴嫩+961 有密码": "Lebanon+961 w/ Password",
+        "黎巴嫩+961无密码": "Lebanon+961 w/o Password",
+        "约旦🇯🇴+962（有密码）": "Jordan🇯🇴+962 (w/ Password)",
+        "约旦🇯🇴+962（无密码）": "Jordan🇯🇴+962 (w/o Password)",
+        "约旦+962 有密码": "Jordan+962 w/ Password",
+        "约旦+962无密码": "Jordan+962 w/o Password",
+        "叙利亚🇸🇾+963（有密码）": "Syria🇸🇾+963 (w/ Password)",
+        "叙利亚🇸🇾+963（无密码）": "Syria🇸🇾+963 (w/o Password)",
+        "叙利亚+963 有密码": "Syria+963 w/ Password",
+        "叙利亚+963无密码": "Syria+963 w/o Password",
+        "伊拉克🇮🇶+964（有密码）": "Iraq🇮🇶+964 (w/ Password)",
+        "伊拉克🇮🇶+964（无密码）": "Iraq🇮🇶+964 (w/o Password)",
+        "伊拉克+964 有密码": "Iraq+964 w/ Password",
+        "伊拉克+964无密码": "Iraq+964 w/o Password",
+        "科威特🇰🇼+965（有密码）": "Kuwait🇰🇼+965 (w/ Password)",
+        "科威特🇰🇼+965（无密码）": "Kuwait🇰🇼+965 (w/o Password)",
+        "科威特+965 有密码": "Kuwait+965 w/ Password",
+        "科威特+965无密码": "Kuwait+965 w/o Password",
+        "沙特阿拉伯🇸🇦+966（有密码）": "Saudi Arabia🇸🇦+966 (w/ Password)",
+        "沙特阿拉伯🇸🇦+966（无密码）": "Saudi Arabia🇸🇦+966 (w/o Password)",
+        "沙特阿拉伯+966 有密码": "Saudi Arabia+966 w/ Password",
+        "沙特阿拉伯+966无密码": "Saudi Arabia+966 w/o Password",
+        "也门🇾🇪+967（有密码）": "Yemen🇾🇪+967 (w/ Password)",
+        "也门🇾🇪+967（无密码）": "Yemen🇾🇪+967 (w/o Password)",
+        "也门+967 有密码": "Yemen+967 w/ Password",
+        "也门+967无密码": "Yemen+967 w/o Password",
+        "阿曼🇴🇲+968（有密码）": "Oman🇴🇲+968 (w/ Password)",
+        "阿曼🇴🇲+968（无密码）": "Oman🇴🇲+968 (w/o Password)",
+        "阿曼+968 有密码": "Oman+968 w/ Password",
+        "阿曼+968无密码": "Oman+968 w/o Password",
+        "巴勒斯坦🇵🇸+970（有密码）": "Palestine🇵🇸+970 (w/ Password)",
+        "巴勒斯坦🇵🇸+970（无密码）": "Palestine🇵🇸+970 (w/o Password)",
+        "巴勒斯坦+970 有密码": "Palestine+970 w/ Password",
+        "巴勒斯坦+970无密码": "Palestine+970 w/o Password",
+        "阿联酋🇦🇪+971（有密码）": "UAE🇦🇪+971 (w/ Password)",
+        "阿联酋🇦🇪+971（无密码）": "UAE🇦🇪+971 (w/o Password)",
+        "阿联酋+971 有密码": "UAE+971 w/ Password",
+        "阿联酋+971无密码": "UAE+971 w/o Password",
+        "以色列🇮🇱+972（有密码）": "Israel🇮🇱+972 (w/ Password)",
+        "以色列🇮🇱+972（无密码）": "Israel🇮🇱+972 (w/o Password)",
+        "以色列+972 有密码": "Israel+972 w/ Password",
+        "以色列+972无密码": "Israel+972 w/o Password",
+        "巴林🇧��+973（有密码）": "Bahrain🇧��+973 (w/ Password)",
+        "巴林🇧��+973（无密码）": "Bahrain🇧��+973 (w/o Password)",
+        "巴林+973 有密码": "Bahrain+973 w/ Password",
+        "巴林+973无密码": "Bahrain+973 w/o Password",
+        "卡塔尔🇶🇦+974（有密码）": "Qatar🇶🇦+974 (w/ Password)",
+        "卡塔尔🇶🇦+974（无密码）": "Qatar🇶🇦+974 (w/o Password)",
+        "卡塔尔+974 有密码": "Qatar+974 w/ Password",
+        "卡塔尔+974无密码": "Qatar+974 w/o Password",
+        "不丹🇧🇹+975（有密码）": "Bhutan🇧🇹+975 (w/ Password)",
+        "不丹🇧🇹+975（无密码）": "Bhutan🇧🇹+975 (w/o Password)",
+        "不丹+975 有密码": "Bhutan+975 w/ Password",
+        "不丹+975无密码": "Bhutan+975 w/o Password",
+        "蒙古🇲🇳+976（有密码）": "Mongolia🇲🇳+976 (w/ Password)",
+        "蒙古🇲🇳+976（无密码）": "Mongolia🇲🇳+976 (w/o Password)",
+        "蒙古+976 有密码": "Mongolia+976 w/ Password",
+        "蒙古+976无密码": "Mongolia+976 w/o Password",
+        "尼泊尔🇳🇵+977（有密码）": "Nepal🇳🇵+977 (w/ Password)",
+        "尼泊尔🇳🇵+977（无密码）": "Nepal🇳🇵+977 (w/o Password)",
+        "尼泊尔+977 有密码": "Nepal+977 w/ Password",
+        "尼泊尔+977无密码": "Nepal+977 w/o Password",
+        "塔吉克斯坦🇹🇯+992（有密码）": "Tajikistan🇹🇯+992 (w/ Password)",
+        "塔吉克斯坦🇹🇯+992（无密码）": "Tajikistan🇹🇯+992 (w/o Password)",
+        "塔吉克斯坦+992 有密码": "Tajikistan+992 w/ Password",
+        "塔吉克斯坦+992无密码": "Tajikistan+992 w/o Password",
+        "土库曼斯坦🇹🇲+993（有密码）": "Turkmenistan🇹🇲+993 (w/ Password)",
+        "土库曼斯坦🇹🇲+993（无密码）": "Turkmenistan🇹🇲+993 (w/o Password)",
+        "土库曼斯坦+993 有密码": "Turkmenistan+993 w/ Password",
+        "土库曼斯坦+993无密码": "Turkmenistan+993 w/o Password",
+        "阿塞拜疆🇦🇿+994（有密码）": "Azerbaijan🇦🇿+994 (w/ Password)",
+        "阿塞拜疆🇦🇿+994（无密码）": "Azerbaijan🇦🇿+994 (w/o Password)",
+        "阿塞拜疆+994 有密码": "Azerbaijan+994 w/ Password",
+        "阿塞拜疆+994无密码": "Azerbaijan+994 w/o Password",
+        "格鲁吉亚🇬🇪+995（有密码）": "Georgia🇬🇪+995 (w/ Password)",
+        "格鲁吉亚🇬🇪+995（无密码）": "Georgia🇬🇪+995 (w/o Password)",
+        "格鲁吉亚+995 有密码": "Georgia+995 w/ Password",
+        "格鲁吉亚+995无密码": "Georgia+995 w/o Password",
+        "吉尔吉斯斯坦🇰🇬+996（有密码）": "Kyrgyzstan🇰🇬+996 (w/ Password)",
+        "吉尔吉斯斯坦🇰🇬+996（无密码）": "Kyrgyzstan🇰🇬+996 (w/o Password)",
+        "吉尔吉斯斯坦+996 有密码": "Kyrgyzstan+996 w/ Password",
+        "吉尔吉斯斯坦+996无密码": "Kyrgyzstan+996 w/o Password",
+        "乌兹别克斯坦🇺🇿+998（有密码）": "Uzbekistan🇺🇿+998 (w/ Password)",
+        "乌兹别克斯坦🇺🇿+998（无密码）": "Uzbekistan🇺🇿+998 (w/o Password)",
+        "乌兹别克斯坦+998 有密码": "Uzbekistan+998 w/ Password",
+        "乌兹别克斯坦+998无密码": "Uzbekistan+998 w/o Password"
+    }
+}
+
 class AgentBotConfig:
     """代理机器人配置"""
     def __init__(self):
@@ -201,6 +2304,26 @@ class AgentBotConfig:
         self.SUPPORT_CONTACT_USERNAME = os.getenv("SUPPORT_CONTACT_USERNAME", "9haokf")
         self.SUPPORT_CONTACT_URL = os.getenv("SUPPORT_CONTACT_URL") or f"https://t.me/{self.SUPPORT_CONTACT_USERNAME}"
         self.SUPPORT_CONTACT_DISPLAY = os.getenv("SUPPORT_CONTACT_DISPLAY")
+        
+        # ✅ 购买成功消息配置（支持中英文）
+        self.PURCHASE_SUCCESS_MSG_ZH = os.getenv("PURCHASE_SUCCESS_MSG_ZH", 
+            "✅您的账户已打包完成，请查收！\n\n"
+            "🔐二级密码:请在json文件中【two2fa】查看！\n\n"
+            "⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n"
+            "‼️超过售后时间，损失自付，无需多言！\n\n"
+            "🔹 9号客服  @o9eth   @o7eth\n"
+            "🔹 频道  @idclub9999\n"
+            "🔹补货通知  @p5540"
+        )
+        self.PURCHASE_SUCCESS_MSG_EN = os.getenv("PURCHASE_SUCCESS_MSG_EN",
+            "✅Your account has been packaged and is ready to receive!\n\n"
+            "🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n"
+            "⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n"
+            "‼️After the warranty period, you bear the loss!\n\n"
+            "🔹 Customer Service 9  @o9eth   @o7eth\n"
+            "🔹 Channel  @idclub9999\n"
+            "🔹 Restock Notice  @p5540"
+        )
         
         # ✅ 广告推送配置
         self.AGENT_AD_CHANNEL_ID = os.getenv("AGENT_AD_CHANNEL_ID")
@@ -632,7 +2755,8 @@ class AgentBotCore:
                 'register_time': now,
                 'last_active': now,
                 'last_contact_time': now,
-                'status': 'active'
+                'status': 'active',
+                'language': DEFAULT_LANGUAGE
             })
             logger.info(f"✅ 用户注册成功 {user_id}")
             return True
@@ -646,6 +2770,132 @@ class AgentBotCore:
         except Exception as e:
             logger.error(f"❌ 获取用户信息失败: {e}")
             return None
+
+    # ---------- 语言管理 ----------
+    def get_user_language(self, user_id: int) -> str:
+        """
+        获取用户的语言偏好
+        
+        Args:
+            user_id: 用户ID
+        
+        Returns:
+            语言代码（'zh' 或 'en'），默认返回 DEFAULT_LANGUAGE
+        """
+        try:
+            user_info = self.get_user_info(user_id)
+            if user_info and 'language' in user_info:
+                lang = user_info['language']
+                if lang in I18N:
+                    return lang
+            return DEFAULT_LANGUAGE
+        except Exception as e:
+            logger.error(f"❌ 获取用户语言失败: {e}")
+            return DEFAULT_LANGUAGE
+
+    def set_user_language(self, user_id: int, lang: str) -> bool:
+        """
+        设置用户的语言偏好
+        
+        Args:
+            user_id: 用户ID
+            lang: 语言代码（'zh' 或 'en'）
+        
+        Returns:
+            True 如果设置成功，否则 False
+        """
+        try:
+            if lang not in I18N:
+                logger.warning(f"⚠️ 不支持的语言代码: {lang}")
+                return False
+            
+            coll = self.config.get_agent_user_collection()
+            result = coll.update_one(
+                {'user_id': user_id},
+                {'$set': {'language': lang}}
+            )
+            
+            if result.modified_count > 0 or result.matched_count > 0:
+                logger.info(f"✅ 用户 {user_id} 语言已设置为 {lang}")
+                return True
+            else:
+                logger.warning(f"⚠️ 用户 {user_id} 不存在，无法设置语言")
+                return False
+        except Exception as e:
+            logger.error(f"❌ 设置用户语言失败: {e}")
+            return False
+
+    def t(self, user_id: int, key: str, **kwargs) -> str:
+        """
+        翻译助手函数
+        
+        Args:
+            user_id: 用户ID
+            key: 翻译键（点号分隔，如 'start.welcome'）
+            **kwargs: 格式化参数
+        
+        Returns:
+            翻译后的文本，如果键不存在则返回键本身
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            keys = key.split('.')
+            value = I18N[lang]
+            
+            for k in keys:
+                if isinstance(value, dict) and k in value:
+                    value = value[k]
+                else:
+                    logger.warning(f"⚠️ 翻译键不存在: {key} (lang={lang})")
+                    return key
+            
+            if isinstance(value, str) and kwargs:
+                return value.format(**kwargs)
+            return value
+        except Exception as e:
+            logger.error(f"❌ 翻译失败 key={key}: {e}")
+            return key
+
+    def translate_category(self, user_id: int, category_name: str) -> str:
+        """
+        翻译商品分类名称
+        
+        Args:
+            user_id: 用户ID
+            category_name: 分类名称
+        
+        Returns:
+            翻译后的分类名称，如果没有翻译则返回原名称
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            if lang in CATEGORY_TRANSLATIONS and category_name in CATEGORY_TRANSLATIONS[lang]:
+                return CATEGORY_TRANSLATIONS[lang][category_name]
+            return category_name
+        except Exception as e:
+            logger.error(f"❌ 分类名称翻译失败: {e}")
+            return category_name
+
+    def get_purchase_success_message(self, user_id: int) -> str:
+        """
+        获取购买成功消息（从环境变量配置中读取）
+        
+        Args:
+            user_id: 用户ID
+        
+        Returns:
+            根据用户语言返回对应的购买成功消息
+        """
+        try:
+            lang = self.get_user_language(user_id)
+            if lang == 'en':
+                return self.config.PURCHASE_SUCCESS_MSG_EN
+            else:
+                return self.config.PURCHASE_SUCCESS_MSG_ZH
+        except Exception as e:
+            logger.error(f"❌ 获取购买成功消息失败: {e}")
+            # 返回默认中文消息
+            return self.config.PURCHASE_SUCCESS_MSG_ZH
 
     def broadcast_ad_to_agent_users(self, message_text: str, parse_mode: str = ParseMode.HTML) -> int:
         """
@@ -2501,26 +4751,29 @@ class AgentBotHandlers:
             # ✅ 处理 restock 深度链接 - 直接显示商品分类（无欢迎消息）
             if payload == "restock":
                 try:
+                    uid = user.id
                     # 直接获取并显示商品分类
                     categories = self.core.get_product_categories()
                     
                     if not categories:
-                        text = "❌ 暂无可用商品分类"
-                        kb = [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]]
+                        text = self.core.t(uid, 'products.categories.no_categories')
+                        kb = [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]]
                     else:
                         text = (
-                            "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                            "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
-                            "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
-                            "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
+                            f"<b>{self.core.t(uid, 'products.categories.title')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.search_tip')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.first_purchase_tip')}</b>\n\n"
+                            f"<b>{self.core.t(uid, 'products.categories.inactive_tip')}</b>"
                         )
                         
                         kb = []
+                        unit = self.core.t(uid, 'common.unit')
                         for cat in categories:
-                            button_text = f"{cat['_id']}  [{cat ['stock']}个]"
+                            category_name = self.core.translate_category(uid, cat['_id'])
+                            button_text = f"{category_name}  [{cat['stock']}{unit}]"
                             kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
                         
-                        kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+                        kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
                     
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     logger.info(f"✅ 已为用户 {user.id} 直接显示商品分类")
@@ -2530,8 +4783,9 @@ class AgentBotHandlers:
                     logger.error(f"❌ 显示商品分类失败: {e}")
                     import traceback
                     traceback.print_exc()
-                    text = "❌ 加载失败，请重试"
-                    kb = [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]]
+                    uid = user.id
+                    text = self.core.t(uid, 'error.load_failed')
+                    kb = [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]]
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     return
             
@@ -2539,18 +4793,19 @@ class AgentBotHandlers:
             if payload and payload.startswith("product_"):
                 nowuid = payload.replace("product_", "")
                 try:
+                    uid = user.id
                     # 直接显示商品详情（购买页面）
                     prod = self.core.config.ejfl.find_one({'nowuid': nowuid})
                     if not prod:
-                        text = "❌ 商品不存在"
-                        kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                        text = self.core.t(uid, 'products.not_exist')
+                        kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                     else:
                         price = self.core.get_product_price(nowuid)
                         stock = self.core.get_product_stock(nowuid)
                         
                         if price is None:
-                            text = "❌ 商品价格未设置"
-                            kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                            text = self.core.t(uid, 'products.price_not_set')
+                            kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                         else:
                             # ✅ 获取商品在代理价格表中的分类（统一后的分类）
                             agent_price_info = self.core.config.agent_product_prices.find_one({
@@ -2562,26 +4817,26 @@ class AgentBotHandlers:
                             
                             # ✅ 完全按照总部的简洁格式
                             product_name = self.H(prod.get('projectname', 'N/A'))
-                            product_status = "✅您正在购买："
+                            unit = self.core.t(uid, 'common.unit')
                             
                             text = (
-                                f"<b>{product_status} {product_name}\n\n</b>"
-                                f"<b>💰 价格: {price:.2f} USDT\n\n</b>"
-                                f"<b>📦 库存: {stock}个\n\n</b>"
-                                f"<b>❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！\n</b>"
+                                f"<b>{self.core.t(uid, 'products.purchase_status')} {product_name}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.price_label', price=price)}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.stock_label', stock=stock)}{unit}\n\n</b>"
+                                f"<b>{self.core.t(uid, 'products.purchase_warning')}\n</b>"
                             )
                             
                             kb = []
                             if stock > 0:
-                                kb.append([InlineKeyboardButton("✅ 购买", callback_data=f"buy_{nowuid}"),
-                                          InlineKeyboardButton("❗使用说明", callback_data="help")])
+                                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.buy'), callback_data=f"buy_{nowuid}"),
+                                          InlineKeyboardButton(self.core.t(uid, 'help.instructions'), callback_data="help")])
                             else:
-                                text += "\n\n⚠️ 商品缺货"
-                                kb.append([InlineKeyboardButton("使用说明", callback_data="help")])
+                                text += f"\n\n{self.core.t(uid, 'products.out_of_stock')}"
+                                kb.append([InlineKeyboardButton(self.core.t(uid, 'help.instructions_simple'), callback_data="help")])
                             
                             # ✅ 使用统一后的分类作为返回目标
-                            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main"),
-                                      InlineKeyboardButton("返回", callback_data=f"category_{category}")])
+                            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main"),
+                                      InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data=f"category_{category}")])
                     
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     logger.info(f"✅ 已为用户 {user.id} 直接显示商品 {nowuid} 购买页面")
@@ -2591,51 +4846,60 @@ class AgentBotHandlers:
                     logger.error(f"❌ 显示商品购买页面失败: {e}")
                     import traceback
                     traceback.print_exc()
-                    text = "❌ 加载失败，请重试"
-                    kb = [[InlineKeyboardButton("🔙 返回商品列表", callback_data="products")]]
+                    uid = user.id
+                    text = self.core.t(uid, 'error.load_failed')
+                    kb = [[InlineKeyboardButton(self.core.t(uid, 'products.back_to_list'), callback_data="products")]]
                     update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
                     return
             
             # ✅ 默认启动消息
-            text = f"""🎉 欢迎使用 {self.H(self.core.config.AGENT_NAME)}！
+            uid = user.id
+            username_display = self.H(user.username or self.core.t(uid, 'common.not_set'))
+            nickname_display = self.H(user.first_name or self.core.t(uid, 'common.not_set'))
+            
+            text = f"""{self.core.t(uid, 'start.welcome', agent_name=self.H(self.core.config.AGENT_NAME))}
 
-👤 用户信息
-• ID: {user.id}
-• 用户名: @{self.H(user.username or '未设置')}
-• 昵称: {self.H(user.first_name or '未设置')}
+{self.core.t(uid, 'start.user_info')}
+{self.core.t(uid, 'start.user_id', uid=user.id)}
+{self.core.t(uid, 'start.username', username=username_display)}
+{self.core.t(uid, 'start.nickname', nickname=nickname_display)}
 
-请选择功能："""
+{self.core.t(uid, 'start.select_function')}"""
             kb = [
-                [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-                 InlineKeyboardButton("👤 个人中心", callback_data="profile")],
-                [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-                 InlineKeyboardButton("📊 订单历史", callback_data="orders")]
+                [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")],
+                [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")]
             ]
             if self.core.config.is_admin(user.id):
-                kb.append([InlineKeyboardButton("💰 价格管理", callback_data="price_management"),
-                           InlineKeyboardButton("📊 系统报表", callback_data="system_reports")])
-                kb.append([InlineKeyboardButton("💸 利润提现", callback_data="profit_center")])
-            kb.append([InlineKeyboardButton("📞 联系客服", callback_data="support"),
-                       InlineKeyboardButton("❓ 使用帮助", callback_data="help")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.price_management'), callback_data="price_management"),
+                           InlineKeyboardButton(self.core.t(uid, 'btn.system_reports'), callback_data="system_reports")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.profit_center'), callback_data="profit_center")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+                       InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.language'), callback_data="language_menu")])
             update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
         else:
-            update.message.reply_text("初始化失败，请稍后重试")
+            uid = user.id
+            update.message.reply_text(self.core.t(uid, 'common.init_failed'))
 
     def show_main_menu(self, query):
         user = query.from_user
+        uid = user.id
         kb = [
-            [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-             InlineKeyboardButton("👤 个人中心", callback_data="profile")],
-            [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-             InlineKeyboardButton("📊 订单历史", callback_data="orders")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")]
         ]
         if self.core.config.is_admin(user.id):
-            kb.append([InlineKeyboardButton("💰 价格管理", callback_data="price_management"),
-                       InlineKeyboardButton("📊 系统报表", callback_data="system_reports")])
-            kb.append([InlineKeyboardButton("💸 利润提现", callback_data="profit_center")])
-        kb.append([InlineKeyboardButton("📞 联系客服", callback_data="support"),
-                   InlineKeyboardButton("❓ 使用帮助", callback_data="help")])
-        text = f"🏠 主菜单\n\n当前时间: {self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')}"
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.price_management'), callback_data="price_management"),
+                       InlineKeyboardButton(self.core.t(uid, 'btn.system_reports'), callback_data="system_reports")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.profit_center'), callback_data="profit_center")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+                   InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.language'), callback_data="language_menu")])
+        text = self.core.t(uid, 'main_menu.title') + "\n\n" + self.core.t(uid, 'main_menu.current_time', time=self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S'))
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def reload_admins_command(self, update: Update, context: CallbackContext):
@@ -2663,11 +4927,14 @@ class AgentBotHandlers:
     def show_profit_center(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]], parse_mode=None)
             return
         s = self.core.get_profit_summary()
         refresh_time = self.core._to_beijing(datetime.utcnow()).strftime('%Y-%m-%d %H:%M:%S')
-        text = f"""💸 <b>利润中心</b>
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = f"""💸 <b>利润中心</b>
 
 累计利润: {s['total_profit']:.2f} USDT
 已提现: {s['withdrawn_profit']:.2f} USDT
@@ -2680,11 +4947,26 @@ class AgentBotHandlers:
 
 • 审核/付款需人工处理
 """
+        else:
+            text = f"""💸 <b>Profit Center</b>
+
+Total Profit: {s['total_profit']:.2f} USDT
+Withdrawn: {s['withdrawn_profit']:.2f} USDT
+Pending: {s['pending_profit']:.2f} USDT
+Available: {s['available_profit']:.2f} USDT
+Pending Requests: {s['request_count_pending']}
+
+
+Refresh Time: {refresh_time}
+
+• Review/Payment requires manual processing
+"""
+        
         kb = [
-            [InlineKeyboardButton("📝 申请提现", callback_data="profit_withdraw"),
-             InlineKeyboardButton("📋 申请记录", callback_data="profit_withdraw_list")],
-            [InlineKeyboardButton("🔄 刷新", callback_data="profit_center"),
-             InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'profit.apply_withdrawal'), callback_data="profit_withdraw"),
+             InlineKeyboardButton(self.core.t(uid, 'profit.application_records'), callback_data="profit_withdraw_list")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.refresh'), callback_data="profit_center"),
+             InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=ParseMode.HTML)
 
@@ -2780,26 +5062,29 @@ class AgentBotHandlers:
     def show_product_categories(self, query):
         """显示商品分类（增强版：支持显示零库存分类）"""
         try:
+            uid = query.from_user.id
             # ✅ 调用核心方法获取分类列表（包含零库存分类）
             categories = self.core.get_product_categories()
             
             if not categories:
-                self.safe_edit_message(query, "❌ 暂无可用商品分类", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.categories.no_categories'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
                 return
             
             text = (
-                "🛒 <b>商品分类 - 请选择所需商品：</b>\n\n"
-                "<b>❗快速查找商品，输入区号查找（例：+54）</b>\n\n"
-                "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
-                "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
+                f"<b>{self.core.t(uid, 'products.categories.title')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.search_tip')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.first_purchase_tip')}</b>\n\n"
+                f"<b>{self.core.t(uid, 'products.categories.inactive_tip')}</b>"
             )
             
             kb = []
+            unit = self.core.t(uid, 'common.unit')
             for cat in categories:
-                button_text = f"{cat['_id']}  [{cat ['stock']}个]"
+                category_name = self.core.translate_category(uid, cat['_id'])
+                button_text = f"{category_name}  [{cat['stock']}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"category_{cat['_id']}")])
             
-            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
             
             self.safe_edit_message(query, text, kb, parse_mode='HTML')
             
@@ -2807,7 +5092,8 @@ class AgentBotHandlers:
             logger.error(f"❌ 获取商品分类失败: {e}")
             import traceback
             traceback.print_exc()
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             
     def show_category_products(self, query, category: str, page: int = 1):
         """显示分类下的商品（二级分类）- 支持HQ克隆模式 + 统一协议号分类"""
@@ -2938,12 +5224,24 @@ class AgentBotHandlers:
                 
                 # 如果HQ克隆模式成功，直接渲染
                 if products_with_stock is not None:
-                    text = (
-                        "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
-                        "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
-                        "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
-                        "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
-                    )
+                    uid = query.from_user.id
+                    lang = self.core.get_user_language(uid)
+                    unit = self.core.t(uid, 'common.unit')
+                    
+                    if lang == 'zh':
+                        text = (
+                            "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
+                            "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
+                            "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
+                            "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
+                        )
+                    else:
+                        text = (
+                            "<b>🛒 Product List - Select what you need:</b>\n\n"
+                            "❗️First-time buyers please test with small quantities to avoid disputes! Thank you for your cooperation.\n\n"
+                            "❗After-sales time: 1 hour for accounts with passwords, 30 minutes for accounts with unknown 2FA!\n\n"
+                            "❗Check account immediately after purchase, provide proof for after-sales - timeout at your own risk!"
+                        )
                     
                     kb = []
                     for p in products_with_stock:
@@ -2952,18 +5250,21 @@ class AgentBotHandlers:
                         price = p['price']
                         stock = p['stock']
                         
+                        # ✅ 翻译分类名称
+                        translated_name = self.core.translate_category(uid, name)
+                        
                         # ✅ 按钮格式
-                        button_text = f"{name} {price}U   [{stock}个]"
+                        button_text = f"{translated_name} {price}U   [{stock}{unit}]"
                         kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
                     
                     # 如果没有有库存的商品
                     if not kb:
-                        kb.append([InlineKeyboardButton("暂无商品耐心等待", callback_data="no_action")])
+                        kb.append([InlineKeyboardButton(self.core.t(uid, 'products.no_products_wait'), callback_data="no_action")])
                     
                     # ✅ 返回按钮
                     kb.append([
-                        InlineKeyboardButton("🔙 返回", callback_data="back_products"),
-                        InlineKeyboardButton("❌ 关闭", callback_data=f"close {query.from_user.id}")
+                        InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products"),
+                        InlineKeyboardButton(self.core.t(uid, 'error.close'), callback_data=f"close {query.from_user.id}")
                     ])
                     
                     self.safe_edit_message(query, text, kb, parse_mode='HTML')
@@ -3037,12 +5338,24 @@ class AgentBotHandlers:
             products_with_stock.sort(key=lambda x: -x['stock'])
             
             # ✅ 文本格式
-            text = (
-                "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
-                "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
-                "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
-                "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
-            )
+            uid = query.from_user.id
+            lang = self.core.get_user_language(uid)
+            unit = self.core.t(uid, 'common.unit')
+            
+            if lang == 'zh':
+                text = (
+                    "<b>🛒 这是商品列表  选择你需要的分类：</b>\n\n"
+                    "❗️没使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！。\n\n"
+                    "❗有密码的账户售后时间1小时内，二级未知的账户售后30分钟内！\n\n"
+                    "❗购买后请第一时间检查账户，提供证明处理售后 超时损失自付！"
+                )
+            else:
+                text = (
+                    "<b>🛒 Product List - Select what you need:</b>\n\n"
+                    "❗️First-time buyers please test with small quantities to avoid disputes! Thank you for your cooperation.\n\n"
+                    "❗After-sales time: 1 hour for accounts with passwords, 30 minutes for accounts with unknown 2FA!\n\n"
+                    "❗Check account immediately after purchase, provide proof for after-sales - timeout at your own risk!"
+                )
             
             kb = []
             for p in products_with_stock:
@@ -3051,18 +5364,21 @@ class AgentBotHandlers:
                 price = p['price']
                 stock = p['stock']
                 
+                # ✅ 翻译分类名称
+                translated_name = self.core.translate_category(uid, name)
+                
                 # ✅ 按钮格式
-                button_text = f"{name} {price}U    [{stock}个]"
+                button_text = f"{translated_name} {price}U    [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 如果没有有库存的商品
             if not kb:
-                kb.append([InlineKeyboardButton("暂无商品耐心等待", callback_data="no_action")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.no_products_wait'), callback_data="no_action")])
             
             # ✅ 返回按钮
             kb.append([
-                InlineKeyboardButton("🔙 返回", callback_data="back_products"),
-                InlineKeyboardButton("❌ 关闭", callback_data=f"close {query.from_user.id}")
+                InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products"),
+                InlineKeyboardButton(self.core.t(uid, 'error.close'), callback_data=f"close {query.from_user.id}")
             ])
             
             self.safe_edit_message(query, text, kb, parse_mode='HTML')
@@ -3071,21 +5387,23 @@ class AgentBotHandlers:
             logger.error(f"❌ 获取分类商品失败: {e}")
             import traceback
             traceback.print_exc()
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
 
     def show_product_detail(self, query, nowuid: str):
         """显示商品详情 - 完全仿照总部格式"""
         try:
+            uid = query.from_user.id
             prod = self.core.config.ejfl.find_one({'nowuid': nowuid})
             if not prod:
-                self.safe_edit_message(query, "❌ 商品不存在", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.not_exist'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
                 return
             
             price = self.core.get_product_price(nowuid)
             stock = self.core.get_product_stock(nowuid)
             
             if price is None:
-                self.safe_edit_message(query, "❌ 商品价格未设置", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+                self.safe_edit_message(query, self.core.t(uid, 'products.price_not_set'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
                 return
             
             # ✅ 获取商品在代理价格表中的分类（统一后的分类）
@@ -3097,34 +5415,37 @@ class AgentBotHandlers:
             category = agent_price_info.get('category') if agent_price_info else (prod.get('leixing') or AGENT_PROTOCOL_CATEGORY_UNIFIED)
             
             # ✅ 完全按照总部的简洁格式
-            product_name = self.H(prod.get('projectname', 'N/A'))
-            product_status = "✅您正在购买："
+            raw_product_name = prod.get('projectname', 'N/A')
+            translated_product_name = self.core.translate_category(uid, raw_product_name)
+            product_name = self.H(translated_product_name)
+            unit = self.core.t(uid, 'common.unit')
             
             text = (
-                f"<b>{product_status} {product_name}\n\n</b>"
-                f"<b>💰 价格: {price:.2f} USDT\n\n</b>"
-                f"<b>📦 库存: {stock}个\n\n</b>"
-                f"<b>❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！\n</b>"
+                f"<b>{self.core.t(uid, 'products.purchase_status')} {product_name}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.price_label', price=price)}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.stock_label', stock=stock)}{unit}\n\n</b>"
+                f"<b>{self.core.t(uid, 'products.purchase_warning')}\n</b>"
                 
             )
             
             kb = []
             if stock > 0:
-                kb.append([InlineKeyboardButton("✅ 购买", callback_data=f"buy_{nowuid}"),
-                          InlineKeyboardButton("❗使用说明", callback_data="help")])
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'products.buy'), callback_data=f"buy_{nowuid}"),
+                          InlineKeyboardButton(self.core.t(uid, 'help.instructions'), callback_data="help")])
             else:
-                text += "\n\n⚠️ 商品缺货"
-                kb.append([InlineKeyboardButton("使用说明", callback_data="help")])
+                text += f"\n\n{self.core.t(uid, 'products.out_of_stock')}"
+                kb.append([InlineKeyboardButton(self.core.t(uid, 'help.instructions_simple'), callback_data="help")])
             
             # ✅ 使用统一后的分类作为返回目标
-            kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main"),
-                      InlineKeyboardButton("返回", callback_data=f"category_{category}")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main"),
+                      InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data=f"category_{category}")])
             
             self.safe_edit_message(query, text, kb, parse_mode=ParseMode.HTML)
         
         except Exception as e:
             logger.error(f"❌ 获取商品详情失败: {e}")
-            self.safe_edit_message(query, "❌ 加载失败，请重试", [[InlineKeyboardButton("🔙 返回", callback_data="back_products")]], parse_mode=None)
+            uid = query.from_user.id
+            self.safe_edit_message(query, self.core.t(uid, 'error.load_failed'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="back_products")]], parse_mode=None)
             
             
     def handle_buy_product(self, query, nowuid: str):
@@ -3137,18 +5458,36 @@ class AgentBotHandlers:
         bal = user.get('USDT', 0) if user else 0
         max_afford = int(bal // price) if price else 0
         max_qty = min(stock, max_afford)
+        unit = self.core.t(uid, 'common.unit')
+        
+        lang = self.core.get_user_language(uid)
+        
+        # ✅ 翻译商品名称
+        raw_product_name = prod['projectname']
+        translated_product_name = self.core.translate_category(uid, raw_product_name)
         
         # ✅ 完全按照总部的格式
-        text = (
-            f"请输入数量:\n"
-            f"格式: 10\n\n"
-            f"✅ 您正在购买 - {self.H(prod['projectname'])}\n"
-            f"💰 单价: {price} U\n"
-            f"🪙 您的余额: {bal:.2f} U\n"
-            f"📊 最多可买: {max_qty} 个"
-        )
+        if lang == 'zh':
+            text = (
+                f"请输入数量:\n"
+                f"格式: 10\n\n"
+                f"✅ 您正在购买 - {self.H(translated_product_name)}\n"
+                f"💰 单价: {price} U\n"
+                f"🪙 您的余额: {bal:.2f} U\n"
+                f"📊 最多可买: {max_qty} {unit}"
+            )
+        else:
+            text = (
+                f"Please enter quantity:\n"
+                f"Format: 10\n\n"
+                f"✅ You are purchasing - {self.H(translated_product_name)}\n"
+                f"💰 Unit price: {price} U\n"
+                f"🪙 Your balance: {bal:.2f} U\n"
+                f"📊 Max affordable: {max_qty} {unit}"
+            )
+        
         kb = [
-            [InlineKeyboardButton("❌ 取消交易", callback_data=f"product_{nowuid}")]
+            [InlineKeyboardButton(self.core.t(uid, 'error.cancel_transaction'), callback_data=f"product_{nowuid}")]
         ]
         
         # ✅ 保存当前消息的ID（这是要被删除的消息）
@@ -3174,7 +5513,7 @@ class AgentBotHandlers:
         try:
             qty = int(update.message.text.strip())
         except:
-            update.message.reply_text("❌ 请输入有效整数")
+            update.message.reply_text(self.core.t(uid, 'error.invalid_integer'))
             return
         
         st = self.user_states[uid]
@@ -3186,18 +5525,23 @@ class AgentBotHandlers:
         bal = user.get('USDT', 0) if user else 0
         
         if qty <= 0:
-            update.message.reply_text("❌ 数量需 > 0")
+            update.message.reply_text(self.core.t(uid, 'error.quantity_required'))
             return
         if qty > stock:
-            update.message.reply_text(f"❌ 库存不足（当前 {stock}）")
+            update.message.reply_text(self.core.t(uid, 'products.insufficient_stock', stock=stock))
             return
         
         total_cost = price * qty
         if total_cost > bal:
-            update.message.reply_text(f"❌ 余额不足，需: {total_cost:.2f}U 当前: {bal:.2f}U")
+            update.message.reply_text(self.core.t(uid, 'recharge.insufficient_balance', total_cost=total_cost, bal=bal))
             return
         
         chat_id = uid
+        lang = self.core.get_user_language(uid)
+        
+        # ✅ 翻译商品名称
+        raw_product_name = prod['projectname']
+        translated_product_name = self.core.translate_category(uid, raw_product_name)
         
         # ✅ 先删除"请输入数量"的消息
         if 'input_msg_id' in st:
@@ -3213,17 +5557,25 @@ class AgentBotHandlers:
             logger.error(f"删除用户消息失败: {e}")
         
         # ✅ 显示确认页面（总部格式）
-        text = (
-            f"<b>✅ 您正在购买 - {self.H(prod['projectname'])}</b>\n\n"
-            f"<b>🛍 数量: {qty}</b>\n\n"
-            f"<b>💰 价格: {price}</b>\n\n"
-            f"<b>🪙 您的余额: {bal:.2f}</b>"
-        )
+        if lang == 'zh':
+            text = (
+                f"<b>✅ 您正在购买 - {self.H(translated_product_name)}</b>\n\n"
+                f"<b>🛍 数量: {qty}</b>\n\n"
+                f"<b>💰 价格: {price}</b>\n\n"
+                f"<b>🪙 您的余额: {bal:.2f}</b>"
+            )
+        else:
+            text = (
+                f"<b>✅ You are purchasing - {self.H(translated_product_name)}</b>\n\n"
+                f"<b>🛍 Quantity: {qty}</b>\n\n"
+                f"<b>💰 Price: {price}</b>\n\n"
+                f"<b>🪙 Your balance: {bal:.2f}</b>"
+            )
         
         kb = [
-            [InlineKeyboardButton("❌ 取消交易", callback_data=f"product_{nowuid}"),
-             InlineKeyboardButton("✅ 确认购买", callback_data=f"confirm_buy_{nowuid}_{qty}")],
-            [InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'error.cancel_transaction'), callback_data=f"product_{nowuid}"),
+             InlineKeyboardButton(self.core.t(uid, 'products.confirm_purchase'), callback_data=f"confirm_buy_{nowuid}_{qty}")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]
         ]
         
         # ✅ 用 send_message 发送确认页面
@@ -3258,36 +5610,28 @@ class AgentBotHandlers:
         ok, res = self.core.process_purchase(uid, nowuid, qty)
         
         if ok:
-            # ✅ 从环境变量加载通知模板内容
-            custom_message_template = os.getenv("PURCHASE_SUCCESS_TEMPLATE", (
-                "✅您的账户已打包完成，请查收！\n\n"
-                "🔐二级密码:请在json文件中【two2fa】查看！\n\n"
-                "⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n"
-                "‼️超过售后时间，损失自付，无需多言！\n\n"
-                "🔹 9号客服  @o9eth   @o7eth\n"
-                "🔹 频道  @idclub9999\n"
-                "🔹补货通知  @p5540"
-            ))
+            # ✅ 从环境配置获取购买成功消息（支持代理自定义）
+            purchase_message = self.core.get_purchase_success_message(uid)
 
             # ✅ 发送购买成功通知（不包括订单、商品等细节内容）
             keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🛍️ 继续购买", callback_data="products"),
-                 InlineKeyboardButton("👤 个人中心", callback_data="profile")]
+                [InlineKeyboardButton(self.core.t(uid, 'products.continue_shopping'), callback_data="products"),
+                 InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile")]
             ])
             try:
                 context.bot.send_message(
                     chat_id=chat_id,
-                    text=os.getenv("PURCHASE_SUCCESS_TEMPLATE"),
+                    text=purchase_message,
                     reply_markup=keyboard,
                     parse_mode=ParseMode.HTML
                     )
-                logger.info(f"✅ 自定义购买成功通知已发送给用户 {uid}")
+                logger.info(f"✅ 购买成功通知已发送给用户 {uid}")
             except Exception as msg_error:
                 logger.error(f"❌ 发送购买成功通知失败: {msg_error}")
             
-            query.answer("✅ 购买成功！")
+            query.answer(self.core.t(uid, 'products.purchase_success'))
         else:
-            query.answer(f"❌ 购买失败: {res}", show_alert=True)
+            query.answer(self.core.t(uid, 'products.purchase_failed', res=res), show_alert=True)
        
     def show_user_profile(self, query):
         """显示用户个人中心"""
@@ -3301,28 +5645,42 @@ class AgentBotHandlers:
         # 🔍 调试：打印查询结果
         logger.info(f"🔍 DEBUG: query result for user {uid} = {info}")
         if not info:
-            self.safe_edit_message(query, "❌ 用户信息不存在", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'user.info_not_exist'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
         
         avg = round(info.get('zgje', 0) / max(info.get('zgsl', 1), 1), 2)
-        level = '🥇 金牌' if info.get('zgje', 0) > 100 else '🥈 银牌' if info.get('zgje', 0) > 50 else '🥉 铜牌'
+        # Simple level badges - keep emojis language-neutral
+        level = '🥇 ' + ('金牌' if self.core.get_user_language(uid) == 'zh' else 'Gold') if info.get('zgje', 0) > 100 else '🥈 ' + ('银牌' if self.core.get_user_language(uid) == 'zh' else 'Silver') if info.get('zgje', 0) > 50 else '🥉 ' + ('铜牌' if self.core.get_user_language(uid) == 'zh' else 'Bronze')
         
-        text = (
-            f"👤 个人中心\n\n"
-            f"ID: {uid}\n"
-            f"内部ID: {self.H(info.get('count_id', '-'))}\n"
-            f"余额: {info.get('USDT', 0):.2f}U\n"
-            f"累计消费: {info.get('zgje', 0):.2f}U  次数:{info.get('zgsl', 0)}\n"
-            f"平均订单: {avg:.2f}U\n"
-            f"等级: {level}\n"
-        )
+        # Create language-aware labels
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = (
+                f"👤 个人中心\n\n"
+                f"ID: {uid}\n"
+                f"内部ID: {self.H(info.get('count_id', '-'))}\n"
+                f"余额: {info.get('USDT', 0):.2f}U\n"
+                f"累计消费: {info.get('zgje', 0):.2f}U  次数:{info.get('zgsl', 0)}\n"
+                f"平均订单: {avg:.2f}U\n"
+                f"等级: {level}\n"
+            )
+        else:
+            text = (
+                f"👤 Profile\n\n"
+                f"ID: {uid}\n"
+                f"Internal ID: {self.H(info.get('count_id', '-'))}\n"
+                f"Balance: {info.get('USDT', 0):.2f}U\n"
+                f"Total Spent: {info.get('zgje', 0):.2f}U  Orders:{info.get('zgsl', 0)}\n"
+                f"Avg Order: {avg:.2f}U\n"
+                f"Level: {level}\n"
+            )
         
         kb = [
-            [InlineKeyboardButton("💰 充值余额", callback_data="recharge"),
-             InlineKeyboardButton("📊 订单历史", callback_data="orders")],
-            [InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-             InlineKeyboardButton("📞 联系客服", callback_data="support")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.recharge'), callback_data="recharge"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.orders'), callback_data="orders")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         
         self.safe_edit_message(query, text, kb, parse_mode=None)
@@ -3349,12 +5707,23 @@ class AgentBotHandlers:
 
     def show_recharge_options(self, query):
         uid = query.from_user.id
-        text = ("💰 余额充值\n\n"
-                "• 固定地址收款，自动到账\n"
-                f"• 最低金额: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
-                f"• 有效期: 10分钟\n"
-                f"• 轮询间隔: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
-                "请选择金额或发送自定义金额（数字）：")
+        lang = self.core.get_user_language(uid)
+        
+        if lang == 'zh':
+            text = ("💰 余额充值\n\n"
+                    "• 固定地址收款，自动到账\n"
+                    f"• 最低金额: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
+                    f"• 有效期: 10分钟\n"
+                    f"• 轮询间隔: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
+                    "请选择金额或发送自定义金额（数字）：")
+        else:
+            text = ("💰 Balance Recharge\n\n"
+                    "• Fixed address payment, auto credit\n"
+                    f"• Minimum: {self.core.config.RECHARGE_MIN_USDT} USDT\n"
+                    f"• Validity: 10 minutes\n"
+                    f"• Poll interval: {self.core.config.RECHARGE_POLL_INTERVAL_SECONDS}s\n\n"
+                    "Select amount or send custom amount (number):")
+        
         kb = [
             [InlineKeyboardButton("10 USDT", callback_data="recharge_amount_10"),
              InlineKeyboardButton("30 USDT", callback_data="recharge_amount_30"),
@@ -3362,8 +5731,8 @@ class AgentBotHandlers:
             [InlineKeyboardButton("100 USDT", callback_data="recharge_amount_100"),
              InlineKeyboardButton("200 USDT", callback_data="recharge_amount_200"),
              InlineKeyboardButton("500 USDT", callback_data="recharge_amount_500")],
-            [InlineKeyboardButton("📜 充值记录", callback_data="recharge_list"),
-             InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'recharge.records'), callback_data="recharge_list"),
+             InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.user_states[uid] = {'state': 'waiting_recharge_amount'}
         self.safe_edit_message(query, text, kb, parse_mode=None)
@@ -3430,18 +5799,22 @@ class AgentBotHandlers:
     def show_price_management(self, query, page: int = 1):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
         res = self.core.get_agent_product_list(uid, page)
         prods = res['products']
         if not prods:
-            self.safe_edit_message(query, "❌ 暂无商品可管理", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'products.no_products_to_manage'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
-        text = f"💰 价格管理（第{page}页）\n\n"
+        
+        text = self.core.t(uid, 'price.management', page=page) + "\n\n"
         kb = []
+        product_buttons = []  # Initialize list to collect product buttons
         for p in prods:
             info = p['product_info'][0] if p['product_info'] else {}
             name = info.get('projectname', 'N/A')
+            # Translate product name
+            translated_name = self.core.translate_category(uid, name)
             nowuid = p.get('original_nowuid', '')
             
             # ✅ 实时获取总部价格
@@ -3457,16 +5830,30 @@ class AgentBotHandlers:
             profit_rate = (agent_markup / origin_price * 100) if origin_price else 0
             
             stock = self.core.get_product_stock(nowuid)
-            text += f"{self.H(name)}\n总部:{origin_price}U  加价:{agent_markup:.2f}U  代理价:{agent_price}U  利润率:{profit_rate:.1f}%  库:{stock}\n\n"
-            kb.append([InlineKeyboardButton(f"📝 {name[:18]}", callback_data=f"edit_price_{nowuid}")])
+            # Use I18N labels
+            hq_label = self.core.t(uid, 'price.hq_label')
+            markup_label = self.core.t(uid, 'price.markup_label')
+            agent_label = self.core.t(uid, 'price.agent_label')
+            profit_label = self.core.t(uid, 'price.profit_label')
+            stock_label = self.core.t(uid, 'price.stock_label')
+            
+            text += f"{self.H(translated_name)}\n{hq_label}:{origin_price}U  {markup_label}:{agent_markup:.2f}U  {agent_label}:{agent_price}U  {profit_label}:{profit_rate:.1f}%  {stock_label}:{stock}\n\n"
+            # Store button for later grouping
+            product_buttons.append(InlineKeyboardButton(f"📝 {translated_name[:18]}", callback_data=f"edit_price_{nowuid}"))
+        
+        # Group product buttons into rows of 2 for cleaner layout
+        for i in range(0, len(product_buttons), 2):
+            row = product_buttons[i:i+2]
+            kb.append(row)
+        
         pag = []
         if page > 1:
-            pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"price_page_{page-1}"))
+            pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"price_page_{page-1}"))
         if res['current_page'] < res['total_pages']:
-            pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"price_page_{page+1}"))
+            pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"price_page_{page+1}"))
         if pag:
             kb.append(pag)
-        kb.append([InlineKeyboardButton("🏠 主菜单", callback_data="back_main")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")])
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def show_price_edit(self, query, nowuid: str):
@@ -3493,35 +5880,40 @@ class AgentBotHandlers:
         # ✅ 计算利润率
         profit_rate = (agent_markup / op * 100) if op > 0 else 0
         
+        uid = query.from_user.id
         stock = self.core.get_product_stock(nowuid)
-        text = f"""📝 编辑商品价格
+        translated_name = self.core.translate_category(uid, prod['projectname'])
+        
+        # Use I18N for all text
+        text = f"""{self.core.t(uid, 'price.edit_product_price')}
 
-🏷️ 商品: {self.H(prod['projectname'])}
-📦 库存: {stock}
-💼 编号: {self.H(nowuid)}
+{self.core.t(uid, 'price.product_label')}: {self.H(translated_name)}
+{self.core.t(uid, 'price.stock_full')}: {stock}
+{self.core.t(uid, 'price.product_id')}: {self.H(nowuid)}
 
-💰 当前价格:
-• 总部: {op}U
-• 加价: {agent_markup:.2f}U
-• 代理价: {agent_price:.2f}U
-• 利润率: {profit_rate:.1f}%
+{self.core.t(uid, 'price.current_price')}:
+{self.core.t(uid, 'price.hq_price')}: {op}U
+{self.core.t(uid, 'price.markup_price')}: {agent_markup:.2f}U
+{self.core.t(uid, 'price.agent_price')}: {agent_price:.2f}U
+{self.core.t(uid, 'price.profit_rate')}: {profit_rate:.1f}%
 
-请直接发送新的代理价格数字，例如: {op + 0.2:.2f}
+{self.core.t(uid, 'price.price_input_hint', price=op + 0.2)}
 """
-        self.user_states[query.from_user.id] = {'state': 'waiting_price', 'product_nowuid': nowuid, 'original_price': op}
+        self.user_states[uid] = {'state': 'waiting_price', 'product_nowuid': nowuid, 'original_price': op}
         kb = [
-            [InlineKeyboardButton("🔄 切换状态", callback_data=f"toggle_status_{nowuid}"),
-             InlineKeyboardButton("📊 利润预算", callback_data=f"profit_calc_{nowuid}")],
-            [InlineKeyboardButton("🔙 返回管理", callback_data="price_management")]
+            [InlineKeyboardButton(self.core.t(uid, 'price.toggle_status'), callback_data=f"toggle_status_{nowuid}"),
+             InlineKeyboardButton(self.core.t(uid, 'price.profit_calc'), callback_data=f"profit_calc_{nowuid}")],
+            [InlineKeyboardButton(self.core.t(uid, 'price.back_to_management'), callback_data="price_management")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=ParseMode.HTML)
 
     def show_profit_calculator(self, query, nowuid: str):
+        uid = query.from_user.id
         ap_info = self.core.config.agent_product_prices.find_one({
             'agent_bot_id': self.core.config.AGENT_BOT_ID, 'original_nowuid': nowuid
         })
         if not ap_info:
-            self.safe_edit_message(query, "❌ 商品不存在", [[InlineKeyboardButton("🔙 返回", callback_data="price_management")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'price.product_not_exist'), [[InlineKeyboardButton(self.core.t(uid, 'common.back'), callback_data="price_management")]], parse_mode=None)
             return
         
         # ✅ 实时获取总部价格
@@ -3529,7 +5921,8 @@ class AgentBotHandlers:
         op = float(prod.get('money', 0)) if prod else 0
         
         name = ap_info.get('product_name', 'N/A')
-        text = f"📊 利润计算器 - {self.H(name)}\n总部: {op}U（实时价格）\n\n"
+        translated_name = self.core.translate_category(uid, name)
+        text = self.core.t(uid, 'price.calc_header', name=self.H(translated_name), op=op)
         kb = []
         
         for rate in [10, 20, 30, 50, 80, 100]:
@@ -3537,27 +5930,34 @@ class AgentBotHandlers:
             new_markup = round(op * rate / 100, 2)
             # ✅ 实时计算代理价格
             new_agent_price = round(op + new_markup, 2)
-            text += f"{rate}% → {new_agent_price:.2f}U (加价:{new_markup:.2f})\n"
-            kb.append([InlineKeyboardButton(f"设置 {rate}%({new_agent_price})", callback_data=f"set_price_{nowuid}_{new_agent_price}")])
+            text += self.core.t(uid, 'price.calc_rate_line', rate=rate, price=new_agent_price, markup=new_markup)
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'price.set_rate', rate=rate, new_agent_price=new_agent_price), callback_data=f"set_price_{nowuid}_{new_agent_price}")])
         
-        kb.append([InlineKeyboardButton("🔙 返回编辑", callback_data=f"edit_price_{nowuid}")])
+        kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.back_to_edit'), callback_data=f"edit_price_{nowuid}")])
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def show_system_reports(self, query):
         uid = query.from_user.id
         if not self.core.config.is_admin(uid):
-            self.safe_edit_message(query, "❌ 无权限", [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]], parse_mode=None)
+            self.safe_edit_message(query, self.core.t(uid, 'error.no_permission'), [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]], parse_mode=None)
             return
-        text = ("📊 系统报表中心\n\n"
-                "请选择需要查看的报表类型：")
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = ("📊 系统报表中心\n\n"
+                    "请选择需要查看的报表类型：")
+        else:
+            text = ("📊 System Reports Center\n\n"
+                    "Please select report type:")
+        
         kb = [
-            [InlineKeyboardButton("📈 销售报表(30天)", callback_data="report_sales_30"),
-             InlineKeyboardButton("👥 用户报表", callback_data="report_users")],
-            [InlineKeyboardButton("📦 商品报表", callback_data="report_products"),
-             InlineKeyboardButton("💰 财务报表(30天)", callback_data="report_financial_30")],
-            [InlineKeyboardButton("📊 综合概览", callback_data="report_overview_quick"),
-             InlineKeyboardButton("🔄 刷新数据", callback_data="system_reports")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'reports.sales_30d'), callback_data="report_sales_30"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.user_report'), callback_data="report_users")],
+            [InlineKeyboardButton(self.core.t(uid, 'reports.product_report'), callback_data="report_products"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.financial_30d'), callback_data="report_financial_30")],
+            [InlineKeyboardButton(self.core.t(uid, 'reports.overview_btn'), callback_data="report_overview_quick"),
+             InlineKeyboardButton(self.core.t(uid, 'reports.refresh'), callback_data="system_reports")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
@@ -4032,11 +6432,22 @@ class AgentBotHandlers:
             total_stock = sum(p['stock'] for p in all_products)
             
             # 构建消息文本
-            text = f"🌍 {title}商品列表 ({codes_display})\n\n"
-            text += f"📊 搜索结果\n"
-            text += f"  • 总商品数：{total}\n"
-            text += f"  • 总库存：{total_stock}\n"
-            text += f"  • 当前页：{page}/{total_pages}\n\n"
+            uid = message.from_user.id if hasattr(message, 'from_user') else message.chat.id
+            lang = self.core.get_user_language(uid)
+            unit = self.core.t(uid, 'common.unit')
+            
+            if lang == 'zh':
+                text = f"🌍 {title}商品列表 ({codes_display})\n\n"
+                text += f"📊 搜索结果\n"
+                text += f"  • 总商品数：{total}\n"
+                text += f"  • 总库存：{total_stock}\n"
+                text += f"  • 当前页：{page}/{total_pages}\n\n"
+            else:
+                text = f"🌍 {title} Product List ({codes_display})\n\n"
+                text += f"📊 Search Results\n"
+                text += f"  • Total Products: {total}\n"
+                text += f"  • Total Stock: {total_stock}\n"
+                text += f"  • Current Page: {page}/{total_pages}\n\n"
             
             # 构建按钮
             kb = []
@@ -4046,27 +6457,30 @@ class AgentBotHandlers:
                 stock = p['stock']
                 nowuid = p['nowuid']
                 
-                # 截断商品名避免按钮太长
-                if len(name) > 25:
-                    name = name[:25] + "..."
+                # ✅ 翻译商品名称
+                translated_name = self.core.translate_category(uid, name)
                 
-                button_text = f"{name} | {price}U | [{stock}个]"
+                # 截断商品名避免按钮太长
+                if len(translated_name) > 25:
+                    translated_name = translated_name[:25] + "..."
+                
+                button_text = f"{translated_name} | {price}U | [{stock}{unit}]"
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"product_{nowuid}")])
             
             # 分页按钮
             if total_pages > 1:
                 pag = []
                 if page > 1:
-                    pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"country_page_{page-1}"))
+                    pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"country_page_{page-1}"))
                 pag.append(InlineKeyboardButton(f"📄 {page}/{total_pages}", callback_data="no_action"))
                 if page < total_pages:
-                    pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"country_page_{page+1}"))
+                    pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"country_page_{page+1}"))
                 kb.append(pag)
             
             # 底部按钮
             kb.append([
-                InlineKeyboardButton("🛍️ 商品中心", callback_data="products"),
-                InlineKeyboardButton("🏠 主菜单", callback_data="back_main")
+                InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products"),
+                InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")
             ])
             
             # 发送或编辑消息
@@ -4102,33 +6516,69 @@ class AgentBotHandlers:
 
     # ========== 其它 ==========
     def show_support_info(self, query):
+        uid = query.from_user.id
         # Build display text using config
         display = self.core.config.SUPPORT_CONTACT_DISPLAY or f"@{self.core.config.SUPPORT_CONTACT_USERNAME}"
-        text = f"📞 客服 {display}\n请描述问题 + 用户ID/订单号，便于快速处理。"
+        text = self.core.t(uid, 'support.description', display=display)
         kb = [
-            [InlineKeyboardButton("💬 联系客服", url=self.core.config.SUPPORT_CONTACT_URL)],
-            [InlineKeyboardButton("👤 个人中心", callback_data="profile"),
-             InlineKeyboardButton("❓ 使用帮助", callback_data="help")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'support.contact'), url=self.core.config.SUPPORT_CONTACT_URL)],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.profile'), callback_data="profile"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.help'), callback_data="help")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
 
     def show_help_info(self, query):
+        uid = query.from_user.id
         # Build display text using config
         display = self.core.config.SUPPORT_CONTACT_DISPLAY or f"@{self.core.config.SUPPORT_CONTACT_USERNAME}"
-        text = (
-            "❓ 使用帮助\n\n"
-            "• 购买：分类 -> 商品 -> 立即购买 -> 输入数量\n"
-            "• 充值：进入充值 -> 选择金额或输入金额 -> 按识别金额精确转账\n"
-            "• 自动监听入账，无需手动校验\n"
-            f"• 有问题联系人工客服 {display}"
-        )
+        
+        lang = self.core.get_user_language(uid)
+        if lang == 'zh':
+            text = (
+                "❓ 使用帮助\n\n"
+                "• 购买：分类 -> 商品 -> 立即购买 -> 输入数量\n"
+                "• 充值：进入充值 -> 选择金额或输入金额 -> 按识别金额精确转账\n"
+                "• 自动监听入账，无需手动校验\n"
+                f"• 有问题联系人工客服 {display}"
+            )
+        else:
+            text = (
+                "❓ Help\n\n"
+                "• Purchase: Category -> Product -> Buy -> Enter quantity\n"
+                "• Recharge: Enter recharge -> Select amount or input amount -> Transfer exact recognition amount\n"
+                "• Auto-detects incoming payments, no manual verification needed\n"
+                f"• For issues, contact support {display}"
+            )
+        
         kb = [
-            [InlineKeyboardButton("📞 联系客服", callback_data="support"),
-             InlineKeyboardButton("🛍️ 商品中心", callback_data="products")],
-            [InlineKeyboardButton("🏠 返回主菜单", callback_data="back_main")]
+            [InlineKeyboardButton(self.core.t(uid, 'btn.support'), callback_data="support"),
+             InlineKeyboardButton(self.core.t(uid, 'btn.products'), callback_data="products")],
+            [InlineKeyboardButton(self.core.t(uid, 'common.back_to_main'), callback_data="back_main")]
         ]
         self.safe_edit_message(query, text, kb, parse_mode=None)
+
+    def show_language_menu(self, query):
+        """显示语言选择菜单"""
+        uid = query.from_user.id
+        text = self.core.t(uid, 'lang.menu_title')
+        kb = [
+            [InlineKeyboardButton(self.core.t(uid, 'lang.zh_label'), callback_data="set_lang_zh")],
+            [InlineKeyboardButton(self.core.t(uid, 'lang.en_label'), callback_data="set_lang_en")],
+            [InlineKeyboardButton(self.core.t(uid, 'btn.back_main'), callback_data="back_main")]
+        ]
+        self.safe_edit_message(query, text, kb, parse_mode=None)
+
+    def set_user_language(self, query, lang: str):
+        """设置用户语言并返回主菜单"""
+        uid = query.from_user.id
+        success = self.core.set_user_language(uid, lang)
+        if success:
+            query.answer(self.core.t(uid, 'lang.set_ok'), show_alert=False)
+            # 刷新主菜单以显示新语言
+            self.show_main_menu(query)
+        else:
+            query.answer("❌ Failed to set language", show_alert=True)
 
     def show_order_history(self, query, page: int = 1):
         """显示用户订单历史（分页）- HQ风格紧凑列表"""
@@ -4141,11 +6591,18 @@ class AgentBotHandlers:
             total = result['total']
             total_pages = result['total_pages']
             
+            lang = self.core.get_user_language(uid)
+            
             if total == 0:
+                if lang == 'zh':
+                    text_empty = "📦 购买记录\n\n暂无购买记录"
+                else:
+                    text_empty = "📦 Purchase Records\n\nNo purchase records"
+                
                 self.safe_edit_message(
                     query,
-                    "📦 购买记录\n\n暂无购买记录",
-                    [[InlineKeyboardButton("🏠 主菜单", callback_data="back_main")]],
+                    text_empty,
+                    [[InlineKeyboardButton(self.core.t(uid, 'common.back_main'), callback_data="back_main")]],
                     parse_mode=None
                 )
                 return
@@ -4161,13 +6618,22 @@ class AgentBotHandlers:
             except:
                 latest_time_display = '-'
             
-            text = "📦 购买记录\n\n"
-            text += f"📊 记录概览\n"
-            text += f"• 总订单数：{total}\n"
-            text += f"• 当前页显示：{len(orders)}\n"
-            text += f"• 最近更新：{latest_time_display}\n\n"
-            text += "💡 操作说明\n"
-            text += "点击下面按钮查看订单详情或重新下载商品\n\n"
+            if lang == 'zh':
+                text = "📦 购买记录\n\n"
+                text += f"📊 记录概览\n"
+                text += f"• 总订单数：{total}\n"
+                text += f"• 当前页显示：{len(orders)}\n"
+                text += f"• 最近更新：{latest_time_display}\n\n"
+                text += "💡 操作说明\n"
+                text += "点击下面按钮查看订单详情或重新下载商品\n\n"
+            else:
+                text = "📦 Purchase Records\n\n"
+                text += f"📊 Records Overview\n"
+                text += f"• Total Orders: {total}\n"
+                text += f"• Current Page: {len(orders)}\n"
+                text += f"• Recent Update: {latest_time_display}\n\n"
+                text += "💡 Operation Guide\n"
+                text += "Click buttons below to view order details or re-download products\n\n"
             
             # 为每个订单构建一个紧凑的按钮
             kb = []
@@ -4190,7 +6656,10 @@ class AgentBotHandlers:
                 name_display = product_name[:20] if len(product_name) > 20 else product_name
                 
                 # 构建按钮文本："商品名 | 数量:N | YYYY-MM-DD HH:MM"
-                button_text = f"{name_display} | 数量:{quantity} | {time_display}"
+                if lang == 'zh':
+                    button_text = f"{name_display} | 数量:{quantity} | {time_display}"
+                else:
+                    button_text = f"{name_display} | Qty:{quantity} | {time_display}"
                 
                 # 添加订单详情按钮
                 kb.append([InlineKeyboardButton(
@@ -4201,9 +6670,9 @@ class AgentBotHandlers:
             # 分页按钮
             pag = []
             if page > 1:
-                pag.append(InlineKeyboardButton("⬅️ 上一页", callback_data=f"orders_page_{page-1}"))
+                pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"orders_page_{page-1}"))
             if page < total_pages:
-                pag.append(InlineKeyboardButton("➡️ 下一页", callback_data=f"orders_page_{page+1}"))
+                pag.append(InlineKeyboardButton(self.core.t(uid, 'common.next_page'), callback_data=f"orders_page_{page+1}"))
             if pag:
                 kb.append(pag)
             
@@ -4237,28 +6706,40 @@ class AgentBotHandlers:
             })
             
             if not order:
-                query.answer("❌ 订单不存在或无权访问", show_alert=True)
+                query.answer(self.core.t(uid, 'orders.not_exist'), show_alert=True)
                 return
             
             # 提取订单信息
-            product_name = order.get('projectname', '未知商品')
+            lang = self.core.get_user_language(uid)
+            product_name = order.get('projectname', self.core.t(uid, 'products.not_exist') if lang == 'en' else '未知商品')
             quantity = order.get('count', 1)
             total_amount = float(order.get('ts', 0))
             unit_price = total_amount / max(quantity, 1)
-            order_time = order.get('timer', '未知时间')
+            order_time = order.get('timer', '-')
             category = order.get('category', '-')
             nowuid = order.get('nowuid', '')
             
             # 构建详情文本
-            text = "📋 订单详情\n\n"
-            text += f"📦 商品：{product_name}\n"
-            text += f"🔢 数量：{quantity}\n"
-            text += f"💴 单价：{unit_price:.2f}U\n"
-            text += f"💰 总额：{total_amount:.2f}U\n"
-            text += f"🕒 时间：{order_time}\n"
-            if category and category != '-':
-                text += f"📂 分类：{category}\n"
-            text += f"📋 订单号：{order_id}\n"
+            if lang == 'zh':
+                text = "📋 订单详情\n\n"
+                text += f"📦 商品：{product_name}\n"
+                text += f"🔢 数量：{quantity}\n"
+                text += f"💴 单价：{unit_price:.2f}U\n"
+                text += f"💰 总额：{total_amount:.2f}U\n"
+                text += f"🕒 时间：{order_time}\n"
+                if category and category != '-':
+                    text += f"📂 分类：{category}\n"
+                text += f"📋 订单号：{order_id}\n"
+            else:
+                text = "📋 Order Details\n\n"
+                text += f"📦 Product: {product_name}\n"
+                text += f"🔢 Quantity: {quantity}\n"
+                text += f"💴 Unit Price: {unit_price:.2f}U\n"
+                text += f"💰 Total: {total_amount:.2f}U\n"
+                text += f"🕒 Time: {order_time}\n"
+                if category and category != '-':
+                    text += f"📂 Category: {category}\n"
+                text += f"📋 Order No.: {order_id}\n"
             
             # 构建按钮
             kb = []
@@ -4266,19 +6747,21 @@ class AgentBotHandlers:
             # 第一行：再次购买 + 下载文件
             row1 = []
             if nowuid:
+                buy_again_text = "🛒 再次购买" if lang == 'zh' else "🛒 Buy Again"
                 row1.append(InlineKeyboardButton(
-                    "🛒 再次购买",
+                    buy_again_text,
                     callback_data=f"product_{nowuid}"
                 ))
+            download_text = "📥 下载文件" if lang == 'zh' else "📥 Download File"
             row1.append(InlineKeyboardButton(
-                "📥 下载文件",
+                download_text,
                 callback_data=f"redownload_{order_id}"
             ))
             if row1:
                 kb.append(row1)
             
             # 第二行：返回列表
-            kb.append([InlineKeyboardButton("🔙 返回列表", callback_data="orders")])
+            kb.append([InlineKeyboardButton(self.core.t(uid, 'btn.back_to_list'), callback_data="orders")])
             
             self.safe_edit_message(query, text, kb, parse_mode=None)
             query.answer()
@@ -4287,7 +6770,7 @@ class AgentBotHandlers:
             logger.error(f"显示订单详情失败: {e}")
             import traceback
             traceback.print_exc()
-            query.answer("❌ 加载订单详情失败", show_alert=True)
+            query.answer(self.core.t(uid, 'orders.load_failed'), show_alert=True)
 
     def handle_redownload_order(self, query, order_id: str):
         """处理重新下载订单文件（使用存储的 item_ids）"""
@@ -4417,6 +6900,14 @@ class AgentBotHandlers:
                 self.show_main_menu(q); q.answer(); return
             elif d == "back_products":
                 self.show_product_categories(q); q.answer(); return
+            
+            # 语言选择
+            elif d == "language_menu":
+                self.show_language_menu(q); q.answer(); return
+            elif d == "set_lang_zh":
+                self.set_user_language(q, "zh"); return
+            elif d == "set_lang_en":
+                self.set_user_language(q, "en"); return
             
             # 国家/地区商品查询分页
             elif d.startswith("country_page_"):
