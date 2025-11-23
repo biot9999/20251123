@@ -224,7 +224,6 @@ I18N = {
             "withdraw_input_amount": "请输入提现金额",
             "withdraw_invalid_amount": "❌ 金额必须大于0，请重新输入",
             "withdraw_exceed_balance": "❌ 超出可提现余额 {balance:.2f}，请重新输入",
-            "withdraw_input_address": "✅ 金额已记录：{amt:.2f} USDT\n请发送收款地址（TRON 或 ERC20）",
             "withdraw_invalid_address": "❌ 地址长度不正确，请重新输入",
             "withdraw_submit_success": "✅ 提现申请成功\n金额：{amt:.2f} USDT\n地址：{address}\n状态：待审核",
             "withdraw_submit_failed": "❌ {reason}",
@@ -463,7 +462,6 @@ I18N = {
             "withdraw_input_amount": "Please enter withdrawal amount",
             "withdraw_invalid_amount": "❌ Amount must be greater than 0, please re-enter",
             "withdraw_exceed_balance": "❌ Exceeds withdrawable balance {balance:.2f}, please re-enter",
-            "withdraw_input_address": "✅ Amount recorded: {amt:.2f} USDT\nPlease send receiving address (TRON or ERC20)",
             "withdraw_invalid_address": "❌ Incorrect address length, please re-enter",
             "withdraw_submit_success": "✅ Withdrawal application successful\nAmount: {amt:.2f} USDT\nAddress: {address}\nStatus: Pending Review",
             "withdraw_submit_failed": "❌ {reason}",
@@ -5179,7 +5177,7 @@ Refresh Time: {refresh_time}
                 return
             self.user_states[uid] = {'state': 'waiting_withdraw_address', 'withdraw_amount': amt}
             update.message.reply_text(
-                self.core.t(uid, 'profit.withdraw_input_address', amt=amt),
+                self.core.t(uid, 'profit.amount_recorded', amt=amt),
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(self.core.t(uid, 'profit.withdraw_cancel'), callback_data="profit_center")]])
             )
         except ValueError:
