@@ -178,7 +178,8 @@ I18N = {
             "stock_label": "📦 库存: {stock}个",
             "purchase_warning": "❗未使用过的本店商品的，请先少量购买测试，以免造成不必要的争执！谢谢合作！",
             "country_list": "🌍 {title}商品列表 ({codes_display})",
-            "country_product": "{name} | {price}U | [{stock}个]"
+            "country_product": "{name} | {price}U | [{stock}个]",
+            "purchase_complete_msg": "✅您的账户已打包完成，请查收！\n\n🔐二级密码:请在json文件中【two2fa】查看！\n\n⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n‼️超过售后时间，损失自付，无需多言！\n\n🔹 9号客服  @o9eth   @o7eth\n🔹 频道  @idclub9999\n🔹补货通知  @p5540"
         },
         "orders": {
             "title": "📊 订单历史",
@@ -382,7 +383,8 @@ I18N = {
             "stock_label": "📦 Stock: {stock} pcs",
             "purchase_warning": "❗For first-time purchases from our store, please buy in small quantities for testing to avoid unnecessary disputes! Thank you for your cooperation!",
             "country_list": "🌍 {title} Product List ({codes_display})",
-            "country_product": "{name} | {price}U | [{stock} pcs]"
+            "country_product": "{name} | {price}U | [{stock} pcs]",
+            "purchase_complete_msg": "✅Your account has been packaged and is ready to receive!\n\n🔐Two-factor password: Please check 【two2fa】 in the json file!\n\n⚠️Note: Please check your account immediately. If there are any problems within 1 hour, contact customer service!\n‼️After the warranty period, you bear the loss!\n\n🔹 Customer Service 9  @o9eth   @o7eth\n🔹 Channel  @idclub9999\n🔹 Restock Notice  @p5540"
         },
         "orders": {
             "title": "📊 Order History",
@@ -5527,16 +5529,8 @@ Refresh Time: {refresh_time}
         ok, res = self.core.process_purchase(uid, nowuid, qty)
         
         if ok:
-            # ✅ 从环境变量加载通知模板内容
-            custom_message_template = os.getenv("PURCHASE_SUCCESS_TEMPLATE", (
-                "✅您的账户已打包完成，请查收！\n\n"
-                "🔐二级密码:请在json文件中【two2fa】查看！\n\n"
-                "⚠️注意：请马上检查账户，1小时内出现问题，联系客服处理！\n"
-                "‼️超过售后时间，损失自付，无需多言！\n\n"
-                "🔹 9号客服  @o9eth   @o7eth\n"
-                "🔹 频道  @idclub9999\n"
-                "🔹补货通知  @p5540"
-            ))
+            # ✅ 使用I18N翻译的购买成功消息
+            purchase_message = self.core.t(uid, 'products.purchase_complete_msg')
 
             # ✅ 发送购买成功通知（不包括订单、商品等细节内容）
             keyboard = InlineKeyboardMarkup([
@@ -5546,11 +5540,11 @@ Refresh Time: {refresh_time}
             try:
                 context.bot.send_message(
                     chat_id=chat_id,
-                    text=os.getenv("PURCHASE_SUCCESS_TEMPLATE"),
+                    text=purchase_message,
                     reply_markup=keyboard,
                     parse_mode=ParseMode.HTML
                     )
-                logger.info(f"✅ 自定义购买成功通知已发送给用户 {uid}")
+                logger.info(f"✅ 购买成功通知已发送给用户 {uid}")
             except Exception as msg_error:
                 logger.error(f"❌ 发送购买成功通知失败: {msg_error}")
             
@@ -5738,6 +5732,7 @@ Refresh Time: {refresh_time}
         else:
             text = f"💰 Price Management (Page {page})\n\n"
         kb = []
+        product_buttons = []  # Initialize list to collect product buttons
         for p in prods:
             info = p['product_info'][0] if p['product_info'] else {}
             name = info.get('projectname', 'N/A')
@@ -5760,7 +5755,14 @@ Refresh Time: {refresh_time}
                 text += f"{self.H(name)}\n总部:{origin_price}U  加价:{agent_markup:.2f}U  代理价:{agent_price}U  利润率:{profit_rate:.1f}%  库:{stock}\n\n"
             else:
                 text += f"{self.H(name)}\nHQ:{origin_price}U  Markup:{agent_markup:.2f}U  Agent:{agent_price}U  Profit:{profit_rate:.1f}%  Stock:{stock}\n\n"
-            kb.append([InlineKeyboardButton(f"📝 {name[:18]}", callback_data=f"edit_price_{nowuid}")])
+            # Store button for later grouping
+            product_buttons.append(InlineKeyboardButton(f"📝 {name[:18]}", callback_data=f"edit_price_{nowuid}"))
+        
+        # Group product buttons into rows of 2 for cleaner layout
+        for i in range(0, len(product_buttons), 2):
+            row = product_buttons[i:i+2]
+            kb.append(row)
+        
         pag = []
         if page > 1:
             pag.append(InlineKeyboardButton(self.core.t(uid, 'common.prev_page'), callback_data=f"price_page_{page-1}"))
