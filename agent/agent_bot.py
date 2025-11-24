@@ -3708,7 +3708,7 @@ class AgentBotCore:
             skip = (page - 1) * limit
             
             # ✅ 处理统一协议号分类查询 - 使用智能检测
-            if category == AGENT_PROTOCOL_CATEGORY_UNIFIED or category in ['协议号', '未分类']:
+            if category == self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED or category in ['协议号', '未分类']:
                 # Note: We fetch all active products first and filter with Python logic because
                 # the protocol detection logic (_is_protocol_like_product) involves keyword matching
                 # and regex patterns that cannot be efficiently expressed in MongoDB queries.
