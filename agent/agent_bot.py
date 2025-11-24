@@ -2636,7 +2636,13 @@ class AgentBotCore:
             if leixing and isinstance(leixing, str) and keyword in leixing:
                 return True
         
-        # 规则3: leixing 为 None/空
+        # 规则3: 检查年份范围模式
+        if name:
+            year_range_pattern = r'\[\s*\d+\s*-\s*\d+\s*(?:年)?\s*\]'
+            if re.search(year_range_pattern, name):
+                return True
+        
+        # 规则4: leixing 为 None/空
         if leixing is None or leixing == '':
             return True
         
