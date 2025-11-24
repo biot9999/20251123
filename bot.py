@@ -9637,16 +9637,16 @@ def czfs_callback(update: Update, context: CallbackContext):
     callback_prefix = "yuecz" if paytype == "usdt" else "czmoney"
 
     keyboard = [
-        [InlineKeyboardButton("1 USDT", callback_data=f"{callback_prefix} 1"),
-         InlineKeyboardButton("5 USDT", callback_data=f"{callback_prefix} 5"),
-         InlineKeyboardButton("10 USDT", callback_data=f"{callback_prefix} 10")],
-        [InlineKeyboardButton("20 USDT", callback_data=f"{callback_prefix} 20"),
-         InlineKeyboardButton("50 USDT", callback_data=f"{callback_prefix} 50"),
-         InlineKeyboardButton("100 USDT", callback_data=f"{callback_prefix} 100")],
-        [InlineKeyboardButton("150 USDT", callback_data=f"{callback_prefix} 150"),
-         InlineKeyboardButton("200 USDT", callback_data=f"{callback_prefix} 200"),
-         InlineKeyboardButton("300 USDT", callback_data=f"{callback_prefix} 300")],
-        [InlineKeyboardButton("500 USDT", callback_data=f"{callback_prefix} 500")],
+        [InlineKeyboardButton("10 USDT", callback_data=f"{callback_prefix} 10"),
+         InlineKeyboardButton("30 USDT", callback_data=f"{callback_prefix} 30"),
+         InlineKeyboardButton("50 USDT", callback_data=f"{callback_prefix} 50")],
+        [InlineKeyboardButton("100 USDT", callback_data=f"{callback_prefix} 100"),
+         InlineKeyboardButton("300 USDT", callback_data=f"{callback_prefix} 300"),
+         InlineKeyboardButton("500 USDT", callback_data=f"{callback_prefix} 500")],
+        [InlineKeyboardButton("1000 USDT", callback_data=f"{callback_prefix} 1000"),
+         InlineKeyboardButton("2000 USDT", callback_data=f"{callback_prefix} 2000"),
+         InlineKeyboardButton("3000 USDT", callback_data=f"{callback_prefix} 3000")],
+        [InlineKeyboardButton("5000 USDT", callback_data=f"{callback_prefix} 5000")],
         [InlineKeyboardButton(custom_text, callback_data="zdycz")],
         [InlineKeyboardButton(back_text, callback_data="czback"),
          InlineKeyboardButton(cancel_text, callback_data=f"close {user_id}")]
