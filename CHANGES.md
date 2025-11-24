@@ -1,5 +1,30 @@
 # Changes Summary
 
+## Critical Fix: Storage Layer Category Preservation (2024-11-24 v2)
+
+### 问题修复
+修复了同步过程中错误转换分类的问题。之前的实现在存储层就对分类进行了转换，导致：
+- 总部"未分类"商品被错误转换为协议号分类
+- 存储的分类与总部不一致，违反了"存储层保持原样"的设计原则
+
+### 修复内容
+- ✅ **`_process_sync_batch()`**: 移除分类转换逻辑，直接存储原始 `leixing`
+- ✅ **`auto_sync_new_products()`**: 移除分类转换逻辑，保持原始分类
+- ✅ 移除 `unified` 统计变量（不再适用）
+- ✅ 确保存储层完全保持总部原始分类
+
+### 设计原则
+- **存储层**：保持原始 `leixing` 值，不做任何转换
+- **展示层**：在 `get_product_categories()` 中进行分类统一/映射
+
+### 验证方法
+执行 `/diag_sync_stats` 后：
+- 总部分类分布 = 代理分类分布
+- 缺失分类列表应为空
+- 原始"未分类"等分类应保持原样
+
+---
+
 ## Latest Update: Full Product Sync and Diagnostics (2024-11-24)
 
 ### 新增功能：全量商品同步与诊断

@@ -3216,7 +3216,6 @@ class AgentBotCore:
             synced = 0
             updated = 0
             activated = 0
-            unified = 0  # 统一分类计数
             
             for p in all_products:
                 nowuid = p.get('nowuid')
@@ -3232,25 +3231,11 @@ class AgentBotCore:
                 # ✅ 安全获取总部价格（处理异常情况）
                 original_price = self._safe_price(p.get('money'))
                 
-                # ✅ 分类检测：使用新的双协议号分类逻辑
+                # 🔥 存储层保持原样：直接使用原始 leixing，不做转换
+                # 分类统一/映射在展示层（get_product_categories）处理
                 leixing = p.get('leixing')
                 projectname = p.get('projectname', '')
-                
-                if self.config.AGENT_CLONE_HEADQUARTERS_CATEGORIES:
-                    # HQ克隆模式：使用新的协议号双分类逻辑
-                    protocol_category = self._classify_protocol_subcategory(projectname, leixing)
-                    if protocol_category:
-                        # 是协议号类商品，使用分类后的结果（主或老）
-                        category = protocol_category
-                    else:
-                        # 非协议号商品，保持原始分类名
-                        category = leixing
-                else:
-                    # 传统模式：只统一协议号别名，其它分类保持原样
-                    if leixing is None or leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
-                        category = self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
-                    else:
-                        category = leixing  # 保持原始分类名
+                category = leixing
                 
                 if not exists:
                     # ✅ 新商品：创建代理价格记录，使用默认加价
@@ -3277,9 +3262,6 @@ class AgentBotCore:
                         'updated_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     })
                     synced += 1
-                    # 统计协议号分类（主分类或老分类）
-                    if category in [self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME, self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME, self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]:
-                        unified += 1
                     status_msg = "待补价" if needs_price_set else "已激活"
                     logger.info(f"✅ 新增同步商品: {p.get('projectname')} (nowuid: {nowuid}, 总部价: {original_price}U, 代理价: {agent_price}U, 状态: {status_msg}, 分类: {category})")
                 else:
@@ -3288,13 +3270,10 @@ class AgentBotCore:
                     if exists.get('product_name') != p.get('projectname'):
                         updates['product_name'] = p.get('projectname', '')
                     
-                    # ✅ 更新分类（包括将旧的协议号分类迁移到新的双分类）
+                    # ✅ 更新分类（保持原始 leixing）
                     old_category = exists.get('category')
                     if old_category != category:
                         updates['category'] = category
-                        # 统计协议号分类（主分类或老分类）
-                        if category in [self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME, self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME, self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]:
-                            unified += 1
                     
                     # ✅ 更新总部价格快照
                     if abs(exists.get('original_price_snapshot', 0) - original_price) > self.PRICE_COMPARISON_EPSILON:
@@ -3368,8 +3347,8 @@ class AgentBotCore:
             except Exception as diag_err:
                 logger.error(f"❌ 诊断日志失败: {diag_err}")
             
-            if synced > 0 or updated > 0 or activated > 0 or unified > 0:
-                logger.info(f"✅ 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个, Unified protocol category: {unified} items")
+            if synced > 0 or updated > 0 or activated > 0:
+                logger.info(f"✅ 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个")
             
             return synced
         except Exception as e:
@@ -3508,15 +3487,9 @@ class AgentBotCore:
                 projectname = product.get('projectname', '')
                 leixing = product.get('leixing')
                 
-                # 确定分类
-                if self.config.AGENT_CLONE_HEADQUARTERS_CATEGORIES:
-                    protocol_category = self._classify_protocol_subcategory(projectname, leixing)
-                    category = protocol_category if protocol_category else leixing
-                else:
-                    if leixing is None or leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
-                        category = self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
-                    else:
-                        category = leixing
+                # 🔥 存储层保持原样：直接使用原始 leixing，不做转换
+                # 分类统一/映射在展示层（get_product_categories）处理
+                category = leixing
                 
                 now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
