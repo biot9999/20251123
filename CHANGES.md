@@ -36,6 +36,20 @@
    - 所有同步相关日志使用 `[SYNC]` 前缀
    - 便于过滤和诊断
 
+#### 新增核心函数
+
+在 `AgentBotCore` 类中新增以下方法：
+
+- `full_resync_hq_products(batch_size=1000)` - 全量重同步总部商品
+- `_process_sync_batch(batch)` - 批量处理商品同步
+- `get_sync_diagnostics()` - 获取同步诊断信息
+- `_build_category_counter(collection)` - 构建分类计数器
+
+在 `AgentBotHandlers` 类中新增命令处理器：
+
+- `resync_hq_products_command()` - `/resync_hq_products` 命令处理器
+- `diag_sync_stats_command()` - `/diag_sync_stats` 命令处理器
+
 #### 技术实现
 
 - **批量处理**: 使用 `batch_size=1000` 避免内存溢出
