@@ -2495,6 +2495,11 @@ class AgentBotCore:
     # 常量定义
     # Note: When returning this, use .copy() to prevent callers from modifying the shared constant
     EMPTY_PRODUCTS_RESULT = {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+    
+    # 同步相关常量
+    SYNC_THRESHOLD_MULTIPLIER = 1.05  # 总部商品数超过代理商品数的阈值倍数（5%容差）
+    PRICE_COMPARISON_EPSILON = 0.01  # 价格比较精度（避免浮点数误差）
+    DEFAULT_SYNC_BATCH_SIZE = 1000  # 默认批量同步大小
 
     def __init__(self, config: AgentBotConfig):
         self.config = config
@@ -3201,10 +3206,10 @@ class AgentBotCore:
                 logger.info(f"[SYNC] ✅ 首次全量同步完成: 插入={result['inserted']}, 更新={result['updated']}")
                 return result['inserted']
             
-            # ✅ 安全检查：如果总部商品数 > 代理商品数 * 1.05，提示需要手动全量同步
+            # ✅ 安全检查：如果总部商品数 > 代理商品数 * 阈值，提示需要手动全量同步
             hq_count = self.config.ejfl.count_documents({})
-            if hq_count > agent_count * 1.05:
-                logger.warning(f"[SYNC] ⚠️ 总部商品数({hq_count}) > 代理商品数({agent_count}) * 1.05，建议执行全量同步")
+            if hq_count > agent_count * self.SYNC_THRESHOLD_MULTIPLIER:
+                logger.warning(f"[SYNC] ⚠️ 总部商品数({hq_count}) > 代理商品数({agent_count}) * {self.SYNC_THRESHOLD_MULTIPLIER}，建议执行全量同步")
                 logger.warning("[SYNC] 💡 使用 /resync_hq_products 命令执行全量同步")
             
             all_products = list(self.config.ejfl.find({}))
@@ -3292,13 +3297,13 @@ class AgentBotCore:
                             unified += 1
                     
                     # ✅ 更新总部价格快照
-                    if abs(exists.get('original_price_snapshot', 0) - original_price) > 0.01:
+                    if abs(exists.get('original_price_snapshot', 0) - original_price) > self.PRICE_COMPARISON_EPSILON:
                         updates['original_price_snapshot'] = original_price
                     
                     # ✅ 重新计算代理价格（总部价 + 加价）
                     agent_markup = float(exists.get('agent_markup', 0))
                     new_agent_price = round(original_price + agent_markup, 2)
-                    if abs(exists.get('agent_price', 0) - new_agent_price) > 0.01:
+                    if abs(exists.get('agent_price', 0) - new_agent_price) > self.PRICE_COMPARISON_EPSILON:
                         updates['agent_price'] = new_agent_price
                     
                     # ✅ 如果之前是待补价状态，现在总部价>0，自动激活
@@ -3373,17 +3378,21 @@ class AgentBotCore:
             traceback.print_exc()
             return 0
 
-    def full_resync_hq_products(self, batch_size: int = 1000) -> Dict:
+    def full_resync_hq_products(self, batch_size: int = None) -> Dict:
         """
         全量重新同步总部商品到代理（可重复执行，基于nowuid幂等）
         
         Args:
-            batch_size: 批处理大小，默认1000
+            batch_size: 批处理大小，默认使用 DEFAULT_SYNC_BATCH_SIZE
         
         Returns:
             Dict: 同步结果统计 {inserted, updated, skipped, total_hq, total_agent, elapsed}
         """
         try:
+            # 使用类常量作为默认值
+            if batch_size is None:
+                batch_size = self.DEFAULT_SYNC_BATCH_SIZE
+            
             start_time = datetime.now()
             logger.info("[SYNC] ========== 开始全量重同步总部商品 ==========")
             logger.info(f"[SYNC] 批处理大小: {batch_size}")
@@ -3399,7 +3408,8 @@ class AgentBotCore:
             logger.info(f"[SYNC] 总部商品总数: {total_hq_products}")
             
             # 2. 批量处理总部商品
-            cursor = self.config.ejfl.find({})
+            # 使用 batch_size() 限制每次从MongoDB获取的文档数量，避免内存溢出
+            cursor = self.config.ejfl.find({}).batch_size(batch_size)
             batch = []
             
             for product in cursor:
@@ -3542,7 +3552,7 @@ class AgentBotCore:
                     if exists.get('category') != category:
                         updates['category'] = category
                     
-                    if abs(exists.get('original_price_snapshot', 0) - original_price) > 0.01:
+                    if abs(exists.get('original_price_snapshot', 0) - original_price) > self.PRICE_COMPARISON_EPSILON:
                         updates['original_price_snapshot'] = original_price
                         
                         # 重新计算代理价格
@@ -3621,7 +3631,7 @@ class AgentBotCore:
             missing_categories = list(hq_cat_set - agent_cat_set)[:20]
             
             # 7. 计算是否需要全量同步
-            suggest_full_resync = hq_total > agent_total * 1.05
+            suggest_full_resync = hq_total > agent_total * self.SYNC_THRESHOLD_MULTIPLIER
             
             # 8. 获取最近同步时间
             latest_sync = self.config.agent_product_prices.find_one(
