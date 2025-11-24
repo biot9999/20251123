@@ -1436,23 +1436,11 @@ def show_admin_panel(update: Update, context: CallbackContext, user_id: int):
     admin_text = f'''
 🔧 <b>管理员控制台</b>
 
-
 📊 <b>平台概览</b>
 ├─ 👥 用户总数：<code>{total_users}</code> 人
 ├─ 💰 平台余额：<code>{standard_num(total_balance)}</code> USDT
-├─ 📅 今日收入：<code>{standard_num(today_rmb)}</code> 元 / <code>{standard_num(today_usdt)}</code> USDT
-└─ 📈 昨日收入：<code>{standard_num(yesterday_rmb)}</code> 元 / <code>{standard_num(yesterday_usdt)}</code> USDT
-
-⚡ <b>快捷指令</b>
-├─ <code>/add 用户ID +金额</code> → 增加余额
-├─ <code>/add 用户ID -金额</code> → 扣除余额
-├─ <code>/gg</code> → 群发消息
-├─ <code>/admin_add @用户名或ID</code> → 添加管理员
-└─ <code>/admin_remove @用户名或ID</code> → 移除管理员
-
-🛡️ <b>安全提示</b>
-└─ 管理员验证基于用户ID，安全可靠
-
+├─ 📅 今日收入：<code>{standard_num(today_usdt)}</code> USDT
+└─ 📈 昨日收入：<code>{standard_num(yesterday_usdt)}</code> USDT
 
 ⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
 '''.strip()
@@ -4789,23 +4777,11 @@ def backstart(update: Update, context: CallbackContext):
     admin_text = f'''
 🔧 <b>管理员控制台</b>
 
-
 📊 <b>平台概览</b>
 ├─ 👥 用户总数：<code>{total_users}</code> 人
 ├─ 💰 平台余额：<code>{standard_num(total_balance)}</code> USDT
-├─ 📅 今日收入：<code>{standard_num(today_rmb)}</code> 元 / <code>{standard_num(today_usdt)}</code> USDT
-└─ 📈 昨日收入：<code>{standard_num(yesterday_rmb)}</code> 元 / <code>{standard_num(yesterday_usdt)}</code> USDT
-
-⚡ <b>快捷指令</b>
-├─ <code>/add 用户ID +金额</code> → 增加余额
-├─ <code>/add 用户ID -金额</code> → 扣除余额
-├─ <code>/gg</code> → 群发消息
-├─ <code>/admin_add @用户名或ID</code> → 添加管理员
-└─ <code>/admin_remove @用户名或ID</code> → 移除管理员
-
-🛡️ <b>安全提示</b>
-└─ 管理员验证基于用户ID，安全可靠
-
+├─ 📅 今日收入：<code>{standard_num(today_usdt)}</code> USDT
+└─ 📈 昨日收入：<code>{standard_num(yesterday_usdt)}</code> USDT
 
 ⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
 '''.strip()
@@ -9248,7 +9224,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                 if lang == 'zh':
                     fstext = (
                         "<b>🛒 商品分类 - 请选择所需：</b>\n\n"
-                        "<b>❗快速查找商品：发送带+号的区号！（如 +94）</b>\n\n"
+                        "<b>❗快速查找商品发送带+号的区号（如 +94）</b>\n\n"
                         "<b>❗️首次购买请先少量测试，避免纠纷</b>！\n\n"
                         "<b>❗️长期未使用账户可能会出现问题，联系客服处理</b>。"
                     )
