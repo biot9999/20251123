@@ -2558,7 +2558,7 @@ class AgentBotCore:
         
         检测规则（按优先级）：
         1. leixing 在别名列表中或等于统一分类名 -> True（已标记为协议号）
-        2. projectname 包含关键词（协议、协议号、年老号、老号等）-> True（检测误标记）
+        2. projectname 或 leixing 包含关键词（协议、协议号、混合国家等）-> True（检测误标记）
         3. projectname 包含年份范围模式（如 [1-8] 或 [3-8 年]）-> True（检测误标记）
         4. leixing 为 None/空 -> True（未分类商品归入协议号）
         
@@ -2575,13 +2575,19 @@ class AgentBotCore:
         if leixing == self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED:
             return True
         
-        # 规则2: 检查商品名称是否包含协议号关键词（检测误标记的协议号商品）
+        # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
+            if not keyword:
+                continue
+            # 检查 projectname
+            if name and keyword in name:
+                return True
+            # 检查 leixing（关键新增：也检查leixing字段本身）
+            if leixing and isinstance(leixing, str) and keyword in leixing:
+                return True
+        
+        # 规则3: 检查年份范围模式（检测误标记的协议号商品）
         if name:
-            for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
-                if keyword and keyword in name:
-                    return True
-            
-            # 规则3: 检查年份范围模式（检测误标记的协议号商品）
             year_range_pattern = r'\[\s*\d+\s*-\s*\d+\s*(?:年)?\s*\]'
             if re.search(year_range_pattern, name):
                 return True
@@ -2598,7 +2604,7 @@ class AgentBotCore:
         
         检测规则：
         1. leixing 在别名列表中或等于主/老分类名 -> True
-        2. projectname 包含协议号关键词 -> True
+        2. projectname 或 leixing 包含协议号关键词 -> True
         3. projectname 包含年份范围模式 -> True
         4. leixing 为 None/空 -> True
         
@@ -2619,11 +2625,16 @@ class AgentBotCore:
         if leixing == self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME:
             return True
         
-        # 规则2: 检查商品名称是否包含协议号关键词
-        if name:
-            for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
-                if keyword and keyword in name:
-                    return True
+        # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
+            if not keyword:
+                continue
+            # 检查 projectname
+            if name and keyword in name:
+                return True
+            # 检查 leixing（关键新增：也检查leixing字段本身）
+            if leixing and isinstance(leixing, str) and keyword in leixing:
+                return True
         
         # 规则3: leixing 为 None/空
         if leixing is None or leixing == '':
