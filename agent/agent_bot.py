@@ -2493,6 +2493,7 @@ class AgentBotCore:
     """核心业务"""
     
     # 常量定义
+    # Note: When returning this, use .copy() to prevent callers from modifying the shared constant
     EMPTY_PRODUCTS_RESULT = {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
 
     def __init__(self, config: AgentBotConfig):
