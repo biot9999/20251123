@@ -11344,7 +11344,8 @@ def check_my_withdrawals(update: Update, context: CallbackContext):
     
     for i, w in enumerate(withdrawals[:5], 1):
         status = status_map.get(w.get('status'), '未知')
-        created = w.get('created_time', datetime.datetime.now()).strftime('%m-%d %H:%M')
+        created_time = w.get('created_time')
+        created = format_beijing_time(created_time, '%m-%d %H:%M') if created_time else beijing_now_str('%m-%d %H:%M')
         
         text += f"{i}. <b>{w['amount']:.2f} USDT</b> - {status}\n"
         text += f"   申请时间: {created}\n"
@@ -11421,9 +11422,12 @@ def jianceguoqi(context: CallbackContext):
                 user_id = i['user_id']
                 message_id = i['message_id']
 
-                dt = datetime.strptime(timer, '%Y-%m-%d %H:%M:%S')
+                # 解析订单时间（北京时间）
+                dt = parse_to_beijing(timer)
+                if not dt:
+                    continue
                 new_dt = dt + timedelta(minutes=10)
-                current_time = datetime.now()
+                current_time = get_beijing_now()
 
                 if current_time >= new_dt:
                     # 删除原来的充值页面
