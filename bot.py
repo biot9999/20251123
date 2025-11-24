@@ -10965,57 +10965,91 @@ def standard_num(num):
 
 
 def jiexi(context: CallbackContext):
+    """
+    解析链上充值记录：
+    - 只处理 state = 0 且 to_address 是充值地址的记录
+    - 每条 qukuai 记录只处理一次
+    - 同一个 txid 只会成功充值一次
+    """
+    from pymongo import ReturnDocument
+
     # 获取充值地址
-    trc20 = shangtext.find_one({'projectname': '充值地址'})['text']
+    trc20_record = shangtext.find_one({'projectname': '充值地址'})
+    if not trc20_record or 'text' not in trc20_record:
+        logging.warning("⚠️ 未找到充值地址配置，终止解析")
+        return
+    trc20 = trc20_record['text']
 
-    # 获取所有未处理的区块记录
-    qukuai_list = qukuai.find({'state': 0, 'to_address': trc20})
+    while True:
+        # 原子方式领取一条待处理记录，并立即标记为 -1（处理中）
+        record = qukuai.find_one_and_update(
+            {'state': 0, 'to_address': trc20},
+            {'$set': {'state': -1}},
+            return_document=ReturnDocument.BEFORE
+        )
 
-    for i in qukuai_list:
-        txid = i['txid']
-        quant = i['quant']
-        from_address = i['from_address']
-        quant123 = Decimal(quant) / Decimal('1000000')
-        quant = float(quant123)
-        today_money = quant
+        if not record:
+            # 没有更多待处理记录
+            break
 
-        # 查找是否有相同金额的订单（带浮点误差容差 ±0.001）
-        dj_list = topup.find_one({
-            "money": {"$gte": round(quant - 0.001, 3), "$lte": round(quant + 0.001, 3)}
-        })
+        txid = record['txid']
+        quant_raw = record['quant']
+        from_address = record['from_address']
 
-        if dj_list is not None and 'message_id' in dj_list and 'user_id' in dj_list:
-            message_id = dj_list['message_id']
-            user_id = dj_list['user_id']
-
-            # 删除原始充值详情消息
-            try:
-                context.bot.delete_message(chat_id=user_id, message_id=message_id)
-            except Exception as e:
-                print(f"⚠️ 删除充值详情消息失败：{e}")
-
-            # 获取用户信息
-            user_list = user.find_one({'user_id': user_id})
-            if not user_list:
-                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+        try:
+            # 如果这个 txid 已经在 topup 里出现过，说明之前已经处理过，避免重复加钱
+            if topup.find_one({'txid': txid}):
+                logging.info(f"⏭ TXID 已处理过，跳过重复充值: {txid}")
+                qukuai.update_one({'txid': txid}, {'$set': {'state': 1}})
                 continue
 
-            username = user_list.get('username', '无')
-            fullname = user_list.get('fullname', '无').replace('<', '').replace('>', '')
-            old_usdt = float(user_list.get('USDT', 0))
+            # 计算金额（USDT）
+            quant_dec = Decimal(quant_raw) / Decimal('1000000')
+            quant = float(quant_dec)          # 本次充值金额
+            today_money = quant
 
-            # 更新余额
-            now_price = standard_num(old_usdt + quant)
-            now_price = float(now_price) if '.' in str(now_price) else int(now_price)
-            user.update_one({'user_id': user_id}, {"$set": {'USDT': now_price}})
+            # 查找是否有相同金额的订单（带浮点误差容差 ±0.001），且状态为 pending
+            dj_list = topup.find_one({
+                "money": {
+                    "$gte": round(quant - 0.001, 3),
+                    "$lte": round(quant + 0.001, 3)
+                },
+                "status": "pending"
+            })
 
-            # 写入充值日志
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            order_id = str(uuid.uuid4())
-            user_logging(order_id, '充值', user_id, today_money, timer)
+            if dj_list is not None and 'message_id' in dj_list and 'user_id' in dj_list:
+                message_id = dj_list['message_id']
+                user_id = dj_list['user_id']
+                order_doc_id = dj_list['_id']   # 这笔订单的唯一 ID
 
-            # 用户通知
-            user_text = f'''
+                # 删除原始充值详情消息
+                try:
+                    context.bot.delete_message(chat_id=user_id, message_id=message_id)
+                except Exception as e:
+                    logging.warning(f"⚠️ 删除充值详情消息失败：{e}")
+
+                # 获取用户信息
+                user_list = user.find_one({'user_id': user_id})
+                if not user_list:
+                    qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                    continue
+
+                username = user_list.get('username', '无')
+                fullname = user_list.get('fullname', '无').replace('<', '').replace('>', '')
+                old_usdt = float(user_list.get('USDT', 0))
+
+                # 更新余额
+                now_price = standard_num(old_usdt + quant)
+                now_price = float(now_price) if '.' in str(now_price) else int(now_price)
+                user.update_one({'user_id': user_id}, {"$set": {'USDT': now_price}})
+
+                # 写入充值日志
+                timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                order_id = str(uuid.uuid4())
+                user_logging(order_id, '充值', user_id, today_money, timer)
+
+                # 用户通知（不带关闭按钮）
+                user_text = f'''
 <b>🎉 恭喜您，成功充值！</b> 💰
 
 <b>充值金额:</b> <u>{today_money} USDT</u>  
@@ -11024,63 +11058,63 @@ def jiexi(context: CallbackContext):
 
 <b>您的账户余额:</b> <b>{now_price} USDT</b>  
 <b>祝您一切顺利！</b> 🥳💫
-            '''
-            close_btn = InlineKeyboardMarkup([
-                [InlineKeyboardButton("❌ 关闭", callback_data="close")]
-            ])
-            context.bot.send_message(
-                chat_id=user_id,
-                text=user_text,
-                parse_mode='HTML',
-                reply_markup=close_btn
-            )
+                '''
+                context.bot.send_message(
+                    chat_id=user_id,
+                    text=user_text,
+                    parse_mode='HTML'
+                )
 
-            # 通知管理员
-            admin_text = f'''
+                # 通知管理员
+                admin_text = f'''
 用户: <a href="tg://user?id={user_id}">{fullname}</a> @{username} 充值成功
 地址: <code>{from_address}</code>
 充值: {today_money} USDT
 <a href="https://tronscan.org/#/transaction/{txid}">充值详细</a>
-            '''
-            # 通知所有管理员 - 使用env配置的管理员列表
-            for admin_id in get_admin_ids():
-                try:
-                    context.bot.send_message(
-                        chat_id=admin_id,
-                        text=admin_text,
-                        parse_mode='HTML',
-                        disable_web_page_preview=True
-                    )
-                except Exception as e:
-                    logging.warning(f"Failed to send recharge notification to admin {admin_id}: {e}")
+                '''
+                for admin_id in get_admin_ids():
+                    try:
+                        context.bot.send_message(
+                            chat_id=admin_id,
+                            text=admin_text,
+                            parse_mode='HTML',
+                            disable_web_page_preview=True
+                        )
+                    except Exception as e:
+                        logging.warning(f"Failed to send recharge notification to admin {admin_id}: {e}")
 
-            # 删除订单消息，更新订单状态为成功
-            existing_order = topup.find_one({'user_id': user_id, 'status': 'pending'})
-            if existing_order:
-                # 兼容新旧字段名
+                # 删除 pending 订单消息（如果有的话）
+                existing_order = dj_list
                 msg_id = existing_order.get('message_id') or existing_order.get('msg_id')
                 if msg_id:
                     try:
                         context.bot.delete_message(chat_id=user_id, message_id=msg_id)
-                    except:
+                    except Exception:
                         pass
-            
-            # 更新订单状态为成功（不删除，用于收入统计）
-            topup.update_one(
-                {'user_id': user_id, 'status': 'pending'}, 
-                {
-                    '$set': {
-                        'status': 'success',
-                        'success_time': datetime.now(),
-                        'txid': txid,
-                        'from_address': from_address
-                    }
-                }
-            )
-            qukuai.update_one({'txid': txid}, {"$set": {"state": 1}})
 
-        else:
-            # 未找到订单或字段缺失，标记为失败
+                # 更新这条 topup 订单为成功，并绑定 txid
+                topup.update_one(
+                    {'_id': order_doc_id},
+                    {
+                        '$set': {
+                            'status': 'success',
+                            'success_time': datetime.now(),
+                            'txid': txid,
+                            'from_address': from_address
+                        }
+                    }
+                )
+
+                # qukuai 标记为处理成功
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 1}})
+
+            else:
+                # 未找到订单或字段缺失，标记为失败
+                logging.warning(f"⚠️ 未找到匹配订单，标记失败: txid={txid}, amount={quant}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+
+        except Exception as e:
+            logging.exception(f"❌ 处理充值记录异常 txid={txid}: {e}")
             qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
 
 def validate_txid_format(txid: str) -> bool:
