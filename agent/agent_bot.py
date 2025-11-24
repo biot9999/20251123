@@ -3188,8 +3188,25 @@ class AgentBotCore:
             return 0
 
     def auto_sync_new_products(self):
-        """自动同步总部新增商品到代理（增强版：支持价格为0的商品预建记录 + 统一协议号分类）"""
+        """自动同步总部新增商品到代理（增强版：支持价格为0的商品预建记录 + 统一协议号分类 + 首次自动全量同步）"""
         try:
+            # ✅ 检查代理集合是否为空（首次启动）
+            agent_count = self.config.agent_product_prices.count_documents({
+                'agent_bot_id': self.config.AGENT_BOT_ID
+            })
+            
+            if agent_count == 0:
+                logger.info("[SYNC] 🔄 检测到代理商品集合为空，触发首次全量同步...")
+                result = self.full_resync_hq_products()
+                logger.info(f"[SYNC] ✅ 首次全量同步完成: 插入={result['inserted']}, 更新={result['updated']}")
+                return result['inserted']
+            
+            # ✅ 安全检查：如果总部商品数 > 代理商品数 * 1.05，提示需要手动全量同步
+            hq_count = self.config.ejfl.count_documents({})
+            if hq_count > agent_count * 1.05:
+                logger.warning(f"[SYNC] ⚠️ 总部商品数({hq_count}) > 代理商品数({agent_count}) * 1.05，建议执行全量同步")
+                logger.warning("[SYNC] 💡 使用 /resync_hq_products 命令执行全量同步")
+            
             all_products = list(self.config.ejfl.find({}))
             synced = 0
             updated = 0
@@ -3355,6 +3372,324 @@ class AgentBotCore:
             import traceback
             traceback.print_exc()
             return 0
+
+    def full_resync_hq_products(self, batch_size: int = 1000) -> Dict:
+        """
+        全量重新同步总部商品到代理（可重复执行，基于nowuid幂等）
+        
+        Args:
+            batch_size: 批处理大小，默认1000
+        
+        Returns:
+            Dict: 同步结果统计 {inserted, updated, skipped, total_hq, total_agent, elapsed}
+        """
+        try:
+            start_time = datetime.now()
+            logger.info("[SYNC] ========== 开始全量重同步总部商品 ==========")
+            logger.info(f"[SYNC] 批处理大小: {batch_size}")
+            
+            # 统计变量
+            inserted_count = 0
+            updated_count = 0
+            skipped_count = 0
+            error_count = 0
+            
+            # 1. 获取总部商品总数
+            total_hq_products = self.config.ejfl.count_documents({})
+            logger.info(f"[SYNC] 总部商品总数: {total_hq_products}")
+            
+            # 2. 批量处理总部商品
+            cursor = self.config.ejfl.find({})
+            batch = []
+            
+            for product in cursor:
+                batch.append(product)
+                
+                if len(batch) >= batch_size:
+                    # 处理批次
+                    stats = self._process_sync_batch(batch)
+                    inserted_count += stats['inserted']
+                    updated_count += stats['updated']
+                    skipped_count += stats['skipped']
+                    error_count += stats['errors']
+                    
+                    logger.info(f"[SYNC] 批次进度: 已插入={inserted_count}, 已更新={updated_count}, 跳过={skipped_count}, 错误={error_count}")
+                    batch = []
+            
+            # 处理剩余批次
+            if batch:
+                stats = self._process_sync_batch(batch)
+                inserted_count += stats['inserted']
+                updated_count += stats['updated']
+                skipped_count += stats['skipped']
+                error_count += stats['errors']
+            
+            # 3. 统计代理商品总数
+            total_agent_products = self.config.agent_product_prices.count_documents({
+                'agent_bot_id': self.config.AGENT_BOT_ID
+            })
+            
+            # 4. 计算耗时
+            elapsed = (datetime.now() - start_time).total_seconds()
+            
+            result = {
+                'inserted': inserted_count,
+                'updated': updated_count,
+                'skipped': skipped_count,
+                'errors': error_count,
+                'total_hq': total_hq_products,
+                'total_agent': total_agent_products,
+                'elapsed': round(elapsed, 2)
+            }
+            
+            logger.info(f"[SYNC] ========== 全量同步完成 ==========")
+            logger.info(f"[SYNC] 插入: {inserted_count}, 更新: {updated_count}, 跳过: {skipped_count}, 错误: {error_count}")
+            logger.info(f"[SYNC] 总部商品数: {total_hq_products}, 代理商品数: {total_agent_products}")
+            logger.info(f"[SYNC] 耗时: {elapsed:.2f}秒")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"[SYNC] ❌ 全量重同步失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'inserted': 0,
+                'updated': 0,
+                'skipped': 0,
+                'errors': 1,
+                'total_hq': 0,
+                'total_agent': 0,
+                'elapsed': 0,
+                'error': str(e)
+            }
+    
+    def _process_sync_batch(self, batch: List[Dict]) -> Dict:
+        """
+        处理一批商品的同步
+        
+        Args:
+            batch: 商品列表
+        
+        Returns:
+            Dict: 统计信息 {inserted, updated, skipped, errors}
+        """
+        inserted = 0
+        updated = 0
+        skipped = 0
+        errors = 0
+        
+        for product in batch:
+            try:
+                nowuid = product.get('nowuid')
+                if not nowuid:
+                    skipped += 1
+                    continue
+                
+                # 检查是否已存在
+                exists = self.config.agent_product_prices.find_one({
+                    'agent_bot_id': self.config.AGENT_BOT_ID,
+                    'original_nowuid': nowuid
+                })
+                
+                # 获取商品信息
+                original_price = self._safe_price(product.get('money'))
+                projectname = product.get('projectname', '')
+                leixing = product.get('leixing')
+                
+                # 确定分类
+                if self.config.AGENT_CLONE_HEADQUARTERS_CATEGORIES:
+                    protocol_category = self._classify_protocol_subcategory(projectname, leixing)
+                    category = protocol_category if protocol_category else leixing
+                else:
+                    if leixing is None or leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
+                        category = self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
+                    else:
+                        category = leixing
+                
+                now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                if not exists:
+                    # 插入新商品
+                    agent_markup = self.config.AGENT_DEFAULT_MARKUP
+                    agent_price = round(original_price + agent_markup, 2)
+                    is_active = original_price > 0
+                    
+                    self.config.agent_product_prices.insert_one({
+                        'agent_bot_id': self.config.AGENT_BOT_ID,
+                        'original_nowuid': nowuid,
+                        'agent_markup': agent_markup,
+                        'agent_price': agent_price,
+                        'original_price_snapshot': original_price,
+                        'product_name': projectname,
+                        'category': category,
+                        'is_active': is_active,
+                        'needs_price_set': original_price <= 0,
+                        'auto_created': False,  # 全量同步创建的标记为 False
+                        'synced_at': now_time,
+                        'created_time': now_time,
+                        'updated_time': now_time
+                    })
+                    inserted += 1
+                else:
+                    # 更新已存在的商品
+                    updates = {}
+                    
+                    # 保留原始 projectname 和 leixing，仅在它们变化时更新
+                    if exists.get('product_name') != projectname:
+                        updates['product_name'] = projectname
+                    
+                    if exists.get('category') != category:
+                        updates['category'] = category
+                    
+                    if abs(exists.get('original_price_snapshot', 0) - original_price) > 0.01:
+                        updates['original_price_snapshot'] = original_price
+                        
+                        # 重新计算代理价格
+                        agent_markup = float(exists.get('agent_markup', 0))
+                        new_agent_price = round(original_price + agent_markup, 2)
+                        updates['agent_price'] = new_agent_price
+                    
+                    # 如果之前是待补价状态，现在总部价>0，自动激活
+                    if exists.get('needs_price_set') and original_price > 0:
+                        updates['is_active'] = True
+                        updates['needs_price_set'] = False
+                    
+                    if updates:
+                        updates['updated_time'] = now_time
+                        self.config.agent_product_prices.update_one(
+                            {'agent_bot_id': self.config.AGENT_BOT_ID, 'original_nowuid': nowuid},
+                            {'$set': updates}
+                        )
+                        updated += 1
+                    else:
+                        skipped += 1
+                        
+            except Exception as e:
+                logger.error(f"[SYNC] 处理商品失败 (nowuid={product.get('nowuid')}): {e}")
+                errors += 1
+                continue
+        
+        return {
+            'inserted': inserted,
+            'updated': updated,
+            'skipped': skipped,
+            'errors': errors
+        }
+    
+    def get_sync_diagnostics(self) -> Dict:
+        """
+        获取同步诊断信息
+        
+        Returns:
+            Dict: 诊断信息，包含总部/代理商品数、缺失分类、分类分布等
+        """
+        try:
+            logger.info("[SYNC] ========== 开始同步诊断 ==========")
+            
+            # 1. 获取总部商品总数
+            hq_total = self.config.ejfl.count_documents({})
+            
+            # 2. 获取代理商品总数
+            agent_total = self.config.agent_product_prices.count_documents({
+                'agent_bot_id': self.config.AGENT_BOT_ID
+            })
+            
+            # 3. 获取代理已激活商品数
+            agent_active = self.config.agent_product_prices.count_documents({
+                'agent_bot_id': self.config.AGENT_BOT_ID,
+                'is_active': True
+            })
+            
+            # 4. 获取总部分类分布 (前20项)
+            hq_categories = self._build_category_counter(self.config.ejfl)
+            hq_top_categories = sorted(hq_categories.items(), key=lambda x: -x[1])[:20]
+            
+            # 5. 获取代理分类分布 (前20项)
+            agent_products = list(self.config.agent_product_prices.find({
+                'agent_bot_id': self.config.AGENT_BOT_ID
+            }, {'category': 1}))
+            agent_categories = {}
+            for p in agent_products:
+                cat = p.get('category', '未分类')
+                agent_categories[cat] = agent_categories.get(cat, 0) + 1
+            agent_top_categories = sorted(agent_categories.items(), key=lambda x: -x[1])[:20]
+            
+            # 6. 找出缺失的分类
+            hq_cat_set = set(hq_categories.keys())
+            agent_cat_set = set(agent_categories.keys())
+            missing_categories = list(hq_cat_set - agent_cat_set)[:20]
+            
+            # 7. 计算是否需要全量同步
+            suggest_full_resync = hq_total > agent_total * 1.05
+            
+            # 8. 获取最近同步时间
+            latest_sync = self.config.agent_product_prices.find_one(
+                {'agent_bot_id': self.config.AGENT_BOT_ID},
+                sort=[('updated_time', -1)]
+            )
+            last_sync_time = latest_sync.get('updated_time', '未知') if latest_sync else '未同步'
+            
+            result = {
+                'hq_total': hq_total,
+                'agent_total': agent_total,
+                'agent_active': agent_active,
+                'missing_count': hq_total - agent_total if hq_total > agent_total else 0,
+                'missing_categories': missing_categories,
+                'hq_top_categories': hq_top_categories,
+                'agent_top_categories': agent_top_categories,
+                'suggest_full_resync': suggest_full_resync,
+                'last_sync_time': last_sync_time
+            }
+            
+            logger.info(f"[SYNC] 诊断结果: HQ={hq_total}, Agent={agent_total}(激活={agent_active}), 缺失={result['missing_count']}")
+            logger.info(f"[SYNC] 建议全量同步: {suggest_full_resync}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"[SYNC] ❌ 获取诊断信息失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'hq_total': 0,
+                'agent_total': 0,
+                'agent_active': 0,
+                'missing_count': 0,
+                'missing_categories': [],
+                'hq_top_categories': [],
+                'agent_top_categories': [],
+                'suggest_full_resync': False,
+                'last_sync_time': '错误',
+                'error': str(e)
+            }
+    
+    def _build_category_counter(self, collection) -> Dict[str, int]:
+        """
+        构建分类计数器
+        
+        Args:
+            collection: MongoDB集合
+        
+        Returns:
+            Dict: {分类名: 数量}
+        """
+        try:
+            pipeline = [
+                {'$group': {'_id': '$leixing', 'count': {'$sum': 1}}},
+                {'$sort': {'count': -1}}
+            ]
+            result = collection.aggregate(pipeline)
+            
+            category_counter = {}
+            for item in result:
+                cat_name = item['_id'] if item['_id'] is not None else '未分类'
+                category_counter[cat_name] = item['count']
+            
+            return category_counter
+        except Exception as e:
+            logger.error(f"[SYNC] 构建分类计数器失败: {e}")
+            return {}
 
     def get_product_categories(self) -> List[Dict]:
         """获取商品分类列表（一级分类）- HQ克隆模式 + 容错回退"""
@@ -5179,6 +5514,121 @@ class AgentBotHandlers:
             text = "⚠️ 管理员列表已重新加载，但当前无管理员配置"
         
         update.message.reply_text(text)
+    
+    def resync_hq_products_command(self, update: Update, context: CallbackContext):
+        """全量重同步总部商品（仅管理员可用）"""
+        user = update.effective_user
+        
+        # 检查是否为管理员
+        if not self.core.config.is_admin(user.id):
+            update.message.reply_text("❌ 无权限")
+            return
+        
+        # 发送开始提示
+        msg = update.message.reply_text("🔄 开始全量重同步总部商品，请稍候...")
+        
+        try:
+            # 执行全量同步
+            result = self.core.full_resync_hq_products()
+            
+            # 格式化结果消息
+            if result.get('error'):
+                text = f"❌ 全量同步失败\n\n错误: {result['error']}"
+            else:
+                text = f"""✅ <b>全量同步完成</b>
+
+📊 <b>同步结果:</b>
+• 新增: {result['inserted']} 个
+• 更新: {result['updated']} 个
+• 跳过: {result['skipped']} 个
+• 错误: {result['errors']} 个
+
+📈 <b>商品统计:</b>
+• 总部商品数: {result['total_hq']}
+• 代理商品数: {result['total_agent']}
+
+⏱️ <b>耗时:</b> {result['elapsed']} 秒
+
+💡 使用 /diag_sync_stats 查看详细诊断信息"""
+            
+            # 更新消息
+            msg.edit_text(text, parse_mode=ParseMode.HTML)
+            
+        except Exception as e:
+            logger.error(f"❌ 全量同步命令执行失败: {e}")
+            import traceback
+            traceback.print_exc()
+            msg.edit_text(f"❌ 全量同步失败: {str(e)}")
+    
+    def diag_sync_stats_command(self, update: Update, context: CallbackContext):
+        """显示同步诊断统计（仅管理员可用）"""
+        user = update.effective_user
+        
+        # 检查是否为管理员
+        if not self.core.config.is_admin(user.id):
+            update.message.reply_text("❌ 无权限")
+            return
+        
+        # 发送开始提示
+        msg = update.message.reply_text("📊 正在获取同步诊断信息...")
+        
+        try:
+            # 获取诊断信息
+            diag = self.core.get_sync_diagnostics()
+            
+            # 格式化诊断消息
+            if diag.get('error'):
+                text = f"❌ 获取诊断信息失败\n\n错误: {diag['error']}"
+            else:
+                # 格式化缺失分类列表
+                missing_cats_str = ""
+                if diag['missing_categories']:
+                    missing_cats_str = "\n• " + "\n• ".join(diag['missing_categories'][:10])
+                    if len(diag['missing_categories']) > 10:
+                        missing_cats_str += f"\n• ...（共 {len(diag['missing_categories'])} 个）"
+                else:
+                    missing_cats_str = "\n• 无缺失分类"
+                
+                # 格式化总部分类分布（前10项）
+                hq_cats_str = ""
+                for cat, count in diag['hq_top_categories'][:10]:
+                    hq_cats_str += f"\n• {cat}: {count} 个"
+                
+                # 格式化代理分类分布（前10项）
+                agent_cats_str = ""
+                for cat, count in diag['agent_top_categories'][:10]:
+                    agent_cats_str += f"\n• {cat}: {count} 个"
+                
+                # 同步建议
+                sync_suggestion = ""
+                if diag['suggest_full_resync']:
+                    sync_suggestion = "\n\n⚠️ <b>建议执行全量同步</b>\n使用 /resync_hq_products 命令"
+                
+                text = f"""📊 <b>同步诊断统计</b>
+
+📈 <b>商品数量对比:</b>
+• 总部商品数: {diag['hq_total']}
+• 代理商品数: {diag['agent_total']}
+• 代理已激活: {diag['agent_active']}
+• 缺失商品数: {diag['missing_count']}
+
+🔖 <b>缺失分类列表:</b>{missing_cats_str}
+
+📊 <b>总部分类分布</b> (前10项):{hq_cats_str}
+
+📊 <b>代理分类分布</b> (前10项):{agent_cats_str}
+
+🕐 <b>最近同步时间:</b>
+{diag['last_sync_time']}{sync_suggestion}"""
+            
+            # 更新消息
+            msg.edit_text(text, parse_mode=ParseMode.HTML)
+            
+        except Exception as e:
+            logger.error(f"❌ 诊断统计命令执行失败: {e}")
+            import traceback
+            traceback.print_exc()
+            msg.edit_text(f"❌ 获取诊断信息失败: {str(e)}")
 
     # ========== 利润中心 / 提现 ==========
     def show_profit_center(self, query):
@@ -7945,6 +8395,8 @@ class AgentBot:
     def setup_handlers(self):
         self.dispatcher.add_handler(CommandHandler("start", self.handlers.start_command))
         self.dispatcher.add_handler(CommandHandler("reload_admins", self.handlers.reload_admins_command))
+        self.dispatcher.add_handler(CommandHandler("resync_hq_products", self.handlers.resync_hq_products_command))
+        self.dispatcher.add_handler(CommandHandler("diag_sync_stats", self.handlers.diag_sync_stats_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handlers.button_callback))
         
         # ✅ 创建组合处理器，同时处理总部通知和广告频道消息
