@@ -3299,19 +3299,15 @@ class AgentBotCore:
             # ✅ 处理旧数据：将已存在的协议号类商品重新分类到主/老分类
             if self.config.AGENT_CLONE_HEADQUARTERS_CATEGORIES:
                 # HQ克隆模式下，重新分类所有协议号类商品
-                old_protocol_categories = [
-                    self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED,
-                    *self.config.AGENT_PROTOCOL_CATEGORY_ALIASES,
-                    None
-                ]
+                # 注意：需要检查所有产品，不仅是已知协议号别名的产品
+                # 因为可能有商品的category是 '🏁混合国家 正常号' 这样的值（不在别名列表中）
                 
-                # 查找所有可能是协议号类的记录
-                protocol_records = self.config.agent_product_prices.find({
-                    'agent_bot_id': self.config.AGENT_BOT_ID,
-                    'category': {'$in': old_protocol_categories}
+                # 获取所有代理商品记录
+                all_agent_records = self.config.agent_product_prices.find({
+                    'agent_bot_id': self.config.AGENT_BOT_ID
                 })
                 
-                for old_rec in protocol_records:
+                for old_rec in all_agent_records:
                     nowuid = old_rec.get('original_nowuid')
                     if not nowuid:
                         continue
@@ -3324,7 +3320,7 @@ class AgentBotCore:
                     product_name = hq_product.get('projectname', '')
                     leixing = hq_product.get('leixing')
                     
-                    # 重新分类
+                    # 重新分类（使用新的检测逻辑）
                     new_category = self._classify_protocol_subcategory(product_name, leixing)
                     if not new_category:
                         # 如果不是协议号类，保持原leixing
@@ -3344,29 +3340,48 @@ class AgentBotCore:
                             updated += 1
                             logger.info(f"✅ 迁移商品分类: {product_name} ({old_cat} -> {new_category})")
             else:
-                # 传统模式：将旧别名统一到AGENT_PROTOCOL_CATEGORY_UNIFIED
-                old_aliases_to_unify = [alias for alias in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES if alias != self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]
-                old_aliases_to_unify.append(None)  # 包含 None
+                # 传统模式：将所有协议号类商品统一到AGENT_PROTOCOL_CATEGORY_UNIFIED
+                # 注意：需要检查所有产品，因为可能有商品的category包含协议号关键词（如 '🏁混合国家 正常号'）
                 
-                # 查找所有需要统一的旧记录
-                old_records = self.config.agent_product_prices.find({
-                    'agent_bot_id': self.config.AGENT_BOT_ID,
-                    'category': {'$in': old_aliases_to_unify}
+                # 获取所有代理商品记录
+                all_agent_records = self.config.agent_product_prices.find({
+                    'agent_bot_id': self.config.AGENT_BOT_ID
                 })
                 
-                for old_rec in old_records:
+                for old_rec in all_agent_records:
+                    nowuid = old_rec.get('original_nowuid')
+                    if not nowuid:
+                        continue
+                    
+                    # 获取总部商品信息
+                    hq_product = self.config.ejfl.find_one({'nowuid': nowuid})
+                    if not hq_product:
+                        continue
+                    
+                    product_name = hq_product.get('projectname', '')
+                    leixing = hq_product.get('leixing')
+                    
+                    # 检查是否是协议号类商品（使用新的检测逻辑）
+                    if self._is_protocol_like_product(product_name, leixing):
+                        # 是协议号类商品，统一分类
+                        new_category = self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
+                    else:
+                        # 非协议号商品，保持原leixing
+                        new_category = leixing
+                    
                     old_cat = old_rec.get('category')
-                    if old_cat != self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED:
+                    if old_cat != new_category and new_category:
                         result = self.config.agent_product_prices.update_one(
                             {'_id': old_rec['_id']},
                             {'$set': {
-                                'category': self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED,
+                                'category': new_category,
                                 'updated_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             }}
                         )
                         if result.modified_count > 0:
                             unified += 1
                             updated += 1
+                            logger.info(f"✅ 迁移商品分类: {product_name} ({old_cat} -> {new_category})")
             
             if synced > 0 or updated > 0 or activated > 0 or unified > 0:
                 logger.info(f"✅ 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个, Unified protocol category: {unified} items")
