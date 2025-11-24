@@ -303,13 +303,14 @@ REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "20"))
 # 日志目录初始化
 os.makedirs(os.path.dirname(LOG_FILE_PATH) if os.path.dirname(LOG_FILE_PATH) else '.', exist_ok=True)
 
-# 北京时区用于日志 (需要在 logging 配置前定义)
-BEIJING_TZ_FOR_LOGGING = pytz.timezone('Asia/Shanghai')
+# ================================ 北京时区定义 ================================
+# 全局使用统一的北京时区对象 (Asia/Shanghai, UTC+8)
+BEIJING_TZ = pytz.timezone('Asia/Shanghai')
 
 class BeijingFormatter(logging.Formatter):
     """使用北京时间的日志格式化器"""
     def formatTime(self, record, datefmt=None):
-        dt = datetime.fromtimestamp(record.created, tz=BEIJING_TZ_FOR_LOGGING)
+        dt = datetime.fromtimestamp(record.created, tz=BEIJING_TZ)
         if datefmt:
             return dt.strftime(datefmt)
         return dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -337,9 +338,7 @@ logging.info("✅ 日志系统初始化完成")
 
 # ================================ 北京时间工具函数 ================================
 # 所有对外展示的时间统一使用北京时间 (Asia/Shanghai, UTC+8)
-# BEIJING_TZ 已在日志配置部分定义为 BEIJING_TZ_FOR_LOGGING
-
-BEIJING_TZ = BEIJING_TZ_FOR_LOGGING  # 复用日志部分定义的时区对象
+# BEIJING_TZ 已在上方日志配置部分统一定义
 
 def get_beijing_now():
     """
@@ -386,15 +385,19 @@ def parse_to_beijing(time_str, fmt='%Y-%m-%d %H:%M:%S'):
     """
     解析时间字符串为北京时间的 datetime 对象
     
+    注意: 此函数假定输入的时间字符串表示的是北京时间（不带时区信息），
+    会将其标记为 Asia/Shanghai 时区。如果字符串表示的是 UTC 时间，
+    应先用 datetime.strptime 解析，然后用 format_beijing_time 转换。
+    
     参数:
-        time_str: 时间字符串
+        time_str: 时间字符串（假定为北京时间）
         fmt: 时间格式，默认 '%Y-%m-%d %H:%M:%S'
     
     返回:
         带北京时区信息的 datetime 对象，解析失败返回 None
     """
     try:
-        # 解析为 naive datetime，然后设置为北京时区
+        # 解析为 naive datetime，然后标记为北京时区（不是转换）
         dt = datetime.strptime(time_str, fmt)
         return BEIJING_TZ.localize(dt)
     except Exception:
@@ -1974,7 +1977,8 @@ def sales_dashboard(update: Update, context: CallbackContext):
             timer_value = order.get('timer')
             if timer_value:
                 try:
-                    # 处理字符串格式的时间（假定为北京时间）
+                    # 处理字符串格式的时间
+                    # 数据库中的时间字符串按北京时间存储，parse_to_beijing将其标记为北京时区
                     if isinstance(timer_value, str):
                         order_time = parse_to_beijing(timer_value)
                     else:
@@ -11422,13 +11426,16 @@ def jianceguoqi(context: CallbackContext):
                 user_id = i['user_id']
                 message_id = i['message_id']
 
-                # 解析订单时间（北京时间）
+                # 解析订单时间（北京时间字符串 -> 带时区的 datetime）
                 dt = parse_to_beijing(timer)
                 if not dt:
                     continue
+                # 计算过期时间（时区感知的 datetime）
                 new_dt = dt + timedelta(minutes=10)
+                # 获取当前北京时间（时区感知的 datetime）
                 current_time = get_beijing_now()
 
+                # 比较两个时区感知的 datetime 对象
                 if current_time >= new_dt:
                     # 删除原来的充值页面
                     try:
