@@ -26,6 +26,7 @@ from datetime import datetime, timedelta
 from glob import glob
 from random import randint, shuffle
 from dotenv import load_dotenv
+import pytz
 
 import telegram
 from telegram import (
@@ -96,7 +97,7 @@ class MultiBotDistributionSystem:
                 agent_username=agent_username,
                 owner_id=creator_id,
                 commission_rate=commission_rate,
-                creation_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                creation_time=beijing_now_str()  # 使用北京时间
             )
             
             if not success:
@@ -302,23 +303,111 @@ REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "20"))
 # 日志目录初始化
 os.makedirs(os.path.dirname(LOG_FILE_PATH) if os.path.dirname(LOG_FILE_PATH) else '.', exist_ok=True)
 
+# ================================ 北京时区定义 ================================
+# 全局使用统一的北京时区对象 (Asia/Shanghai, UTC+8)
+BEIJING_TZ = pytz.timezone('Asia/Shanghai')
+
+class BeijingFormatter(logging.Formatter):
+    """使用北京时间的日志格式化器"""
+    def formatTime(self, record, datefmt=None):
+        dt = datetime.fromtimestamp(record.created, tz=BEIJING_TZ)
+        if datefmt:
+            return dt.strftime(datefmt)
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+
 # 文件日志配置
-logging.basicConfig(
-    format='[%(asctime)s] [%(levelname)s] %(message)s',
-    level=logging.INFO,
-    filename=LOG_FILE_PATH,
-    filemode='a',
-)
+file_handler = logging.FileHandler(LOG_FILE_PATH, mode='a', encoding='utf-8')
+file_handler.setLevel(logging.INFO)
+file_formatter = BeijingFormatter('[%(asctime)s] [%(levelname)s] %(message)s')
+file_handler.setFormatter(file_formatter)
 
 # 控制台日志 handler（避免重复添加）
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
-formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
-console.setFormatter(formatter)
-if not logging.getLogger('').handlers:
-    logging.getLogger('').addHandler(console)
+console_formatter = BeijingFormatter('[%(asctime)s] [%(levelname)s] %(message)s')
+console.setFormatter(console_formatter)
+
+# 配置根日志记录器
+root_logger = logging.getLogger('')
+root_logger.setLevel(logging.INFO)
+if not root_logger.handlers:
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console)
 
 logging.info("✅ 日志系统初始化完成")
+
+# ================================ 北京时间工具函数 ================================
+# 所有对外展示的时间统一使用北京时间 (Asia/Shanghai, UTC+8)
+# BEIJING_TZ 已在上方日志配置部分统一定义
+
+def get_beijing_now():
+    """
+    获取当前北京时间
+    返回带时区信息的 datetime 对象
+    """
+    return datetime.now(BEIJING_TZ)
+
+def format_beijing_time(dt=None, fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    将时间格式化为北京时间字符串
+    
+    参数:
+        dt: datetime 对象、时间戳(int/float)或None
+            - 如果是 naive datetime，假定为 UTC 时间
+            - 如果是 aware datetime，转换到北京时区
+            - 如果是时间戳，转换为北京时间
+            - 如果是 None，返回当前北京时间
+        fmt: 时间格式字符串，默认 '%Y-%m-%d %H:%M:%S'
+    
+    返回:
+        格式化的北京时间字符串
+    """
+    if dt is None:
+        # 返回当前北京时间
+        return get_beijing_now().strftime(fmt)
+    
+    if isinstance(dt, (int, float)):
+        # 时间戳转换为北京时间
+        dt = datetime.fromtimestamp(dt, tz=pytz.UTC)
+    elif isinstance(dt, datetime):
+        if dt.tzinfo is None:
+            # naive datetime，假定为 UTC
+            dt = pytz.UTC.localize(dt)
+    else:
+        # 不支持的类型，返回当前北京时间
+        return get_beijing_now().strftime(fmt)
+    
+    # 转换到北京时区并格式化
+    beijing_time = dt.astimezone(BEIJING_TZ)
+    return beijing_time.strftime(fmt)
+
+def parse_to_beijing(time_str, fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    解析时间字符串为北京时间的 datetime 对象
+    
+    注意: 此函数假定输入的时间字符串表示的是北京时间（不带时区信息），
+    会将其标记为 Asia/Shanghai 时区。如果字符串表示的是 UTC 时间，
+    应先用 datetime.strptime 解析，然后用 format_beijing_time 转换。
+    
+    参数:
+        time_str: 时间字符串（假定为北京时间）
+        fmt: 时间格式，默认 '%Y-%m-%d %H:%M:%S'
+    
+    返回:
+        带北京时区信息的 datetime 对象，解析失败返回 None
+    """
+    try:
+        # 解析为 naive datetime，然后标记为北京时区（不是转换）
+        dt = datetime.strptime(time_str, fmt)
+        return BEIJING_TZ.localize(dt)
+    except Exception:
+        return None
+
+def beijing_now_str(fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    获取当前北京时间的字符串格式（快捷函数）
+    """
+    return get_beijing_now().strftime(fmt)
 
 # ✅ 全局状态管理字典
 WAITING_TXHASH = {}  # 用于跟踪等待输入交易哈希的用户
@@ -818,7 +907,7 @@ def inline_query(update: Update, context: CallbackContext):
                 update.inline_query.answer(results=results, cache_time=0)
                 return
             uid = generate_24bit_uid()
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             zhuanz.insert_one({
                 'uid': uid,
                 'user_id': user_id,
@@ -1007,7 +1096,7 @@ def shokuan(update: Update, context: CallbackContext):
     username = query.from_user.username
     fullname = query.from_user.full_name.replace('<', '').replace('>', '')
     lastname = query.from_user.last_name
-    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    timer = beijing_now_str()
 
     if user.find_one({'user_id': user_id}) is None:
         try:
@@ -1057,7 +1146,7 @@ def lqhb(update: Update, context: CallbackContext):
     username = query.from_user.username
     fullname = query.from_user.full_name.replace('<', '').replace('>', '')
     lastname = query.from_user.last_name
-    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    timer = beijing_now_str()
 
     if user.find_one({'user_id': user_id}) is None:
         try:
@@ -1335,7 +1424,7 @@ def start(update: Update, context: CallbackContext):
     fullname = update.effective_user.full_name.replace('<', '').replace('>', '')
     lastname = update.effective_user.last_name
     chat_id = update.effective_chat.id
-    now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    now = beijing_now_str()
 
     # 检查是否是新用户
     is_new_user = user.find_one({'user_id': user_id}) is None
@@ -1399,11 +1488,12 @@ def start(update: Update, context: CallbackContext):
 
 
 def show_admin_panel(update: Update, context: CallbackContext, user_id: int):
-    now = datetime.now()
-    today_start = datetime(now.year, now.month, now.day)
+    # 使用北京时间计算统计边界
+    now = get_beijing_now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_start = today_start - timedelta(days=1)
     week_start = today_start - timedelta(days=today_start.weekday())
-    month_start = datetime(now.year, now.month, 1)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     def sum_income(start_time, end_time, cz_type=None):
         query = {
@@ -1442,7 +1532,7 @@ def show_admin_panel(update: Update, context: CallbackContext, user_id: int):
 ├─ 📅 今日收入：<code>{standard_num(today_usdt)}</code> USDT
 └─ 📈 昨日收入：<code>{standard_num(yesterday_usdt)}</code> USDT
 
-⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{format_beijing_time(now, '%m-%d %H:%M:%S')}
 '''.strip()
 
 
@@ -1674,7 +1764,7 @@ def diag_db(update: Update, context: CallbackContext):
 • 提现申请: {withdrawal_count} 条（{pending_withdrawal_count} 条待处理）
 
 <b>⏰ 系统时间</b>
-• 当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+• 当前时间: {beijing_now_str()}
 
 <b>ℹ️ 说明</b>
 此命令用于诊断数据库连接和配置，确保所有代理使用统一的数据库。
@@ -1727,7 +1817,7 @@ def export_gmjlu_records(update: Update, context: CallbackContext):
             pname = o.get('projectname', '未知商品')
             leixing = o.get('leixing', '未知类型')
             text = o.get('text', '')
-            ts = o.get('timer', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))  # 使用timer字段
+            ts = o.get('timer', beijing_now_str())  # 使用timer字段
             count = o.get('count', 1)
             price = o.get('price', 0)  # 单价
             total_price = o.get('total_price', price * count)  # 总价
@@ -1847,7 +1937,7 @@ def export_gmjlu_records(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id, 
             document=buffer, 
-            filename=f"用户购买记录详细报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            filename=f"用户购买记录详细报表_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx",
             caption=f"📊 购买记录导出完成\n\n🛒 总订单: {len(orders)} 个\n👥 总用户: {len(user_stats)} 人\n💰 总收入: {total_revenue:.2f} USDT\n📈 商品类型: {len(category_stats)} 种"
         )
         
@@ -1870,11 +1960,12 @@ def sales_dashboard(update: Update, context: CallbackContext):
         query.edit_message_text("❌ 无权限访问此功能")
         return
 
-    now = datetime.now()
-    today_start = datetime(now.year, now.month, now.day)
+    # 使用北京时间计算统计边界
+    now = get_beijing_now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_start = today_start - timedelta(days=1)
     week_start = today_start - timedelta(days=today_start.weekday())
-    month_start = datetime(now.year, now.month, 1)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # 销量统计 - 修复版：兼容字符串格式的时间字段
     def get_sales_stats(start_time, end_time):
@@ -1887,8 +1978,9 @@ def sales_dashboard(update: Update, context: CallbackContext):
             if timer_value:
                 try:
                     # 处理字符串格式的时间
+                    # 数据库中的时间字符串按北京时间存储，parse_to_beijing将其标记为北京时区
                     if isinstance(timer_value, str):
-                        order_time = datetime.strptime(timer_value, '%Y-%m-%d %H:%M:%S')
+                        order_time = parse_to_beijing(timer_value)
                     else:
                         order_time = timer_value
                     
@@ -1974,7 +2066,7 @@ def sales_dashboard(update: Update, context: CallbackContext):
 {categories_text}
 
 
-⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{format_beijing_time(now, '%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2094,7 +2186,7 @@ def stock_alerts(update: Update, context: CallbackContext):
 └─ 🔍 定期检查库存状态
 
 
-⏰ 更新时间：{datetime.now().strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{beijing_now_str('%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2153,7 +2245,7 @@ def data_export_menu(update: Update, context: CallbackContext):
 └─ Excel (.xlsx) - 便于数据分析
 
 
-⏰ 更新时间：{datetime.now().strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{beijing_now_str('%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2253,7 +2345,7 @@ def export_users_comprehensive(update: Update, context: CallbackContext):
             # 注册时间（如果有的话）
             reg_time = u.get('reg_time', '未知')
             if isinstance(reg_time, datetime):
-                reg_time = reg_time.strftime('%Y-%m-%d %H:%M:%S')
+                reg_time = format_beijing_time(reg_time)
             
             data.append({
                 "用户ID": uid,
@@ -2284,7 +2376,7 @@ def export_users_comprehensive(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id, 
             document=buffer, 
-            filename=f"用户综合数据_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename=f"用户综合数据_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx"
         )
         
         query.edit_message_text(
@@ -2350,7 +2442,7 @@ def export_orders_comprehensive(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"订单综合数据_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename=f"订单综合数据_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx"
         )
         
         query.edit_message_text(
@@ -2387,7 +2479,7 @@ def export_financial_data(update: Update, context: CallbackContext):
             uinfo = user.find_one({'user_id': uid}) or {}
             
             financial_data.append({
-                "充值时间": record.get('time').strftime('%Y-%m-%d %H:%M:%S') if record.get('time') else '',
+                "充值时间": format_beijing_time(record.get('time')) if record.get('time') else '',
                 "用户ID": uid,
                 "用户名": uinfo.get('username', ''),
                 "用户姓名": uinfo.get('fullname', '').replace('<', '').replace('>', ''),
@@ -2398,10 +2490,10 @@ def export_financial_data(update: Update, context: CallbackContext):
                 "备注": record.get('remark', '')
             })
         
-        # 计算财务汇总
-        now = datetime.now()
-        today_start = datetime(now.year, now.month, now.day)
-        month_start = datetime(now.year, now.month, 1)
+        # 计算财务汇总（使用北京时间）
+        now = get_beijing_now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
         def sum_income(start_time, end_time, cz_type=None):
             query_filter = {
@@ -2461,7 +2553,7 @@ def export_financial_data(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"财务数据报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename=f"财务数据报表_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx"
         )
         
         query.edit_message_text(
@@ -2531,7 +2623,7 @@ def export_inventory_data(update: Update, context: CallbackContext):
                 "库存总数": total_count,
                 "库存状态": status,
                 "库存率": f"{(available_count/total_count*100):.1f}%" if total_count > 0 else "0%",
-                "最后更新": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                "最后更新": beijing_now_str()
             })
         
         # 库存汇总统计 - 修复版
@@ -2588,7 +2680,7 @@ def export_inventory_data(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"库存数据报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename=f"库存数据报表_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx"
         )
         
         query.edit_message_text(
@@ -2659,7 +2751,7 @@ def multilang_management(update: Update, context: CallbackContext):
 └─ 🌐 多语言界面适配
 
 
-⏰ 更新时间：{datetime.now().strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{beijing_now_str('%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2769,8 +2861,8 @@ def language_statistics(update: Update, context: CallbackContext):
     language_stats = list(fyb.aggregate(pipeline))
     total_translations = fyb.count_documents({})
     
-    # 统计最活跃翻译时间段
-    recent_24h = datetime.now() - timedelta(hours=24)
+    # 统计最活跃翻译时间段（北京时间）
+    recent_24h = get_beijing_now() - timedelta(hours=24)
     recent_count = fyb.count_documents({"_id": {"$gte": recent_24h}}) if hasattr(fyb.find_one({}), '_id') else 0
 
     text = f"""
@@ -2818,7 +2910,7 @@ def language_statistics(update: Update, context: CallbackContext):
 └─ 📊 翻译比率：<code>{(avg_translated/avg_original*100):.1f}%</code>
 
 
-⏰ 更新时间：{datetime.now().strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{beijing_now_str('%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2934,7 +3026,7 @@ def view_reminder_history(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    now = datetime.now()
+    now = get_beijing_now()
     
     # 模拟提醒历史数据（实际使用时应该从数据库获取）
     history_data = [
@@ -2959,7 +3051,7 @@ def view_reminder_history(update: Update, context: CallbackContext):
 """
     
     for i, record in enumerate(history_data, 1):
-        time_str = record["time"].strftime('%m-%d %H:%M')
+        time_str = format_beijing_time(record["time"], '%m-%d %H:%M')
         type_icon = "🚨" if record["type"] == "缺货" else "⚠️"
         text += f"""├─ {type_icon} {time_str} - {record['product']} (库存:{record['stock']})\n"""
 
@@ -2970,7 +3062,7 @@ def view_reminder_history(update: Update, context: CallbackContext):
 └─ ⚙️ 调整预警阈值
 
 
-⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{format_beijing_time(now, '%m-%d %H:%M:%S')}
     """.strip()
 
     keyboard = [
@@ -2995,7 +3087,7 @@ def detailed_sales_report(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    now = datetime.now()
+    now = get_beijing_now()
     
     # 生成详细销售报表
     text = f"""
@@ -3028,7 +3120,7 @@ def detailed_sales_report(update: Update, context: CallbackContext):
 └─ 🌙 夜间(22-6)：<code>5%</code>
 
 
-⏰ 生成时间：{now.strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 生成时间：{format_beijing_time(now)}
     """.strip()
 
     keyboard = [
@@ -3053,7 +3145,7 @@ def sales_trend_analysis(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    now = datetime.now()
+    now = get_beijing_now()
     
     text = f"""
 📊 <b>销售趋势分析</b>
@@ -3084,7 +3176,7 @@ def sales_trend_analysis(update: Update, context: CallbackContext):
 └─ 💡 建议优化营销策略
 
 
-🤖 AI分析时间：{now.strftime('%Y-%m-%d %H:%M:%S')}
+🤖 AI分析时间：{format_beijing_time(now)}
     """.strip()
 
     keyboard = [
@@ -3282,7 +3374,7 @@ def export_dictionary(update: Update, context: CallbackContext):
                 "原文": trans.get('text', ''),
                 "译文": trans.get('fanyi', ''),
                 "语言": trans.get('language', '未知'),
-                "创建时间": trans.get('_id').generation_time.strftime('%Y-%m-%d %H:%M:%S') if hasattr(trans.get('_id'), 'generation_time') else '未知'
+                "创建时间": format_beijing_time(trans.get('_id').generation_time) if hasattr(trans.get('_id'), 'generation_time') else '未知'
             })
 
         # 生成Excel文件
@@ -3301,7 +3393,7 @@ def export_dictionary(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"翻译词典_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename=f"翻译词典_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx"
         )
 
         query.edit_message_text(
@@ -3376,7 +3468,7 @@ def detailed_lang_report(update: Update, context: CallbackContext):
 └─ 🔄 重新翻译率：<code>3.2%</code>
 
 
-⏰ 生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 生成时间：{beijing_now_str()}
         """.strip()
 
         keyboard = [
@@ -3489,8 +3581,8 @@ def clear_expired_cache(update: Update, context: CallbackContext):
     user_id = query.from_user.id
 
     try:
-        # 计算30天前的时间
-        cutoff_date = datetime.now() - timedelta(days=30)
+        # 计算30天前的时间（北京时间）
+        cutoff_date = get_beijing_now() - timedelta(days=30)
         
         # 获取过期记录数量（这里简化处理，实际应根据具体的时间戳字段）
         total_before = fyb.count_documents({})
@@ -3685,7 +3777,7 @@ def confirm_clear_all_cache(update: Update, context: CallbackContext):
 └─ 💡 建议监控系统运行状况
 
 
-⏰ 清理时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 清理时间：{beijing_now_str()}
         """.strip()
 
         keyboard = [
@@ -3710,11 +3802,12 @@ def show_income_callback(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    now = datetime.now()
-    today_start = datetime(now.year, now.month, now.day)
+    # 使用北京时间计算统计边界
+    now = get_beijing_now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_start = today_start - timedelta(days=1)
     week_start = today_start - timedelta(days=today_start.weekday())
-    month_start = datetime(now.year, now.month, 1)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     def sum_income(start_time, end_time, cz_type=None):
         q = {
@@ -3782,7 +3875,7 @@ def show_income_callback(update: Update, context: CallbackContext):
    └─ 本月：<code>{month_usdt}</code> USDT
 
 📋 <b>统计说明</b>
-├─ 📅 统计时间：{now.strftime('%Y-%m-%d %H:%M:%S')}
+├─ 📅 统计时间：{format_beijing_time(now)}
 ├─ 🔄 数据状态：实时更新
 └─ 💡 包含：支付宝、微信、USDT充值
 
@@ -3845,7 +3938,7 @@ def export_recharge_details(update: Update, context: CallbackContext):
             }.get(cz_type, cz_type)
             
             data.append({
-                '充值时间': r.get('time').strftime('%Y-%m-%d %H:%M:%S') if r.get('time') else '未知',
+                '充值时间': format_beijing_time(r.get('time')) if r.get('time') else '未知',
                 '用户ID': uid,
                 '用户名': u.get('username', '未知'),
                 '用户姓名': u.get('fullname', '').replace('<', '').replace('>', ''),
@@ -3902,8 +3995,8 @@ def export_recharge_details(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"充值明细报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            caption=f"📄 充值明细导出完成\n\n📊 总记录: {len(data)} 条\n💰 总金额: {total_amount:.2f}\n📅 导出时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            filename=f"充值明细报表_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx",
+            caption=f"📄 充值明细导出完成\n\n📊 总记录: {len(data)} 条\n💰 总金额: {total_amount:.2f}\n📅 导出时间: {beijing_now_str()}"
         )
         
         query.edit_message_text("✅ 充值明细导出完成，请查收文件！")
@@ -3993,7 +4086,7 @@ def show_user_income_summary(update: Update, context: CallbackContext):
             alipay = standard_num(s['alipay'])
             wechat = standard_num(s['wechat'])
             count = s['count']
-            last_time = s['last_time'].strftime('%Y-%m-%d') if s['last_time'] else '未知'
+            last_time = format_beijing_time(s['last_time'], '%Y-%m-%d') if s['last_time'] else '未知'
             
             # 计算总价值
             total_value = float(rmb) + float(usdt) * 7.2
@@ -4031,7 +4124,7 @@ def show_user_income_summary(update: Update, context: CallbackContext):
 
 
 💡 <b>说明</b>: 按总充值金额排序，USDT按1:7.2汇率计算
-⏰ <b>更新时间</b>: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ <b>更新时间</b>: {beijing_now_str()}
         """.strip()
 
         # 构建分页按钮
@@ -4124,8 +4217,8 @@ def export_user_summary_report(update: Update, context: CallbackContext):
                 'USDT充值': s['usdt'],
                 '总价值(元)': round(total_value, 2),
                 '充值次数': s['count'],
-                '首次充值': s['first_time'].strftime('%Y-%m-%d %H:%M:%S') if s['first_time'] else '',
-                '最后充值': s['last_time'].strftime('%Y-%m-%d %H:%M:%S') if s['last_time'] else '',
+                '首次充值': format_beijing_time(s['first_time']) if s['first_time'] else '',
+                '最后充值': format_beijing_time(s['last_time']) if s['last_time'] else '',
                 '用户状态': u.get('state', '1'),
                 '当前余额': u.get('USDT', 0)
             })
@@ -4192,7 +4285,7 @@ def export_user_summary_report(update: Update, context: CallbackContext):
         context.bot.send_document(
             chat_id=user_id,
             document=buffer,
-            filename=f"用户充值汇总报表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            filename=f"用户充值汇总报表_{beijing_now_str('%Y%m%d_%H%M%S')}.xlsx",
             caption=f"📊 用户充值汇总报表\n\n👥 总用户: {total_users} 人\n💰 总金额: {total_value:.2f} 元\n📈 交易数: {total_transactions} 笔"
         )
         
@@ -4740,11 +4833,12 @@ def backstart(update: Update, context: CallbackContext):
     query.answer()
     user_id = query.from_user.id
 
-    now = datetime.now()
-    today_start = datetime(now.year, now.month, now.day)
+    # 使用北京时间计算统计边界
+    now = get_beijing_now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_start = today_start - timedelta(days=1)
     week_start = today_start - timedelta(days=today_start.weekday())
-    month_start = datetime(now.year, now.month, 1)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     def sum_income(start_time, end_time, cz_type=None):
         query = {
@@ -4783,7 +4877,7 @@ def backstart(update: Update, context: CallbackContext):
 ├─ 📅 今日收入：<code>{standard_num(today_usdt)}</code> USDT
 └─ 📈 昨日收入：<code>{standard_num(yesterday_usdt)}</code> USDT
 
-⏰ 更新时间：{now.strftime('%m-%d %H:%M:%S')}
+⏰ 更新时间：{format_beijing_time(now, '%m-%d %H:%M:%S')}
 '''.strip()
 
 
@@ -4834,15 +4928,15 @@ def gmaijilu(update: Update, context: CallbackContext):
         timer_value = i.get('timer')
         count = i.get('count', 1)
         
-        # 处理时间显示
+        # 处理时间显示（北京时间）
         if isinstance(timer_value, str):
             try:
-                timer_dt = datetime.strptime(timer_value, '%Y-%m-%d %H:%M:%S')
-                time_str = timer_dt.strftime("%m-%d %H:%M")
+                timer_dt = parse_to_beijing(timer_value)
+                time_str = format_beijing_time(timer_dt, "%m-%d %H:%M") if timer_dt else timer_value[:10]
             except:
                 time_str = timer_value[:10] if len(timer_value) > 10 else timer_value
         elif isinstance(timer_value, datetime):
-            time_str = timer_value.strftime("%m-%d %H:%M")
+            time_str = format_beijing_time(timer_value, "%m-%d %H:%M")
         else:
             time_str = '未知时间'
 
@@ -4892,7 +4986,7 @@ def gmaijilu(update: Update, context: CallbackContext):
 <b>记录概览</b>
 ├─ 总订单数: <code>{total_count}</code>
 ├─ 显示条数: <code>{min(10, len(jilu_list))}</code>
-└─ 最后更新: <code>{datetime.now().strftime("%m-%d %H:%M")}</code>
+└─ 最后更新: <code>{beijing_now_str("%m-%d %H:%M")}</code>
 
 <b>操作说明</b>
 └─ 点击下方按钮查看或重新下载商品
@@ -4925,7 +5019,7 @@ def gmaijilu(update: Update, context: CallbackContext):
 <b>Records Overview</b>
 ├─ Total Orders: <code>{total_count}</code>
 ├─ Showing: <code>{min(10, len(jilu_list))}</code>
-└─ Last Update: <code>{datetime.now().strftime("%m-%d %H:%M")}</code>
+└─ Last Update: <code>{beijing_now_str("%m-%d %H:%M")}</code>
 
 <b>Instructions</b>
 └─ Click buttons below to view or re-download
@@ -4977,15 +5071,15 @@ def gmainext(update: Update, context: CallbackContext):
         timer_value = i.get('timer')
         count = i.get('count', 1)
         
-        # 处理时间显示
+        # 处理时间显示（北京时间）
         if isinstance(timer_value, str):
             try:
-                timer_dt = datetime.strptime(timer_value, '%Y-%m-%d %H:%M:%S')
-                time_str = timer_dt.strftime("%m-%d %H:%M")
+                timer_dt = parse_to_beijing(timer_value)
+                time_str = format_beijing_time(timer_dt, "%m-%d %H:%M") if timer_dt else timer_value[:10]
             except:
                 time_str = timer_value[:10] if len(timer_value) > 10 else timer_value
         elif isinstance(timer_value, datetime):
-            time_str = timer_value.strftime("%m-%d %H:%M")
+            time_str = format_beijing_time(timer_value, "%m-%d %H:%M")
         else:
             time_str = '未知时间'
 
@@ -5036,7 +5130,7 @@ def gmainext(update: Update, context: CallbackContext):
 ├─ 当前页面: <code>{current_page}/{total_pages}</code>
 ├─ 显示记录: <code>{len(jilu_list)}</code> 条
 ├─ 总记录数: <code>{total_count}</code> 条
-└─ 最后更新: <code>{datetime.now().strftime("%m-%d %H:%M")}</code>
+└─ 最后更新: <code>{beijing_now_str("%m-%d %H:%M")}</code>
 
 <b>操作说明</b>
 └─ 点击商品按钮查看或重新下载
@@ -5077,7 +5171,7 @@ def gmainext(update: Update, context: CallbackContext):
 ├─ Current Page: <code>{current_page}/{total_pages}</code>
 ├─ Records Shown: <code>{len(jilu_list)}</code>
 ├─ Total Records: <code>{total_count}</code>
-└─ Last Update: <code>{datetime.now().strftime("%m-%d %H:%M")}</code>
+└─ Last Update: <code>{beijing_now_str("%m-%d %H:%M")}</code>
 
 <b>Instructions</b>
 └─ Click product buttons to view or re-download
@@ -6896,11 +6990,11 @@ def is_number(s):
     return False
 
 def dabaohao(context, user_id, folder_names, leixing, nowuid, erjiprojectname, fstext, yssj):
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+    current_time = get_beijing_now()
+    formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
     timestamp = str(current_time.timestamp()).replace(".", "")
     bianhao = formatted_time + timestamp
-    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    timer = beijing_now_str()
     count = len(folder_names)
 
     if leixing == '协议号':
@@ -6991,7 +7085,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             # for j in list(hb.find({"nowuid": nowuid,'state': 0},limit=gmsl)):
             #     projectname = j['projectname']
             #     hbid = j['hbid']
-            #     timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            #     timer = beijing_now_str()
 
             #     hb.update_one({'hbid': hbid},{"$set":{'state': 1, 'yssj': timer, 'gmid': user_id}})
             #     folder_names.append(projectname)
@@ -7007,11 +7101,11 @@ def qrgaimai(update: Update, context: CallbackContext):
             cursor = hb.aggregate(pipeline)
             folder_names = [doc['projectname'] for doc in cursor]
 
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             update_data = {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}}
             hb.update_many({"_id": {"$in": document_ids}}, update_data)
 
-            # timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            # timer = beijing_now_str()
             # update_data = {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}}
 
             # hb.update_many(query_condition, update_data, limit=gmsl)
@@ -7056,7 +7150,7 @@ def qrgaimai(update: Update, context: CallbackContext):
 
             # # 组合编号
             # bianhao = formatted_time + timestamp
-            # timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            # timer = beijing_now_str()
             # goumaijilua('协议号', bianhao, user_id, erjiprojectname,zip_filename,fstext, timer)
             # # 发送 zip 文件给用户
             # query.message.reply_document(open(zip_filename, "rb"))
@@ -7077,7 +7171,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             for j in list(hb.find({"nowuid": nowuid, 'state': 0, 'leixing': '谷歌'}, limit=gmsl)):
                 projectname = j['projectname']
                 hbid = j['hbid']
-                timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                timer = beijing_now_str()
                 hb.update_one({'hbid': hbid}, {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}})
                 data = j['data']
                 us1 = data['账户']
@@ -7092,17 +7186,17 @@ def qrgaimai(update: Update, context: CallbackContext):
             zip_filename = f"./谷歌发货/{user_id}_{shijiancuo}.txt"
             with open(zip_filename, "w") as f:
                 f.write(folder_names)
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
 
             # 组合编号
             bianhao = formatted_time + timestamp
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             goumaijilua('谷歌', bianhao, user_id, erjiprojectname, zip_filename, fstext, timer)
 
             query.message.reply_document(open(zip_filename, "rb"))
@@ -7136,7 +7230,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             for j in list(hb.find({"nowuid": nowuid, 'state': 0}, limit=gmsl)):
                 projectname = j['projectname']
                 hbid = j['hbid']
-                timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                timer = beijing_now_str()
                 hb.update_one({'hbid': hbid}, {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}})
                 folder_names.append(projectname)
 
@@ -7147,17 +7241,17 @@ def qrgaimai(update: Update, context: CallbackContext):
                 for folder_name in folder_names:
                     f.write(folder_name + "\n")
 
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
 
             # 组合编号
             bianhao = formatted_time + timestamp
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             link_text = '\n'.join(folder_names)  # API链接内容应该是账号列表
             goumaijilua('API链接', bianhao, user_id, erjiprojectname, link_text, fstext, timer)
 
@@ -7187,7 +7281,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             for j in list(hb.find({"nowuid": nowuid, 'state': 0}, limit=gmsl)):
                 projectname = j['projectname']
                 hbid = j['hbid']
-                timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                timer = beijing_now_str()
                 hb.update_one({'hbid': hbid}, {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}})
                 folder_names.append(projectname)
 
@@ -7196,17 +7290,17 @@ def qrgaimai(update: Update, context: CallbackContext):
 
             folder_names = '\n'.join(folder_names)
 
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
 
             # 组合编号
             bianhao = formatted_time + timestamp
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             goumaijilua('会员链接', bianhao, user_id, erjiprojectname, folder_names, fstext, timer, gmsl)
 
 
@@ -7238,7 +7332,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             # for j in list(hb.find({"nowuid": nowuid, 'state': 0}, limit=gmsl)):
             #     projectname = j['projectname']
             #     hbid = j['hbid']
-            #     timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            #     timer = beijing_now_str()
             #     hb.update_one({'hbid': hbid}, {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}})
             #     folder_names.append(projectname)
 
@@ -7253,7 +7347,7 @@ def qrgaimai(update: Update, context: CallbackContext):
             cursor = hb.aggregate(pipeline)
             folder_names = [doc['projectname'] for doc in cursor]
 
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             update_data = {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}}
             hb.update_many({"_id": {"$in": document_ids}}, update_data)
 
@@ -7307,7 +7401,7 @@ def qrgaimai(update: Update, context: CallbackContext):
 
             # # 组合编号
             # bianhao = formatted_time + timestamp
-            # timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            # timer = beijing_now_str()
             # goumaijilua('直登号', bianhao, user_id, erjiprojectname, zip_filename,fstext, timer)
 
             # query.message.reply_document(open(zip_filename, "rb"))
@@ -7344,7 +7438,7 @@ def qchuall(update: Update, context: CallbackContext):
         for j in list(hb.find({"nowuid": nowuid, 'state': 0})):
             projectname = j['projectname']
             hbid = j['hbid']
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             hb.delete_one({'hbid': hbid})
             folder_names.append(projectname)
         shijiancuo = int(time.time())
@@ -7365,7 +7459,7 @@ def qchuall(update: Update, context: CallbackContext):
         for j in list(hb.find({"nowuid": nowuid, 'state': 0})):
             projectname = j['projectname']
             hbid = j['hbid']
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             hb.delete_one({'hbid': hbid})
             folder_names.append(projectname)
 
@@ -7382,7 +7476,7 @@ def qchuall(update: Update, context: CallbackContext):
         for j in list(hb.find({"nowuid": nowuid, 'state': 0, 'leixing': '谷歌'})):
             projectname = j['projectname']
             hbid = j['hbid']
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             hb.update_one({'hbid': hbid}, {"$set": {'state': 1, 'yssj': timer, 'gmid': user_id}})
             data = j['data']
             us1 = data['账户']
@@ -7406,7 +7500,7 @@ def qchuall(update: Update, context: CallbackContext):
         for j in list(hb.find({"nowuid": nowuid, 'state': 0})):
             projectname = j['projectname']
             hbid = j['hbid']
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             hb.delete_one({'hbid': hbid})
             folder_names.append(projectname)
         folder_names = '\n'.join(folder_names)
@@ -7416,7 +7510,7 @@ def qchuall(update: Update, context: CallbackContext):
         for j in list(hb.find({"nowuid": nowuid, 'state': 0})):
             projectname = j['projectname']
             hbid = j['hbid']
-            timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            timer = beijing_now_str()
             hb.delete_one({'hbid': hbid})
             folder_names.append(projectname)
 
@@ -7506,7 +7600,7 @@ def textkeyboard(update: Update, context: CallbackContext):
         bot_id = context.bot.id
         fullname = chat.full_name.replace('<', '').replace('>', '')
         reply_to_message_id = update.effective_message.message_id
-        timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        timer = beijing_now_str()
         user_list = user.find_one({"user_id": user_id})
         creation_time = user_list['creation_time']
         state = user_list['state']
@@ -7596,7 +7690,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                             return
                         user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
                         uid = generate_24bit_uid()
-                        timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                        timer = beijing_now_str()
                         hongbao.insert_one({
                             'uid': uid,
                             'user_id': user_id,
@@ -7647,10 +7741,10 @@ def textkeyboard(update: Update, context: CallbackContext):
                         lang = user_info.get('lang', 'zh')
                         paytype = user_info.get('cz_paytype', 'usdt')
 
-                        now = datetime.now()
-                        timer = now.strftime('%Y%m%d%H%M%S')
-                        timer_str = now.strftime('%Y-%m-%d %H:%M:%S')
-                        expire_str = (now + timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
+                        now = get_beijing_now()
+                        timer = format_beijing_time(now, '%Y%m%d%H%M%S')
+                        timer_str = format_beijing_time(now)
+                        expire_str = format_beijing_time(now + timedelta(minutes=10))
 
                         topup.delete_many({'user_id': user_id, 'status': 'pending'})
 
@@ -8197,7 +8291,7 @@ def textkeyboard(update: Update, context: CallbackContext):
 
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
                     count = 0
-                    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    timer = beijing_now_str()
                     total = len(lines)
                     step = max(1, total // 10)
 
@@ -8287,7 +8381,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
 
                     count = 0
-                    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    timer = beijing_now_str()
                     with zipfile.ZipFile(new_file_path, 'r') as zip_ref:
                         file_list = zip_ref.infolist()
                         total = len(file_list)
@@ -8381,7 +8475,7 @@ def textkeyboard(update: Update, context: CallbackContext):
 
                     matches = list(zip(login, password, submail))
 
-                    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    timer = beijing_now_str()
                     count = 0
                     total = len(matches)
                     step = max(1, total // 10)
@@ -8469,7 +8563,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                             # 去除每行末尾的换行符并添加到列表中
                             link_list.append(line.strip())
 
-                    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    timer = beijing_now_str()
                     count = 0
                     total = len(link_list)
                     step = max(1, total // 10)
@@ -8545,7 +8639,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                     # 解压缩文件
                     count = 0
                     tj_dict = {}
-                    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    timer = beijing_now_str()
                     with zipfile.ZipFile(new_file_path, 'r') as zip_ref:
                         for file_info in zip_ref.infolist():
                             filename = file_info.filename
@@ -8755,7 +8849,7 @@ def textkeyboard(update: Update, context: CallbackContext):
 └─ 联系客服支持
 
 
-<i>数据更新时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</i>
+<i>数据更新时间: {beijing_now_str()}</i>
                     '''.strip()
                 else:
                     fstext = f'''
@@ -8779,7 +8873,7 @@ def textkeyboard(update: Update, context: CallbackContext):
 └─ Contact Customer Support
 
 
-<i>Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</i>
+<i>Last Updated: {beijing_now_str()}</i>
                     '''.strip()
                 
                 keyboard = [[
@@ -9764,7 +9858,7 @@ def czmoney_callback(update: Update, context: CallbackContext):
     USDT_TO_CNY = 7.2
 
     base_rmb = round(amount * USDT_TO_CNY, 2)
-    bianhao = datetime.now().strftime('%Y%m%d') + str(int(time.time()))
+    bianhao = beijing_now_str('%Y%m%d') + str(int(time.time()))
 
     while True:
         suijishu = round(random.uniform(0.01, 0.50), 2)
@@ -9804,11 +9898,11 @@ def czmoney_callback(update: Update, context: CallbackContext):
         query.answer("支付通道异常，请稍后重试", show_alert=True)
         return
 
-    # 时间字段
-    now_time = datetime.now()
+    # 时间字段（北京时间）
+    now_time = get_beijing_now()
     expire_time = now_time + timedelta(minutes=10)
-    now_str = now_time.strftime('%Y-%m-%d %H:%M:%S')
-    expire_str = expire_time.strftime('%Y-%m-%d %H:%M:%S')
+    now_str = format_beijing_time(now_time)
+    expire_str = format_beijing_time(expire_time)
 
     # 美化文本（中英）
     payment_name = "微信支付" if paytype == 'wechat' else "支付宝"
@@ -9944,7 +10038,7 @@ def yuecz(update: Update, context: CallbackContext):
     topup.delete_many({'user_id': user_id, 'status': 'pending'})
 
     # 编号生成
-    timer = time.strftime('%Y%m%d', time.localtime())
+    timer = beijing_now_str('%Y%m%d')
     bianhao = timer + str(int(time.time()))
 
     # 随机尾数金额
@@ -9954,10 +10048,10 @@ def yuecz(update: Update, context: CallbackContext):
         if not topup.find_one({'money': total_money, 'status': 'pending'}):
             break
 
-    now = datetime.now()
+    now = get_beijing_now()
     expire = now + timedelta(minutes=10)
-    timer_str = now.strftime('%Y-%m-%d %H:%M:%S')
-    expire_str = expire.strftime('%Y-%m-%d %H:%M:%S')
+    timer_str = format_beijing_time(now)
+    expire_str = format_beijing_time(expire)
 
     trc20 = shangtext.find_one({'projectname': '充值地址'})['text']
 
@@ -10073,7 +10167,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
             pending_count = len(pending_withdrawals)
             pending_amount = sum([w['amount'] for w in pending_withdrawals])
             
-            today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+            today_start = get_beijing_now().replace(hour=0, minute=0, second=0, microsecond=0)
             today_processed = withdrawal_requests.count_documents({
                 'status': {'$in': ['approved', 'completed']},
                 'processed_time': {'$gte': today_start}
@@ -10089,7 +10183,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 • 已处理：{today_processed} 笔
 • 系统运行正常
 
-⏰ 最后检查：{datetime.datetime.now().strftime('%H:%M:%S')}"""
+⏰ 最后检查：{beijing_now_str('%H:%M:%S')}"""
 
                 keyboard = [
                     [InlineKeyboardButton("🔄 刷新", callback_data="agent_withdrawal_manage")],
@@ -10109,7 +10203,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 
                 # 显示最新的3个申请
                 for i, w in enumerate(pending_withdrawals[:3], 1):
-                    created = w['created_time'].strftime('%m-%d %H:%M')
+                    created = format_beijing_time(w['created_time'], '%m-%d %H:%M')
                     text += f"\n{i}. 用户{w['user_id']} - {w['amount']:.2f} USDT ({created})"
 
                 keyboard = [
@@ -10156,7 +10250,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
                 keyboard = []
                 
                 for w in pending_withdrawals:
-                    created = w['created_time'].strftime('%m-%d %H:%M')
+                    created = format_beijing_time(w['created_time'], '%m-%d %H:%M')
                     address_short = f"{w['withdrawal_address'][:6]}...{w['withdrawal_address'][-6:]}"
                     text += f"💰 {w['amount']:.2f} USDT\n"
                     text += f"👤 用户ID: {w['user_id']}\n" 
@@ -10296,7 +10390,8 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
         
         for i, w in enumerate(withdrawals[:5], 1):
             status = status_map.get(w.get('status'), '未知')
-            created = w.get('created_time', datetime.datetime.now()).strftime('%m-%d %H:%M')
+            created_time = w.get('created_time')
+            created = format_beijing_time(created_time, '%m-%d %H:%M') if created_time else beijing_now_str('%m-%d %H:%M')
             
             text += f"{i}. <b>{w['amount']:.2f} USDT</b> - {status}\n"
             text += f"   申请时间: {created}\n"
@@ -10494,7 +10589,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 <b>👤 用户ID:</b> <code>{withdrawal['user_id']}</code>
 <b>💰 提现金额:</b> <code>{withdrawal['amount']:.2f} USDT</code>
 <b>📍 提现地址:</b> <code>{withdrawal['withdrawal_address']}</code>
-<b>⏰ 完成时间:</b> <code>{now.strftime('%Y-%m-%d %H:%M:%S')}</code>
+<b>⏰ 完成时间:</b> <code>{format_beijing_time(now)}</code>
 
 <b>📊 验证状态:</b> ✅ 已验证
 🎉 感谢您的使用！"""
@@ -10534,7 +10629,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 • 用户ID: {withdrawal['user_id']}
 • 提现金额: {withdrawal['amount']:.2f} USDT
 • 提现地址: {withdrawal['withdrawal_address']}
-• 完成时间: {now.strftime('%Y-%m-%d %H:%M:%S')}
+• 完成时间: {format_beijing_time(now)}
 
 ✅ 系统已自动:
 • 标记提现完成
@@ -10737,7 +10832,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
             return
         
         from datetime import datetime
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = beijing_now_str()
         
         try:
             # 获取所有代理机器人
@@ -10877,11 +10972,11 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
                 total_balance += user_doc.get('USDT', 0)
                 total_consumption += user_doc.get('zgje', 0)
             
-            # 获取今日新增用户
+            # 获取今日新增用户（北京时间）
             from datetime import datetime, timedelta
-            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_start = get_beijing_now().replace(hour=0, minute=0, second=0, microsecond=0)
             today_users = agent_users_collection.count_documents({
-                'creation_time': {'$gte': today_start.strftime('%Y-%m-%d %H:%M:%S')}
+                'creation_time': {'$gte': format_beijing_time(today_start)}
             })
             
             text = f"""📊 <b>{agent_info['agent_name']} - 用户统计</b>
@@ -10897,7 +10992,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 • 平均消费：<code>{total_consumption/total_users if total_users > 0 else 0:.2f}</code> USDT/人
 
 📅 <b>统计时间：</b>
-{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+{beijing_now_str()}"""
 
             keyboard = [[InlineKeyboardButton("🔙 返回", callback_data=f'manage_agent_users_{agent_bot_id}')]]
             
@@ -11020,7 +11115,7 @@ def jiexi(context: CallbackContext):
                 user.update_one({'user_id': user_id}, {"$set": {'USDT': now_price}})
 
                 # 写入充值日志
-                timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                timer = beijing_now_str()
                 order_id = str(uuid.uuid4())
                 user_logging(order_id, '充值', user_id, today_money, timer)
 
@@ -11185,7 +11280,7 @@ def handle_user_withdrawal_txid(update: Update, context: CallbackContext):
             f"• 提现金额: {withdrawal['amount']:.2f} USDT\n"
             f"• 提现地址: {withdrawal.get('withdrawal_address', 'N/A')}\n"
             f"• 交易哈希: <code>{text}</code>\n"
-            f"• 提交时间: {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            f"• 提交时间: {format_beijing_time(now)}\n\n"
             f"⏳ <b>处理状态</b>\n"
             f"系统正在验证您的交易，请耐心等待。\n"
             f"验证通过后将自动通知您。\n\n"
@@ -11202,7 +11297,7 @@ def handle_user_withdrawal_txid(update: Update, context: CallbackContext):
                          f"用户ID: {user_id}\n"
                          f"提现金额: {withdrawal['amount']:.2f} USDT\n"
                          f"交易哈希: <code>{text}</code>\n"
-                         f"提交时间: {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                         f"提交时间: {format_beijing_time(now)}\n\n"
                          f"请尽快验证处理。",
                     parse_mode='HTML'
                 )
@@ -11254,7 +11349,8 @@ def check_my_withdrawals(update: Update, context: CallbackContext):
     
     for i, w in enumerate(withdrawals[:5], 1):
         status = status_map.get(w.get('status'), '未知')
-        created = w.get('created_time', datetime.datetime.now()).strftime('%m-%d %H:%M')
+        created_time = w.get('created_time')
+        created = format_beijing_time(created_time, '%m-%d %H:%M') if created_time else beijing_now_str('%m-%d %H:%M')
         
         text += f"{i}. <b>{w['amount']:.2f} USDT</b> - {status}\n"
         text += f"   申请时间: {created}\n"
@@ -11331,10 +11427,16 @@ def jianceguoqi(context: CallbackContext):
                 user_id = i['user_id']
                 message_id = i['message_id']
 
-                dt = datetime.strptime(timer, '%Y-%m-%d %H:%M:%S')
+                # 解析订单时间（北京时间字符串 -> 带时区的 datetime）
+                dt = parse_to_beijing(timer)
+                if not dt:
+                    continue
+                # 计算过期时间（时区感知的 datetime）
                 new_dt = dt + timedelta(minutes=10)
-                current_time = datetime.now()
+                # 获取当前北京时间（时区感知的 datetime）
+                current_time = get_beijing_now()
 
+                # 比较两个时区感知的 datetime 对象
                 if current_time >= new_dt:
                     # 删除原来的充值页面
                     try:
@@ -11518,7 +11620,7 @@ def adm(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=user_id, text="❌ 目标用户不存在")
         return
 
-    timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    timer = beijing_now_str()
     current_balance = target_user.get('USDT', 0)
     new_balance = round(current_balance + amount, 2) if is_add else round(current_balance - amount, 2)
 
@@ -11566,7 +11668,7 @@ def cha(update: Update, context: CallbackContext):
         username = chat['username']
         firstname = chat['first_name']
         fullname = chat['full_name']
-        timer = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        timer = beijing_now_str()
         lastname = chat['last_name']
         text = update.message.text
         text1 = text.split(' ')
@@ -12195,7 +12297,7 @@ def confirm_agent_create_callback(update: Update, context: CallbackContext):
 ├─ ID：<code>{agent_bot_id}</code>
 └─ 利润加价：+{wizard_data['commission']}
 
-⏰ 时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 时间：{beijing_now_str()}
                     """.strip()
                     
                     context.bot.send_message(
@@ -12214,7 +12316,7 @@ def confirm_agent_create_callback(update: Update, context: CallbackContext):
 ├─ 机器人ID：<code>{agent_bot_id}</code>
 ├─ 机器人用户名：@{wizard_data['username']}
 ├─ 利润加价：<code>+{wizard_data['commission']}</code>
-└─ 创建时间：<code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>
+└─ 创建时间：<code>{beijing_now_str()}</code>
 
 🛍️ <b>商品配置：</b>
 ├─ 已克隆商品：<code>{cloned_products}</code> 个
@@ -12353,7 +12455,7 @@ def handle_create_agent_bot_command(update: Update, context: CallbackContext):
 ├─ 机器人ID：<code>{agent_bot_id}</code>
 ├─ 机器人用户名：@{agent_username}
 ├─ 佣金比例：<code>{commission_rate}%</code>
-└─ 创建时间：<code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>
+└─ 创建时间：<code>{beijing_now_str()}</code>
 
 🛍️ <b>商品配置：</b>
 ├─ 已克隆商品：<code>{cloned_products}</code> 个
@@ -12593,7 +12695,7 @@ def show_agent_report_detail(update: Update, context: CallbackContext, agent_bot
                 }
             
             from datetime import datetime
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            current_time = beijing_now_str()
             
             # 时间周期描述
             period_name_map = {
@@ -13312,7 +13414,7 @@ def handle_adjust_balance_command(update: Update, context: CallbackContext):
                 'new_balance': new_balance,
                 'amount_changed': amount_change,
                 'reason': reason,
-                'operation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'operation_time': beijing_now_str(),
                 'status': 'completed'
             }
             
@@ -13420,7 +13522,7 @@ def send_balance_notification_to_user(agent_bot_id, target_user_id, operation, a
 ├─ 操作类型：<code>{operation_display}</code>
 ├─ 变动金额：<code>{amount_display}</code> USDT
 ├─ 当前余额：<code>{new_balance:.2f}</code> USDT
-└─ 变动时间：<code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>
+└─ 变动时间：<code>{beijing_now_str()}</code>
 
 📝 <b>变动原因：</b>
 {reason}
@@ -13910,7 +14012,7 @@ def detailed_balance_stats(update: Update, context: CallbackContext):
         ]
         
         text = f"📊 <b>{agent_info['agent_name']} - 详细统计</b>\n\n"
-        text += f"📅 生成时间：<code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>\n\n"
+        text += f"📅 生成时间：<code>{beijing_now_str()}</code>\n\n"
         
         # 基础统计
         pipeline = [
@@ -14003,7 +14105,7 @@ def balance_statistics(update: Update, context: CallbackContext):
             return
         
         # 生成详细统计
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = beijing_now_str()
         
         text = f"📊 <b>余额统计报表</b>\n"
         text += f"🕐 生成时间：<code>{current_time}</code>\n\n"
@@ -14314,7 +14416,7 @@ def handle_user_balance_set(update: Update, context: CallbackContext):
             if not user:
                 # ✅ 自动创建用户（auto-provision）
                 print(f"🔧 用户 {target_user_id} 不存在于代理 {target_agent_id}，自动创建")
-                creation_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                creation_time = beijing_now_str()
                 success, count_id = create_agent_user_data(
                     agent_bot_id=target_agent_id,
                     user_id=target_user_id,
@@ -14355,7 +14457,7 @@ def handle_user_balance_set(update: Update, context: CallbackContext):
                     'amount_changed': amount,
                     'before_balance': current_balance,
                     'after_balance': new_balance,
-                    'operation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'operation_time': beijing_now_str(),
                     'reason': 'manual_adjustment'
                 })
                 
@@ -14378,7 +14480,7 @@ def handle_user_balance_set(update: Update, context: CallbackContext):
 
 {'➕ 增加' if is_add else '➖ 减少'}: {abs_amount:.2f} USDT
 💎 当前余额: {new_balance:.2f} USDT
-⏰ 操作时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 操作时间: {beijing_now_str()}
 
 如有疑问请联系客服"""
                         
@@ -14467,7 +14569,7 @@ def handle_user_balance_set(update: Update, context: CallbackContext):
                 'amount_changed': amount,
                 'before_balance': current_balance,
                 'after_balance': new_balance,
-                'operation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'operation_time': beijing_now_str(),
                 'reason': 'manual_adjustment'
             })
             
@@ -14491,7 +14593,7 @@ def handle_user_balance_set(update: Update, context: CallbackContext):
 
 {'➕ 增加' if is_add else '➖ 减少'}: {abs_amount:.2f} USDT
 💎 当前余额: {new_balance:.2f} USDT
-⏰ 操作时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 操作时间: {beijing_now_str()}
 
 如有疑问请联系客服"""
                     
@@ -14547,7 +14649,7 @@ def handle_uset_callback(update: Update, context: CallbackContext):
         if not user:
             # ✅ 自动创建用户（auto-provision）
             print(f"🔧 用户 {target_user_id} 不存在于代理 {agent_bot_id}，自动创建")
-            creation_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            creation_time = beijing_now_str()
             success, count_id = create_agent_user_data(
                 agent_bot_id=agent_bot_id,
                 user_id=target_user_id,
@@ -14588,7 +14690,7 @@ def handle_uset_callback(update: Update, context: CallbackContext):
                 'amount_changed': amount,
                 'before_balance': current_balance,
                 'after_balance': new_balance,
-                'operation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'operation_time': beijing_now_str(),
                 'reason': 'manual_adjustment'
             })
             
@@ -14611,7 +14713,7 @@ def handle_uset_callback(update: Update, context: CallbackContext):
 
 {'➕ 增加' if amount > 0 else '➖ 减少'}: {abs(amount):.2f} USDT
 💎 当前余额: {new_balance:.2f} USDT
-⏰ 操作时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ 操作时间: {beijing_now_str()}
 
 如有疑问请联系客服"""
                     
