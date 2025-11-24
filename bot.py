@@ -26,6 +26,7 @@ from datetime import datetime, timedelta
 from glob import glob
 from random import randint, shuffle
 from dotenv import load_dotenv
+import pytz
 
 import telegram
 from telegram import (
@@ -302,23 +303,108 @@ REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "20"))
 # 日志目录初始化
 os.makedirs(os.path.dirname(LOG_FILE_PATH) if os.path.dirname(LOG_FILE_PATH) else '.', exist_ok=True)
 
+# 北京时区用于日志 (需要在 logging 配置前定义)
+BEIJING_TZ_FOR_LOGGING = pytz.timezone('Asia/Shanghai')
+
+class BeijingFormatter(logging.Formatter):
+    """使用北京时间的日志格式化器"""
+    def formatTime(self, record, datefmt=None):
+        dt = datetime.fromtimestamp(record.created, tz=BEIJING_TZ_FOR_LOGGING)
+        if datefmt:
+            return dt.strftime(datefmt)
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+
 # 文件日志配置
-logging.basicConfig(
-    format='[%(asctime)s] [%(levelname)s] %(message)s',
-    level=logging.INFO,
-    filename=LOG_FILE_PATH,
-    filemode='a',
-)
+file_handler = logging.FileHandler(LOG_FILE_PATH, mode='a', encoding='utf-8')
+file_handler.setLevel(logging.INFO)
+file_formatter = BeijingFormatter('[%(asctime)s] [%(levelname)s] %(message)s')
+file_handler.setFormatter(file_formatter)
 
 # 控制台日志 handler（避免重复添加）
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
-formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
-console.setFormatter(formatter)
-if not logging.getLogger('').handlers:
-    logging.getLogger('').addHandler(console)
+console_formatter = BeijingFormatter('[%(asctime)s] [%(levelname)s] %(message)s')
+console.setFormatter(console_formatter)
+
+# 配置根日志记录器
+root_logger = logging.getLogger('')
+root_logger.setLevel(logging.INFO)
+if not root_logger.handlers:
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console)
 
 logging.info("✅ 日志系统初始化完成")
+
+# ================================ 北京时间工具函数 ================================
+# 所有对外展示的时间统一使用北京时间 (Asia/Shanghai, UTC+8)
+# BEIJING_TZ 已在日志配置部分定义为 BEIJING_TZ_FOR_LOGGING
+
+BEIJING_TZ = BEIJING_TZ_FOR_LOGGING  # 复用日志部分定义的时区对象
+
+def get_beijing_now():
+    """
+    获取当前北京时间
+    返回带时区信息的 datetime 对象
+    """
+    return datetime.now(BEIJING_TZ)
+
+def format_beijing_time(dt=None, fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    将时间格式化为北京时间字符串
+    
+    参数:
+        dt: datetime 对象、时间戳(int/float)或None
+            - 如果是 naive datetime，假定为 UTC 时间
+            - 如果是 aware datetime，转换到北京时区
+            - 如果是时间戳，转换为北京时间
+            - 如果是 None，返回当前北京时间
+        fmt: 时间格式字符串，默认 '%Y-%m-%d %H:%M:%S'
+    
+    返回:
+        格式化的北京时间字符串
+    """
+    if dt is None:
+        # 返回当前北京时间
+        return get_beijing_now().strftime(fmt)
+    
+    if isinstance(dt, (int, float)):
+        # 时间戳转换为北京时间
+        dt = datetime.fromtimestamp(dt, tz=pytz.UTC)
+    elif isinstance(dt, datetime):
+        if dt.tzinfo is None:
+            # naive datetime，假定为 UTC
+            dt = pytz.UTC.localize(dt)
+    else:
+        # 不支持的类型，返回当前北京时间
+        return get_beijing_now().strftime(fmt)
+    
+    # 转换到北京时区并格式化
+    beijing_time = dt.astimezone(BEIJING_TZ)
+    return beijing_time.strftime(fmt)
+
+def parse_to_beijing(time_str, fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    解析时间字符串为北京时间的 datetime 对象
+    
+    参数:
+        time_str: 时间字符串
+        fmt: 时间格式，默认 '%Y-%m-%d %H:%M:%S'
+    
+    返回:
+        带北京时区信息的 datetime 对象，解析失败返回 None
+    """
+    try:
+        # 解析为 naive datetime，然后设置为北京时区
+        dt = datetime.strptime(time_str, fmt)
+        return BEIJING_TZ.localize(dt)
+    except Exception:
+        return None
+
+def beijing_now_str(fmt='%Y-%m-%d %H:%M:%S'):
+    """
+    获取当前北京时间的字符串格式（快捷函数）
+    """
+    return get_beijing_now().strftime(fmt)
 
 # ✅ 全局状态管理字典
 WAITING_TXHASH = {}  # 用于跟踪等待输入交易哈希的用户
