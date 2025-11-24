@@ -3303,31 +3303,48 @@ class AgentBotCore:
             # ✅ 主同步循环已完成分类更新，这里记录最终结果
             logger.info(f"🔄 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个")
             
-            # 记录混合国家产品的分类情况（用于调试）
-            mixed_country_products = list(self.config.ejfl.find({
-                'leixing': {'$regex': '混合国家'}
-            }, {'nowuid': 1, 'projectname': 1, 'leixing': 1}).limit(10))
-            
-            if mixed_country_products:
-                logger.info(f"📊 混合国家产品检测:")
-                for p in mixed_country_products:
-                    nowuid = p.get('nowuid')
-                    projectname = p.get('projectname', '')
-                    leixing = p.get('leixing')
+            # 诊断：检查混合国家产品的分类情况
+            try:
+                # 先检查HQ是否有混合国家产品
+                hq_mixed_count = self.config.ejfl.count_documents({'leixing': {'$regex': '混合国家'}})
+                logger.info(f"📊 HQ总部混合国家产品数量: {hq_mixed_count}")
+                
+                if hq_mixed_count > 0:
+                    mixed_country_products = list(self.config.ejfl.find({
+                        'leixing': {'$regex': '混合国家'}
+                    }, {'nowuid': 1, 'projectname': 1, 'leixing': 1}).limit(5))
                     
-                    # 检查该商品的代理分类
-                    agent_rec = self.config.agent_product_prices.find_one({
-                        'agent_bot_id': self.config.AGENT_BOT_ID,
-                        'original_nowuid': nowuid
-                    })
-                    
-                    if agent_rec:
-                        agent_category = agent_rec.get('category')
-                        is_active = agent_rec.get('is_active', False)
-                        logger.info(f"  - {projectname[:30]} | HQ分类: {leixing} | 代理分类: {agent_category} | 激活: {is_active}")
-            else:
-                # 传统模式：记录混合国家产品（用于调试）
-                logger.info(f"🔄 传统模式商品同步完成")
+                    logger.info(f"📊 混合国家产品检测 (前5个):")
+                    for p in mixed_country_products:
+                        nowuid = p.get('nowuid')
+                        projectname = p.get('projectname', '')
+                        leixing = p.get('leixing')
+                        
+                        # 检查该商品的代理分类
+                        agent_rec = self.config.agent_product_prices.find_one({
+                            'agent_bot_id': self.config.AGENT_BOT_ID,
+                            'original_nowuid': nowuid
+                        })
+                        
+                        if agent_rec:
+                            agent_category = agent_rec.get('category')
+                            is_active = agent_rec.get('is_active', False)
+                            logger.info(f"  ✓ {projectname[:30]} | HQ: {leixing} | 代理: {agent_category} | 激活: {is_active}")
+                        else:
+                            logger.info(f"  ✗ {projectname[:30]} | HQ: {leixing} | 代理: 未同步")
+                else:
+                    logger.info(f"⚠️ HQ总部没有找到混合国家产品，检查所有分类...")
+                    # 显示前10个分类供参考
+                    sample_categories = self.config.ejfl.aggregate([
+                        {'$group': {'_id': '$leixing', 'count': {'$sum': 1}}},
+                        {'$sort': {'count': -1}},
+                        {'$limit': 10}
+                    ])
+                    logger.info(f"📊 HQ总部前10个分类:")
+                    for cat in sample_categories:
+                        logger.info(f"  - {cat['_id']}: {cat['count']} 个商品")
+            except Exception as diag_err:
+                logger.error(f"❌ 诊断日志失败: {diag_err}")
             
             if synced > 0 or updated > 0 or activated > 0 or unified > 0:
                 logger.info(f"✅ 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个, Unified protocol category: {unified} items")
