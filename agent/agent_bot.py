@@ -2331,7 +2331,7 @@ class AgentBotConfig:
         self.HQ_PROTOCOL_OLD_CATEGORY_NAME = os.getenv("HQ_PROTOCOL_OLD_CATEGORY_NAME", "✈️【1-8年】协议老号（session+json）")
         
         # ✅ 协议号关键词列表（用于检测协议号类商品）
-        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】")
+        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】,混合国家,双向号,正常号")
         self.AGENT_PROTOCOL_CATEGORY_KEYWORDS = [kw.strip() for kw in keywords_str.split(",") if kw.strip()]
         
         # ✅ 老号协议关键词（用于识别老号协议）
@@ -2491,6 +2491,10 @@ class AgentBotConfig:
 
 class AgentBotCore:
     """核心业务"""
+    
+    # 常量定义
+    # Note: When returning this, use .copy() to prevent callers from modifying the shared constant
+    EMPTY_PRODUCTS_RESULT = {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
 
     def __init__(self, config: AgentBotConfig):
         self.config = config
@@ -2525,13 +2529,36 @@ class AgentBotCore:
             return self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
         return leixing
     
+    def _get_hq_products_map(self, nowuids: List[str]) -> Dict[str, Dict]:
+        """
+        获取HQ商品信息映射
+        
+        Args:
+            nowuids: 商品nowuid列表
+        
+        Returns:
+            Dict[nowuid -> product_info] 映射，其中product_info包含projectname和leixing
+        """
+        try:
+            if not nowuids:
+                return {}
+            
+            hq_products = list(self.config.ejfl.find(
+                {'nowuid': {'$in': nowuids}},
+                {'nowuid': 1, 'projectname': 1, 'leixing': 1}
+            ))
+            return {p['nowuid']: p for p in hq_products}
+        except Exception as e:
+            logger.warning(f"⚠️ 获取HQ商品信息失败: {e}")
+            return {}
+    
     def _is_protocol_like_product(self, name: str, leixing: Any) -> bool:
         """
         检测商品是否为协议号类商品（HQ克隆模式使用）
         
         检测规则（按优先级）：
         1. leixing 在别名列表中或等于统一分类名 -> True（已标记为协议号）
-        2. projectname 包含关键词（协议、协议号、年老号、老号等）-> True（检测误标记）
+        2. projectname 或 leixing 包含关键词（协议、协议号、混合国家等）-> True（检测误标记）
         3. projectname 包含年份范围模式（如 [1-8] 或 [3-8 年]）-> True（检测误标记）
         4. leixing 为 None/空 -> True（未分类商品归入协议号）
         
@@ -2548,13 +2575,19 @@ class AgentBotCore:
         if leixing == self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED:
             return True
         
-        # 规则2: 检查商品名称是否包含协议号关键词（检测误标记的协议号商品）
+        # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
+            if not keyword:
+                continue
+            # 检查 projectname
+            if name and keyword in name:
+                return True
+            # 检查 leixing（关键新增：也检查leixing字段本身）
+            if leixing and isinstance(leixing, str) and keyword in leixing:
+                return True
+        
+        # 规则3: 检查年份范围模式（检测误标记的协议号商品）
         if name:
-            for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
-                if keyword and keyword in name:
-                    return True
-            
-            # 规则3: 检查年份范围模式（检测误标记的协议号商品）
             year_range_pattern = r'\[\s*\d+\s*-\s*\d+\s*(?:年)?\s*\]'
             if re.search(year_range_pattern, name):
                 return True
@@ -2571,7 +2604,7 @@ class AgentBotCore:
         
         检测规则：
         1. leixing 在别名列表中或等于主/老分类名 -> True
-        2. projectname 包含协议号关键词 -> True
+        2. projectname 或 leixing 包含协议号关键词 -> True
         3. projectname 包含年份范围模式 -> True
         4. leixing 为 None/空 -> True
         
@@ -2592,19 +2625,30 @@ class AgentBotCore:
         if leixing == self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME:
             return True
         
-        # 规则2: 检查商品名称是否包含协议号关键词
-        if name:
-            for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
-                if keyword and keyword in name:
-                    return True
+        # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
+            if not keyword:
+                continue
+            # 检查 projectname
+            if name and keyword in name:
+                return True
+            # 检查 leixing（关键新增：也检查leixing字段本身）
+            if leixing and isinstance(leixing, str) and keyword in leixing:
+                return True
         
-        # 规则3: leixing 为 None/空
+        # 规则3: 检查年份范围模式
+        if name:
+            year_range_pattern = r'\[\s*\d+\s*-\s*\d+\s*(?:年)?\s*\]'
+            if re.search(year_range_pattern, name):
+                return True
+        
+        # 规则4: leixing 为 None/空
         if leixing is None or leixing == '':
             return True
         
         return False
     
-    def _is_old_protocol(self, name: str) -> bool:
+    def _is_old_protocol(self, name: str, leixing: Any = None) -> bool:
         """
         检测商品是否为老号协议
         
@@ -2612,8 +2656,12 @@ class AgentBotCore:
         1. 名称包含年份范围模式（如 [1-8年]、【3-8年】等）-> True
         2. 名称包含老号关键词（年老号、老号等）-> True
         
+        注意：不检查leixing字段，因为leixing中的"老号"可能只是产品类型描述，
+        而不是真正的老号协议。只有projectname中的"老号"或年份范围才表示真正的老号协议。
+        
         Args:
             name: 商品名称 (projectname)
+            leixing: 商品分类 (leixing)，保留参数用于兼容性，但不使用
         
         Returns:
             True 如果商品应归入老号协议分类，否则 False
@@ -2626,7 +2674,7 @@ class AgentBotCore:
         if re.search(year_range_pattern, name):
             return True
         
-        # 规则2: 检查老号关键词
+        # 规则2: 检查老号关键词（仅检查projectname，不检查leixing）
         for keyword in self.config.AGENT_PROTOCOL_OLD_KEYWORDS:
             if keyword and keyword in name:
                 return True
@@ -2650,8 +2698,8 @@ class AgentBotCore:
         if not self._is_protocol_like(name, leixing):
             return None
         
-        # 然后检查是否为老号协议
-        if self._is_old_protocol(name):
+        # 然后检查是否为老号协议（传入leixing参数）
+        if self._is_old_protocol(name, leixing):
             return self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME
         
         # 否则归入主协议号分类
@@ -3252,77 +3300,51 @@ class AgentBotCore:
                         )
                         updated += 1
             
-            # ✅ 处理旧数据：将已存在的协议号类商品重新分类到主/老分类
-            if self.config.AGENT_CLONE_HEADQUARTERS_CATEGORIES:
-                # HQ克隆模式下，重新分类所有协议号类商品
-                old_protocol_categories = [
-                    self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED,
-                    *self.config.AGENT_PROTOCOL_CATEGORY_ALIASES,
-                    None
-                ]
+            # ✅ 主同步循环已完成分类更新，这里记录最终结果
+            logger.info(f"🔄 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个")
+            
+            # 诊断：检查混合国家产品的分类情况
+            try:
+                # 先检查HQ是否有混合国家产品
+                hq_mixed_count = self.config.ejfl.count_documents({'leixing': {'$regex': '混合国家'}})
+                logger.info(f"📊 HQ总部混合国家产品数量: {hq_mixed_count}")
                 
-                # 查找所有可能是协议号类的记录
-                protocol_records = self.config.agent_product_prices.find({
-                    'agent_bot_id': self.config.AGENT_BOT_ID,
-                    'category': {'$in': old_protocol_categories}
-                })
-                
-                for old_rec in protocol_records:
-                    nowuid = old_rec.get('original_nowuid')
-                    if not nowuid:
-                        continue
+                if hq_mixed_count > 0:
+                    mixed_country_products = list(self.config.ejfl.find({
+                        'leixing': {'$regex': '混合国家'}
+                    }, {'nowuid': 1, 'projectname': 1, 'leixing': 1}).limit(5))
                     
-                    # 获取总部商品信息
-                    hq_product = self.config.ejfl.find_one({'nowuid': nowuid})
-                    if not hq_product:
-                        continue
-                    
-                    product_name = hq_product.get('projectname', '')
-                    leixing = hq_product.get('leixing')
-                    
-                    # 重新分类
-                    new_category = self._classify_protocol_subcategory(product_name, leixing)
-                    if not new_category:
-                        # 如果不是协议号类，保持原leixing
-                        new_category = leixing
-                    
-                    old_cat = old_rec.get('category')
-                    if old_cat != new_category and new_category:
-                        result = self.config.agent_product_prices.update_one(
-                            {'_id': old_rec['_id']},
-                            {'$set': {
-                                'category': new_category,
-                                'updated_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            }}
-                        )
-                        if result.modified_count > 0:
-                            unified += 1
-                            updated += 1
-                            logger.info(f"✅ 迁移商品分类: {product_name} ({old_cat} -> {new_category})")
-            else:
-                # 传统模式：将旧别名统一到AGENT_PROTOCOL_CATEGORY_UNIFIED
-                old_aliases_to_unify = [alias for alias in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES if alias != self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]
-                old_aliases_to_unify.append(None)  # 包含 None
-                
-                # 查找所有需要统一的旧记录
-                old_records = self.config.agent_product_prices.find({
-                    'agent_bot_id': self.config.AGENT_BOT_ID,
-                    'category': {'$in': old_aliases_to_unify}
-                })
-                
-                for old_rec in old_records:
-                    old_cat = old_rec.get('category')
-                    if old_cat != self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED:
-                        result = self.config.agent_product_prices.update_one(
-                            {'_id': old_rec['_id']},
-                            {'$set': {
-                                'category': self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED,
-                                'updated_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            }}
-                        )
-                        if result.modified_count > 0:
-                            unified += 1
-                            updated += 1
+                    logger.info(f"📊 混合国家产品检测 (前5个):")
+                    for p in mixed_country_products:
+                        nowuid = p.get('nowuid')
+                        projectname = p.get('projectname', '')
+                        leixing = p.get('leixing')
+                        
+                        # 检查该商品的代理分类
+                        agent_rec = self.config.agent_product_prices.find_one({
+                            'agent_bot_id': self.config.AGENT_BOT_ID,
+                            'original_nowuid': nowuid
+                        })
+                        
+                        if agent_rec:
+                            agent_category = agent_rec.get('category')
+                            is_active = agent_rec.get('is_active', False)
+                            logger.info(f"  ✓ {projectname[:30]} | HQ: {leixing} | 代理: {agent_category} | 激活: {is_active}")
+                        else:
+                            logger.info(f"  ✗ {projectname[:30]} | HQ: {leixing} | 代理: 未同步")
+                else:
+                    logger.info(f"⚠️ HQ总部没有找到混合国家产品，检查所有分类...")
+                    # 显示前10个分类供参考
+                    sample_categories = self.config.ejfl.aggregate([
+                        {'$group': {'_id': '$leixing', 'count': {'$sum': 1}}},
+                        {'$sort': {'count': -1}},
+                        {'$limit': 10}
+                    ])
+                    logger.info(f"📊 HQ总部前10个分类:")
+                    for cat in sample_categories:
+                        logger.info(f"  - {cat['_id']}: {cat['count']} 个商品")
+            except Exception as diag_err:
+                logger.error(f"❌ 诊断日志失败: {diag_err}")
             
             if synced > 0 or updated > 0 or activated > 0 or unified > 0:
                 logger.info(f"✅ 商品同步完成: 新增 {synced} 个, 更新 {updated} 个, 激活 {activated} 个, Unified protocol category: {unified} items")
@@ -3540,6 +3562,10 @@ class AgentBotCore:
                 categories_map[self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED] = {'nowuids': set(), 'stock': 0}
             
             # 3.3 收集代理端已激活商品的 nowuid 到对应分类
+            # 先获取所有HQ商品信息用于智能检测
+            active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
+            hq_products_map = self._get_hq_products_map(active_nowuids)
+            
             for prod in agent_products:
                 nowuid = prod.get('original_nowuid')
                 if not nowuid:
@@ -3547,7 +3573,18 @@ class AgentBotCore:
                 
                 raw_category = prod.get('category')
                 
-                # ✅ 检查是否为协议号别名：如果是，归入统一协议号分类
+                # ✅ 使用智能检测：检查商品是否为协议号类商品
+                hq_prod = hq_products_map.get(nowuid)
+                if hq_prod:
+                    # 有HQ商品信息，使用智能检测
+                    name = hq_prod.get('projectname', '')
+                    leixing = hq_prod.get('leixing')
+                    if self._is_protocol_like_product(name, leixing):
+                        # 是协议号类商品，归入统一协议号分类
+                        categories_map[self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]['nowuids'].add(nowuid)
+                        continue
+                
+                # ✅ 回退方案：检查是否为协议号别名
                 if raw_category is None or raw_category in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES or raw_category == self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED:
                     # 归入统一协议号分类
                     categories_map[self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED]['nowuids'].add(nowuid)
@@ -3610,14 +3647,32 @@ class AgentBotCore:
                     'is_active': True
                 }, {'original_nowuid': 1, 'category': 1}))
                 
+                # 获取HQ商品信息用于智能检测
+                active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
+                hq_products_map = self._get_hq_products_map(active_nowuids)
+                
                 fallback_map = {}
                 for prod in agent_products:
                     nowuid = prod.get('original_nowuid')
                     if not nowuid:
                         continue
                     
-                    raw_cat = prod.get('category')
-                    unified_cat = self._unify_category(raw_cat)
+                    # 使用智能检测
+                    hq_prod = hq_products_map.get(nowuid)
+                    if hq_prod:
+                        name = hq_prod.get('projectname', '')
+                        leixing = hq_prod.get('leixing')
+                        if self._is_protocol_like_product(name, leixing):
+                            # 协议号类商品，归入统一协议号分类
+                            unified_cat = self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
+                        else:
+                            # 非协议号商品，使用原始分类
+                            raw_cat = prod.get('category')
+                            unified_cat = raw_cat if raw_cat else self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
+                    else:
+                        # 没有HQ信息，使用 _unify_category 回退
+                        raw_cat = prod.get('category')
+                        unified_cat = self._unify_category(raw_cat)
                     
                     if unified_cat not in fallback_map:
                         fallback_map[unified_cat] = set()
@@ -3648,69 +3703,100 @@ class AgentBotCore:
         try:
             skip = (page - 1) * limit
             
-            # ✅ 处理统一协议号分类查询
-            if category == AGENT_PROTOCOL_CATEGORY_UNIFIED:
-                # 查询所有协议号类商品（leixing 为 None/空/'协议号'/'未分类'）
-                match_condition = {
-                    '$or': [
-                        {'leixing': None}, 
-                        {'leixing': ''}, 
-                        {'leixing': '协议号'},
-                        {'leixing': '未分类'}
-                    ]
-                }
-            # ✅ 兼容旧的协议号/未分类查询（也查统一分类）
-            elif category in ['协议号', '未分类']:
-                match_condition = {
-                    '$or': [
-                        {'leixing': None}, 
-                        {'leixing': ''}, 
-                        {'leixing': '协议号'},
-                        {'leixing': '未分类'}
-                    ]
+            # ✅ 处理统一协议号分类查询 - 使用智能检测
+            if category == self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED or category in ['协议号', '未分类']:
+                # Note: We fetch all active products first and filter with Python logic because
+                # the protocol detection logic (_is_protocol_like_product) involves keyword matching
+                # and regex patterns that cannot be efficiently expressed in MongoDB queries.
+                # We minimize data transfer by projecting only necessary fields (nowuid, projectname, leixing).
+                
+                # 第一步：获取所有活跃的代理商品（仅nowuid字段）
+                active_products = list(self.config.agent_product_prices.find({
+                    'agent_bot_id': self.config.AGENT_BOT_ID,
+                    'is_active': True
+                }, {'original_nowuid': 1}))
+                
+                active_nowuids = [p['original_nowuid'] for p in active_products if p.get('original_nowuid')]
+                
+                if not active_nowuids:
+                    return self.EMPTY_PRODUCTS_RESULT.copy()
+                
+                # 第二步：从ejfl获取这些商品的详细信息（仅必要字段）
+                all_products = list(self.config.ejfl.find(
+                    {'nowuid': {'$in': active_nowuids}},
+                    {'nowuid': 1, 'projectname': 1, 'leixing': 1, 'money': 1}
+                ))
+                
+                # 第三步：使用 _is_protocol_like_product 过滤出协议号类商品
+                protocol_like_nowuids = []
+                for prod in all_products:
+                    name = prod.get('projectname', '')
+                    leixing = prod.get('leixing')
+                    if self._is_protocol_like_product(name, leixing):
+                        protocol_like_nowuids.append(prod['nowuid'])
+                
+                if not protocol_like_nowuids:
+                    return self.EMPTY_PRODUCTS_RESULT.copy()
+                
+                # 第四步：获取分页的协议号商品
+                match_condition = {'nowuid': {'$in': protocol_like_nowuids}}
+                total = len(protocol_like_nowuids)
+                
+                pipeline = [
+                    {'$match': match_condition},
+                    {'$lookup': {
+                        'from': 'agent_product_prices',
+                        'localField': 'nowuid',
+                        'foreignField': 'original_nowuid',
+                        'as': 'agent_price'
+                    }},
+                    {'$match': {
+                        'agent_price.agent_bot_id': self.config.AGENT_BOT_ID,
+                        'agent_price.is_active': True
+                    }},
+                    {'$skip': skip},
+                    {'$limit': limit}
+                ]
+                products = list(self.config.ejfl.aggregate(pipeline))
+                
+                return {
+                    'products': products,
+                    'total': total,
+                    'current_page': page,
+                    'total_pages': (total + limit - 1) // limit
                 }
             else:
+                # 非协议号分类：直接使用 leixing 匹配
                 match_condition = {'leixing': category}
             
-            pipeline = [
-                {'$match': match_condition},
-                {'$lookup': {
-                    'from': 'agent_product_prices',
-                    'localField': 'nowuid',
-                    'foreignField': 'original_nowuid',
-                    'as': 'agent_price'
-                }},
-                {'$match': {
-                    'agent_price.agent_bot_id': self.config.AGENT_BOT_ID,
-                    'agent_price.is_active': True
-                }},
-                {'$skip': skip},
-                {'$limit': limit}
-            ]
-            products = list(self.config.ejfl.aggregate(pipeline))
-            
-            # ✅ 统计总数时也要用同样的条件
-            if category == AGENT_PROTOCOL_CATEGORY_UNIFIED or category in ['协议号', '未分类']:
-                total = self.config.ejfl.count_documents({
-                    '$or': [
-                        {'leixing': None}, 
-                        {'leixing': ''}, 
-                        {'leixing': '协议号'},
-                        {'leixing': '未分类'}
-                    ]
-                })
-            else:
+                pipeline = [
+                    {'$match': match_condition},
+                    {'$lookup': {
+                        'from': 'agent_product_prices',
+                        'localField': 'nowuid',
+                        'foreignField': 'original_nowuid',
+                        'as': 'agent_price'
+                    }},
+                    {'$match': {
+                        'agent_price.agent_bot_id': self.config.AGENT_BOT_ID,
+                        'agent_price.is_active': True
+                    }},
+                    {'$skip': skip},
+                    {'$limit': limit}
+                ]
+                products = list(self.config.ejfl.aggregate(pipeline))
+                
                 total = self.config.ejfl.count_documents({'leixing': category})
-            
-            return {
-                'products': products,
-                'total': total,
-                'current_page': page,
-                'total_pages': (total + limit - 1) // limit
-            }
+                
+                return {
+                    'products': products,
+                    'total': total,
+                    'current_page': page,
+                    'total_pages': (total + limit - 1) // limit
+                }
         except Exception as e:
             logger.error(f"❌ 获取分类商品失败: {e}")
-            return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+            return self.EMPTY_PRODUCTS_RESULT.copy()
 
     def get_product_stock(self, nowuid: str) -> int:
         try:
@@ -3772,7 +3858,7 @@ class AgentBotCore:
             }
         except Exception as e:
             logger.error(f"❌ 获取代理商品失败: {e}")
-            return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+            return self.EMPTY_PRODUCTS_RESULT.copy()
 
     def update_agent_price(self, product_nowuid: str, new_agent_price: float) -> Tuple[bool, str]:
         try:
@@ -5321,7 +5407,7 @@ Refresh Time: {refresh_time}
                         for p in all_hq_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
-                            if self.core._is_protocol_like(projectname, leixing) and not self.core._is_old_protocol(projectname):
+                            if self.core._is_protocol_like(projectname, leixing) and not self.core._is_old_protocol(projectname, leixing):
                                 main_protocol_nowuids.append(p['nowuid'])
                         
                         ejfl_match = {'nowuid': {'$in': main_protocol_nowuids}}
@@ -5337,7 +5423,7 @@ Refresh Time: {refresh_time}
                         for p in all_hq_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
-                            if self.core._is_protocol_like(projectname, leixing) and self.core._is_old_protocol(projectname):
+                            if self.core._is_protocol_like(projectname, leixing) and self.core._is_old_protocol(projectname, leixing):
                                 old_protocol_nowuids.append(p['nowuid'])
                         
                         ejfl_match = {'nowuid': {'$in': old_protocol_nowuids}}
