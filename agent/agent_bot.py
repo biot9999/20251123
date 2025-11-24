@@ -2491,6 +2491,9 @@ class AgentBotConfig:
 
 class AgentBotCore:
     """核心业务"""
+    
+    # 常量定义
+    EMPTY_PRODUCTS_RESULT = {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
 
     def __init__(self, config: AgentBotConfig):
         self.config = config
@@ -2524,6 +2527,29 @@ class AgentBotCore:
         if leixing is None or leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
             return self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
         return leixing
+    
+    def _get_hq_products_map(self, nowuids: List[str]) -> Dict[str, Dict]:
+        """
+        获取HQ商品信息映射
+        
+        Args:
+            nowuids: 商品nowuid列表
+        
+        Returns:
+            Dict[nowuid -> product_info] 映射，其中product_info包含projectname和leixing
+        """
+        try:
+            if not nowuids:
+                return {}
+            
+            hq_products = list(self.config.ejfl.find(
+                {'nowuid': {'$in': nowuids}},
+                {'nowuid': 1, 'projectname': 1, 'leixing': 1}
+            ))
+            return {p['nowuid']: p for p in hq_products}
+        except Exception as e:
+            logger.warning(f"⚠️ 获取HQ商品信息失败: {e}")
+            return {}
     
     def _is_protocol_like_product(self, name: str, leixing: Any) -> bool:
         """
@@ -3541,17 +3567,8 @@ class AgentBotCore:
             
             # 3.3 收集代理端已激活商品的 nowuid 到对应分类
             # 先获取所有HQ商品信息用于智能检测
-            hq_products_map = {}
-            try:
-                active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
-                if active_nowuids:
-                    hq_products = list(self.config.ejfl.find(
-                        {'nowuid': {'$in': active_nowuids}},
-                        {'nowuid': 1, 'projectname': 1, 'leixing': 1}
-                    ))
-                    hq_products_map = {p['nowuid']: p for p in hq_products}
-            except Exception as e:
-                logger.warning(f"⚠️ 获取HQ商品信息失败: {e}")
+            active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
+            hq_products_map = self._get_hq_products_map(active_nowuids)
             
             for prod in agent_products:
                 nowuid = prod.get('original_nowuid')
@@ -3635,17 +3652,8 @@ class AgentBotCore:
                 }, {'original_nowuid': 1, 'category': 1}))
                 
                 # 获取HQ商品信息用于智能检测
-                hq_products_map = {}
-                try:
-                    active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
-                    if active_nowuids:
-                        hq_products = list(self.config.ejfl.find(
-                            {'nowuid': {'$in': active_nowuids}},
-                            {'nowuid': 1, 'projectname': 1, 'leixing': 1}
-                        ))
-                        hq_products_map = {p['nowuid']: p for p in hq_products}
-                except Exception as e:
-                    logger.warning(f"⚠️ 回退模式：获取HQ商品信息失败: {e}")
+                active_nowuids = [p.get('original_nowuid') for p in agent_products if p.get('original_nowuid')]
+                hq_products_map = self._get_hq_products_map(active_nowuids)
                 
                 fallback_map = {}
                 for prod in agent_products:
@@ -3701,7 +3709,12 @@ class AgentBotCore:
             
             # ✅ 处理统一协议号分类查询 - 使用智能检测
             if category == AGENT_PROTOCOL_CATEGORY_UNIFIED or category in ['协议号', '未分类']:
-                # 第一步：获取所有活跃的代理商品
+                # Note: We fetch all active products first and filter with Python logic because
+                # the protocol detection logic (_is_protocol_like_product) involves keyword matching
+                # and regex patterns that cannot be efficiently expressed in MongoDB queries.
+                # We minimize data transfer by projecting only necessary fields (nowuid, projectname, leixing).
+                
+                # 第一步：获取所有活跃的代理商品（仅nowuid字段）
                 active_products = list(self.config.agent_product_prices.find({
                     'agent_bot_id': self.config.AGENT_BOT_ID,
                     'is_active': True
@@ -3710,9 +3723,9 @@ class AgentBotCore:
                 active_nowuids = [p['original_nowuid'] for p in active_products if p.get('original_nowuid')]
                 
                 if not active_nowuids:
-                    return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+                    return self.EMPTY_PRODUCTS_RESULT.copy()
                 
-                # 第二步：从ejfl获取这些商品的详细信息
+                # 第二步：从ejfl获取这些商品的详细信息（仅必要字段）
                 all_products = list(self.config.ejfl.find(
                     {'nowuid': {'$in': active_nowuids}},
                     {'nowuid': 1, 'projectname': 1, 'leixing': 1, 'money': 1}
@@ -3727,7 +3740,7 @@ class AgentBotCore:
                         protocol_like_nowuids.append(prod['nowuid'])
                 
                 if not protocol_like_nowuids:
-                    return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+                    return self.EMPTY_PRODUCTS_RESULT.copy()
                 
                 # 第四步：获取分页的协议号商品
                 match_condition = {'nowuid': {'$in': protocol_like_nowuids}}
@@ -3787,7 +3800,7 @@ class AgentBotCore:
                 }
         except Exception as e:
             logger.error(f"❌ 获取分类商品失败: {e}")
-            return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+            return self.EMPTY_PRODUCTS_RESULT.copy()
 
     def get_product_stock(self, nowuid: str) -> int:
         try:
@@ -3849,7 +3862,7 @@ class AgentBotCore:
             }
         except Exception as e:
             logger.error(f"❌ 获取代理商品失败: {e}")
-            return {'products': [], 'total': 0, 'current_page': 1, 'total_pages': 0}
+            return self.EMPTY_PRODUCTS_RESULT.copy()
 
     def update_agent_price(self, product_nowuid: str, new_agent_price: float) -> Tuple[bool, str]:
         try:
