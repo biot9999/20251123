@@ -6990,8 +6990,8 @@ def is_number(s):
     return False
 
 def dabaohao(context, user_id, folder_names, leixing, nowuid, erjiprojectname, fstext, yssj):
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+    current_time = get_beijing_now()
+    formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
     timestamp = str(current_time.timestamp()).replace(".", "")
     bianhao = formatted_time + timestamp
     timer = beijing_now_str()
@@ -7186,10 +7186,10 @@ def qrgaimai(update: Update, context: CallbackContext):
             zip_filename = f"./谷歌发货/{user_id}_{shijiancuo}.txt"
             with open(zip_filename, "w") as f:
                 f.write(folder_names)
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
@@ -7241,10 +7241,10 @@ def qrgaimai(update: Update, context: CallbackContext):
                 for folder_name in folder_names:
                     f.write(folder_name + "\n")
 
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
@@ -7290,10 +7290,10 @@ def qrgaimai(update: Update, context: CallbackContext):
 
             folder_names = '\n'.join(folder_names)
 
-            current_time = datetime.now()
+            current_time = get_beijing_now()
 
-            # 将当前时间格式化为字符串
-            formatted_time = current_time.strftime("%Y%m%d%H%M%S")
+            # 将当前时间格式化为字符串（北京时间）
+            formatted_time = format_beijing_time(current_time, "%Y%m%d%H%M%S")
 
             # 添加时间戳
             timestamp = str(current_time.timestamp()).replace(".", "")
@@ -9858,7 +9858,7 @@ def czmoney_callback(update: Update, context: CallbackContext):
     USDT_TO_CNY = 7.2
 
     base_rmb = round(amount * USDT_TO_CNY, 2)
-    bianhao = datetime.now().strftime('%Y%m%d') + str(int(time.time()))
+    bianhao = beijing_now_str('%Y%m%d') + str(int(time.time()))
 
     while True:
         suijishu = round(random.uniform(0.01, 0.50), 2)
@@ -9898,11 +9898,11 @@ def czmoney_callback(update: Update, context: CallbackContext):
         query.answer("支付通道异常，请稍后重试", show_alert=True)
         return
 
-    # 时间字段
-    now_time = datetime.now()
+    # 时间字段（北京时间）
+    now_time = get_beijing_now()
     expire_time = now_time + timedelta(minutes=10)
-    now_str = now_time.strftime('%Y-%m-%d %H:%M:%S')
-    expire_str = expire_time.strftime('%Y-%m-%d %H:%M:%S')
+    now_str = format_beijing_time(now_time)
+    expire_str = format_beijing_time(expire_time)
 
     # 美化文本（中英）
     payment_name = "微信支付" if paytype == 'wechat' else "支付宝"
@@ -10183,7 +10183,7 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
 • 已处理：{today_processed} 笔
 • 系统运行正常
 
-⏰ 最后检查：{datetime.datetime.now().strftime('%H:%M:%S')}"""
+⏰ 最后检查：{beijing_now_str('%H:%M:%S')}"""
 
                 keyboard = [
                     [InlineKeyboardButton("🔄 刷新", callback_data="agent_withdrawal_manage")],
@@ -10390,7 +10390,8 @@ def handle_all_callbacks(update: Update, context: CallbackContext):
         
         for i, w in enumerate(withdrawals[:5], 1):
             status = status_map.get(w.get('status'), '未知')
-            created = w.get('created_time', datetime.datetime.now()).strftime('%m-%d %H:%M')
+            created_time = w.get('created_time')
+            created = format_beijing_time(created_time, '%m-%d %H:%M') if created_time else beijing_now_str('%m-%d %H:%M')
             
             text += f"{i}. <b>{w['amount']:.2f} USDT</b> - {status}\n"
             text += f"   申请时间: {created}\n"
