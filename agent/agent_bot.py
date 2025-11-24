@@ -2648,7 +2648,7 @@ class AgentBotCore:
         
         return False
     
-    def _is_old_protocol(self, name: str) -> bool:
+    def _is_old_protocol(self, name: str, leixing: Any = None) -> bool:
         """
         检测商品是否为老号协议
         
@@ -2656,8 +2656,12 @@ class AgentBotCore:
         1. 名称包含年份范围模式（如 [1-8年]、【3-8年】等）-> True
         2. 名称包含老号关键词（年老号、老号等）-> True
         
+        注意：不检查leixing字段，因为leixing中的"老号"可能只是产品类型描述，
+        而不是真正的老号协议。只有projectname中的"老号"或年份范围才表示真正的老号协议。
+        
         Args:
             name: 商品名称 (projectname)
+            leixing: 商品分类 (leixing)，保留参数用于兼容性，但不使用
         
         Returns:
             True 如果商品应归入老号协议分类，否则 False
@@ -2670,7 +2674,7 @@ class AgentBotCore:
         if re.search(year_range_pattern, name):
             return True
         
-        # 规则2: 检查老号关键词
+        # 规则2: 检查老号关键词（仅检查projectname，不检查leixing）
         for keyword in self.config.AGENT_PROTOCOL_OLD_KEYWORDS:
             if keyword and keyword in name:
                 return True
@@ -2694,8 +2698,8 @@ class AgentBotCore:
         if not self._is_protocol_like(name, leixing):
             return None
         
-        # 然后检查是否为老号协议
-        if self._is_old_protocol(name):
+        # 然后检查是否为老号协议（传入leixing参数）
+        if self._is_old_protocol(name, leixing):
             return self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME
         
         # 否则归入主协议号分类
@@ -5444,7 +5448,7 @@ Refresh Time: {refresh_time}
                         for p in all_hq_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
-                            if self.core._is_protocol_like(projectname, leixing) and not self.core._is_old_protocol(projectname):
+                            if self.core._is_protocol_like(projectname, leixing) and not self.core._is_old_protocol(projectname, leixing):
                                 main_protocol_nowuids.append(p['nowuid'])
                         
                         ejfl_match = {'nowuid': {'$in': main_protocol_nowuids}}
@@ -5460,7 +5464,7 @@ Refresh Time: {refresh_time}
                         for p in all_hq_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
-                            if self.core._is_protocol_like(projectname, leixing) and self.core._is_old_protocol(projectname):
+                            if self.core._is_protocol_like(projectname, leixing) and self.core._is_old_protocol(projectname, leixing):
                                 old_protocol_nowuids.append(p['nowuid'])
                         
                         ejfl_match = {'nowuid': {'$in': old_protocol_nowuids}}
