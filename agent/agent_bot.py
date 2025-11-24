@@ -3408,7 +3408,8 @@ class AgentBotCore:
             logger.info(f"[SYNC] 总部商品总数: {total_hq_products}")
             
             # 2. 批量处理总部商品
-            # 使用 batch_size() 限制每次从MongoDB获取的文档数量，避免内存溢出
+            # 注意：cursor.batch_size() 控制MongoDB每次返回的文档数
+            # 我们的batch列表用于应用层批量处理，两者配合使用避免内存溢出
             cursor = self.config.ejfl.find({}).batch_size(batch_size)
             batch = []
             
@@ -3566,10 +3567,14 @@ class AgentBotCore:
                         updates['needs_price_set'] = False
                     
                     if updates:
-                        updates['updated_time'] = now_time
+                        # 使用 $set 更新字段，$setOnInsert 确保 synced_at 仅在首次同步时设置
                         self.config.agent_product_prices.update_one(
                             {'agent_bot_id': self.config.AGENT_BOT_ID, 'original_nowuid': nowuid},
-                            {'$set': updates}
+                            {
+                                '$set': {**updates, 'updated_time': now_time},
+                                '$setOnInsert': {'synced_at': now_time}
+                            },
+                            upsert=False  # 这里已存在，不需要 upsert
                         )
                         updated += 1
                     else:
@@ -3615,14 +3620,22 @@ class AgentBotCore:
             hq_categories = self._build_category_counter(self.config.ejfl)
             hq_top_categories = sorted(hq_categories.items(), key=lambda x: -x[1])[:20]
             
-            # 5. 获取代理分类分布 (前20项)
-            agent_products = list(self.config.agent_product_prices.find({
-                'agent_bot_id': self.config.AGENT_BOT_ID
-            }, {'category': 1}))
+            # 5. 获取代理分类分布 (前20项) - 使用聚合管道优化内存
             agent_categories = {}
-            for p in agent_products:
-                cat = p.get('category', '未分类')
-                agent_categories[cat] = agent_categories.get(cat, 0) + 1
+            try:
+                pipeline = [
+                    {'$match': {'agent_bot_id': self.config.AGENT_BOT_ID}},
+                    {'$group': {'_id': '$category', 'count': {'$sum': 1}}},
+                    {'$sort': {'count': -1}}
+                ]
+                result = self.config.agent_product_prices.aggregate(pipeline)
+                
+                for item in result:
+                    cat_name = item['_id'] if item['_id'] is not None else '未分类'
+                    agent_categories[cat_name] = item['count']
+            except Exception as e:
+                logger.error(f"[SYNC] 获取代理分类分布失败: {e}")
+            
             agent_top_categories = sorted(agent_categories.items(), key=lambda x: -x[1])[:20]
             
             # 6. 找出缺失的分类
