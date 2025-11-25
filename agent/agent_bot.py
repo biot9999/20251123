@@ -6053,8 +6053,25 @@ Refresh Time: {refresh_time}
                         ejfl_match = {'nowuid': {'$in': protocol_nowuids}}
                         
                     else:
-                        # 非协议号分类：精确匹配leixing（但排除协议号类商品）
-                        candidate_products = list(self.core.config.ejfl.find({'leixing': category}, {
+                        # 非协议号分类：匹配leixing或通过uid回退查找
+                        # 1. 首先找到这个分类对应的fenlei uid
+                        fenlei_doc = self.core.config.fenlei.find_one({'projectname': category})
+                        fenlei_uid = fenlei_doc.get('uid') if fenlei_doc else None
+                        
+                        # 2. 查询条件：leixing精确匹配 OR (leixing为空且uid匹配)
+                        if fenlei_uid:
+                            query_condition = {
+                                '$or': [
+                                    {'leixing': category},
+                                    {'leixing': {'$exists': False}, 'uid': fenlei_uid},
+                                    {'leixing': None, 'uid': fenlei_uid},
+                                    {'leixing': '', 'uid': fenlei_uid}
+                                ]
+                            }
+                        else:
+                            query_condition = {'leixing': category}
+                        
+                        candidate_products = list(self.core.config.ejfl.find(query_condition, {
                             'nowuid': 1, 'projectname': 1, 'leixing': 1
                         }))
                         
