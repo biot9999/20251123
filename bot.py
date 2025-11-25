@@ -5570,7 +5570,7 @@ def create_product(ejfl, projectname, price, uid):
         )
         logging.info(f"🔄 新商品已同步到 {sync_result.get('success_count', 0)} 个代理: {projectname}")
     except Exception as sync_err:
-        logging.warning(f"⚠️ 同步新商品到代理失败: {sync_err}")
+        logging.warning(f"⚠️ 同步新商品到代理失败: {projectname} - {sync_err}")
     
     return nowuid
 
@@ -8251,7 +8251,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                             )
                             logging.info(f"🔄 价格变动已同步到 {sync_result.get('updated_count', 0)} 个代理: {product_name} -> {money}U")
                         except Exception as sync_err:
-                            logging.warning(f"⚠️ 同步价格变动到代理失败: {sync_err}")
+                            logging.warning(f"⚠️ 同步价格变动到代理失败: nowuid={nowuid} - {sync_err}")
 
                         ej_list = ejfl.find_one({'nowuid': nowuid})
                         uid = ej_list['uid']
@@ -8306,7 +8306,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                             )
                             logging.info(f"🔄 商品名称变动已同步到 {sync_result.get('updated_count', 0)} 个代理: {text}")
                     except Exception as sync_err:
-                        logging.warning(f"⚠️ 同步商品名称变动到代理失败: {sync_err}")
+                        logging.warning(f"⚠️ 同步商品名称变动到代理失败: {text} - {sync_err}")
                     
                     uid = ejfl.find_one({'nowuid': nowuid})['uid']
                     fl_pro = fenlei.find_one({'uid': uid})['projectname']

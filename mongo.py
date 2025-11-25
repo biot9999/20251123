@@ -376,7 +376,19 @@ def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark=''):
     
     
 def erjifenleibiao(uid, nowuid, projectname, row):
-    """创建二级分类商品并同步到所有代理"""
+    """
+    创建二级分类商品并同步到所有代理机器人
+    
+    此函数执行两个主要操作:
+    1. 在总部数据库(ejfl)中创建二级分类商品记录
+    2. 自动将新商品同步到所有激活的代理机器人
+    
+    Args:
+        uid: 一级分类的唯一标识
+        nowuid: 商品的唯一标识
+        projectname: 商品名称
+        row: 商品在分类中的排序位置
+    """
     # 获取一级分类信息作为商品分类
     category = ''
     try:
@@ -416,9 +428,9 @@ def erjifenleibiao(uid, nowuid, projectname, row):
             original_price=0.0,  # 初始价格为0
             default_markup=0.3
         )
-        logging.info(f"🔄 新商品已同步到 {sync_result.get('success_count', 0)} 个代理")
+        logging.info(f"🔄 新商品已同步到 {sync_result.get('success_count', 0)} 个代理: {projectname}")
     except Exception as sync_err:
-        logging.warning(f"⚠️ 同步新商品到代理失败: {sync_err}")
+        logging.warning(f"⚠️ 同步新商品到代理失败: {projectname} - {sync_err}")
 
 
 def fenleibiao(uid, projectname,row):
@@ -1278,7 +1290,7 @@ def sync_new_product_to_all_agents(product_nowuid, product_name='', category='',
                         'product_name': product_name,
                         'category': category,
                         'original_price_snapshot': original_price,
-                        'agent_price': round(original_price + float(exists.get('agent_markup', default_markup)), 2),
+                        'agent_price': round(original_price + float(exists.get('agent_markup') or default_markup), 2),
                         'sync_time': now_time,
                         'update_time': now_time
                     }}
@@ -1392,7 +1404,7 @@ def sync_all_products_to_agent(agent_bot_id, default_markup=0.3):
                             'product_name': product_name,
                             'category': category,
                             'original_price_snapshot': original_price,
-                            'agent_price': round(original_price + float(exists.get('agent_markup', agent_markup)), 2),
+                            'agent_price': round(original_price + float(exists.get('agent_markup') or agent_markup), 2),
                             'sync_time': now_time,
                             'update_time': now_time
                         }}
