@@ -1,5 +1,23 @@
 # Changes Summary
 
+## 修复：协议号分类查询逻辑 (2024-11-25 v5)
+
+### 问题背景
+用户点击"🔥二手TG协议号（session+json）"分类后，部分商品（如"混合国家 正常号"）不显示。
+
+原因分析：
+- `get_products_by_category()` 函数只检查 `category == AGENT_PROTOCOL_CATEGORY_UNIFIED`
+- 但实际点击的分类名称是 `🔥二手TG协议号（session+json）`（在别名列表中）
+- 导致查询逻辑走到 `else` 分支，使用 `leixing` 字段直接匹配
+- 而这些商品的 `leixing` 是 `null`，所以无法匹配
+
+### 修复内容
+- 在 `get_products_by_category()` 中扩展协议号分类检测逻辑
+- 新增检查 `category in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES`
+- 确保所有协议号别名分类都使用智能检测逻辑
+
+---
+
 ## 修复：混合国家分类显示问题 (2024-11-25 v4)
 
 ### 问题背景
