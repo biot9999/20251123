@@ -2331,8 +2331,7 @@ class AgentBotConfig:
         self.HQ_PROTOCOL_OLD_CATEGORY_NAME = os.getenv("HQ_PROTOCOL_OLD_CATEGORY_NAME", "✈️【1-8年】协议老号（session+json）")
         
         # ✅ 协议号关键词列表（用于检测协议号类商品）
-        # 注意：移除了"混合国家,双向号,正常号"，因为这些是独立的商品分类，不应归入协议号
-        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】")
+        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】,混合国家,双向号,正常号")
         self.AGENT_PROTOCOL_CATEGORY_KEYWORDS = [kw.strip() for kw in keywords_str.split(",") if kw.strip()]
         
         # ✅ 老号协议关键词（用于识别老号协议）
@@ -2661,13 +2660,8 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: leixing 为 None/空 且 projectname 也为空时，才归入协议号
-        # ✅ 修改：如果有有效的 projectname，则不自动归入协议号，而是作为独立分类显示
+        # 规则4: leixing 为 None/空（未分类商品默认归入协议号）
         if leixing is None or leixing == '':
-            # 如果 projectname 存在且有效，不归入协议号
-            if name and name.strip():
-                return False
-            # 如果 projectname 也为空，归入协议号
             return True
         
         return False
@@ -2731,13 +2725,8 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: leixing 为 None/空 且 projectname 也为空时，才归入协议号
-        # ✅ 修改：如果有有效的 projectname，则不自动归入协议号，而是作为独立分类显示
+        # 规则4: leixing 为 None/空
         if leixing is None or leixing == '':
-            # 如果 projectname 存在且有效，不归入协议号
-            if name and name.strip():
-                return False
-            # 如果 projectname 也为空，归入协议号
             return True
         
         return False
@@ -3856,15 +3845,8 @@ class AgentBotCore:
                                     category_products[leixing] = set()
                                 category_products[leixing].add(nowuid)
                         else:
-                            # 如果leixing为空，使用projectname作为分类名称（与总部机器人保持一致）
-                            if projectname:
-                                if projectname not in category_products:
-                                    category_products[projectname] = set()
-                                category_products[projectname].add(nowuid)
-                                logger.debug(f"📊 商品 {nowuid} 使用projectname作为分类: {projectname}")
-                            else:
-                                # 如果projectname也为空，归入主协议号分类（兜底）
-                                category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
+                            # 如果leixing为空，归入主协议号分类（兜底）
+                            category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
                     
                     # 步骤5：统计每个分类的库存
                     category_stock = {}
