@@ -1,6 +1,110 @@
-# Changes Summary - Use env ADMIN_IDS for all admin permissions
+# Changes Summary
 
-## Overview
+## Critical Fix: Storage Layer Category Preservation (2024-11-24 v2)
+
+### 问题修复
+修复了同步过程中错误转换分类的问题。之前的实现在存储层就对分类进行了转换，导致：
+- 总部"未分类"商品被错误转换为协议号分类
+- 存储的分类与总部不一致，违反了"存储层保持原样"的设计原则
+
+### 修复内容
+- ✅ **`_process_sync_batch()`**: 移除分类转换逻辑，直接存储原始 `leixing`
+- ✅ **`auto_sync_new_products()`**: 移除分类转换逻辑，保持原始分类
+- ✅ 移除 `unified` 统计变量（不再适用）
+- ✅ 确保存储层完全保持总部原始分类
+
+### 设计原则
+- **存储层**：保持原始 `leixing` 值，不做任何转换
+- **展示层**：在 `get_product_categories()` 中进行分类统一/映射
+
+### 验证方法
+执行 `/diag_sync_stats` 后：
+- 总部分类分布 = 代理分类分布
+- 缺失分类列表应为空
+- 原始"未分类"等分类应保持原样
+
+---
+
+## Latest Update: Full Product Sync and Diagnostics (2024-11-24)
+
+### 新增功能：全量商品同步与诊断
+
+#### 背景
+代理端显示的商品分类列表与总部不一致，缺少多个分类。现有 `auto_sync_new_products()` 函数仅做增量同步，未实现首次全量迁移。
+
+#### 新增功能
+
+1. **全量重同步命令** `/resync_hq_products`
+   - 管理员专用命令
+   - 批量全量同步总部所有商品到代理
+   - 基于 `nowuid` 幂等处理，可重复执行
+   - 保护代理侧字段不被覆盖
+   - 显示详细同步统计：插入、更新、跳过、错误数量
+
+2. **同步诊断命令** `/diag_sync_stats`
+   - 管理员专用命令
+   - 显示总部/代理商品数量对比
+   - 显示缺失分类列表（前20项）
+   - 显示分类分布对比（前10项）
+   - 显示最近同步时间
+   - 智能判断是否需要全量同步
+
+3. **自动首次全量同步**
+   - 检测到代理商品集合为空时，自动触发全量同步
+   - 避免首次启动时商品缺失问题
+
+4. **同步安全检查**
+   - 当总部商品数 > 代理商品数 * 1.05 时，记录警告日志
+   - 提示管理员执行全量同步
+
+5. **统一日志前缀**
+   - 所有同步相关日志使用 `[SYNC]` 前缀
+   - 便于过滤和诊断
+
+#### 新增核心函数
+
+在 `AgentBotCore` 类中新增以下方法：
+
+- `full_resync_hq_products(batch_size=1000)` - 全量重同步总部商品
+- `_process_sync_batch(batch)` - 批量处理商品同步
+- `get_sync_diagnostics()` - 获取同步诊断信息
+- `_build_category_counter(collection)` - 构建分类计数器
+
+在 `AgentBotHandlers` 类中新增命令处理器：
+
+- `resync_hq_products_command()` - `/resync_hq_products` 命令处理器
+- `diag_sync_stats_command()` - `/diag_sync_stats` 命令处理器
+
+#### 技术实现
+
+- **批量处理**: 使用 `batch_size=1000` 避免内存溢出
+- **幂等性**: 基于 `nowuid` 去重，使用 `update_one(upsert=True)`
+- **字段保护**: 仅更新必要字段，保留代理侧运营数据
+- **时间戳**: 新增 `synced_at`, `updated_time` 字段追踪同步历史
+- **错误处理**: 批次内异常不中断整体流程，记录错误统计
+
+#### 使用方法
+
+```bash
+# 执行全量重同步（管理员）
+/resync_hq_products
+
+# 查看同步诊断
+/diag_sync_stats
+```
+
+#### 验收标准
+- ✅ 执行 `/resync_hq_products` 后代理商品总数与总部一致
+- ✅ `/diag_sync_stats` 显示缺失分类为空或可预期
+- ✅ 原始 `projectname`、`leixing` 字段保持不变
+- ✅ 日志清晰，带 `[SYNC]` 前缀
+- ✅ 可重复执行不重复插入
+
+---
+
+## Previous Update: Use env ADMIN_IDS for all admin permissions
+
+### Overview
 
 This update unifies all admin permission checks to use environment-configured `ADMIN_IDS` instead of MongoDB `state == '4'` checks. This solves the issue where admin panel buttons and agent management were inaccessible despite `/admin` working.
 
