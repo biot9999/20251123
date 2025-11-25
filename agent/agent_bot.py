@@ -2338,6 +2338,14 @@ class AgentBotConfig:
         old_keywords_str = os.getenv("AGENT_PROTOCOL_OLD_KEYWORDS", "年老号,老号")
         self.AGENT_PROTOCOL_OLD_KEYWORDS = [kw.strip() for kw in old_keywords_str.split(",") if kw.strip()]
         
+        # ✅ 协议号分类排除白名单（这些分类不会被归入协议号，即使包含协议号关键词）
+        # 解决"混合国家 正常号（二级未知）"等被误归入协议号的问题
+        whitelist_str = os.getenv("AGENT_PROTOCOL_WHITELIST_PATTERNS", "混合国家 正常号,混合国家 双向号码,混合国家正常号,混合国家双向号码")
+        self.AGENT_PROTOCOL_WHITELIST_PATTERNS = [p.strip() for p in whitelist_str.split(",") if p.strip()]
+        
+        # ✅ 显示原始分类模式（调试用）
+        self.SHOW_RAW_CATEGORY = os.getenv("SHOW_RAW_CATEGORY", "0") in ("1", "true", "True")
+        
         # ✅ 默认代理加价（新商品自动同步时的默认加价）
         self.AGENT_DEFAULT_MARKUP = float(os.getenv("AGENT_DEFAULT_MARKUP", "0.2"))
         
@@ -2534,6 +2542,34 @@ class AgentBotCore:
             return self.config.AGENT_PROTOCOL_CATEGORY_UNIFIED
         return leixing
     
+    def _extract_primary_category(self, leixing: str) -> Optional[str]:
+        """
+        从分类名称中提取一级分类（用于"(二级未知)"的回退显示）
+        
+        例如：
+        - "混合国家 正常号（二级未知）" -> "混合国家 正常号"
+        - "混合国家 双向号码" -> "混合国家 双向号码"（无变化）
+        - "美国/加拿大🇺🇸+1（二级未知）" -> "美国/加拿大🇺🇸+1"
+        
+        Args:
+            leixing: 原始分类名称
+        
+        Returns:
+            提取的一级分类名称，如果无法提取则返回 None
+        """
+        if not leixing or not isinstance(leixing, str):
+            return None
+        
+        # 检查是否包含"(二级未知)"或"（二级未知）"
+        if "(二级未知)" in leixing or "（二级未知）" in leixing:
+            # 移除"(二级未知)"或"（二级未知）"，取前面部分作为一级分类
+            primary = leixing.replace("（二级未知）", "").replace("(二级未知)", "").strip()
+            if primary:
+                logger.debug(f"✅ 提取一级分类: '{leixing}' -> '{primary}'")
+                return primary
+        
+        return None
+    
     def _get_hq_products_map(self, nowuids: List[str]) -> Dict[str, Dict]:
         """
         获取HQ商品信息映射
@@ -2562,8 +2598,9 @@ class AgentBotCore:
         检测商品是否为协议号类商品（HQ克隆模式使用）
         
         检测规则（按优先级）：
+        0. [新增] 白名单排除：如果 leixing 以白名单模式开头，直接返回 False（不归入协议号）
         1. leixing 在别名列表中或等于统一分类名 -> True（已标记为协议号）
-        2. projectname 或 leixing 包含关键词（协议、协议号、混合国家等）-> True（检测误标记）
+        2. projectname 或 leixing 包含关键词（协议、协议号等）-> True（检测误标记）
         3. projectname 包含年份范围模式（如 [1-8] 或 [3-8 年]）-> True（检测误标记）
         4. leixing 为 None/空 -> True（未分类商品归入协议号）
         
@@ -2574,6 +2611,14 @@ class AgentBotCore:
         Returns:
             True 如果商品应归入协议号分类，否则 False
         """
+        # ✅ 规则0（新增）: 白名单排除 - 这些分类不会被归入协议号
+        # 解决"混合国家 正常号（二级未知）"、"混合国家 双向号码"等被误归入协议号的问题
+        if leixing and isinstance(leixing, str):
+            for whitelist_pattern in self.config.AGENT_PROTOCOL_WHITELIST_PATTERNS:
+                if leixing.startswith(whitelist_pattern):
+                    logger.debug(f"⚪ 白名单排除: leixing='{leixing}' 匹配模式 '{whitelist_pattern}'，不归入协议号")
+                    return False
+        
         # 规则1: leixing 在别名列表中或等于统一分类名（已经是协议号类）
         if leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
             return True
@@ -2581,8 +2626,16 @@ class AgentBotCore:
             return True
         
         # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        # ✅ 修改：只检查真正的协议号关键词，排除过于泛化的关键词
         for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
             if not keyword:
+                continue
+            # ✅ 跳过过于泛化的关键词（如"号"单字），避免误判
+            if len(keyword) <= 1:
+                continue
+            # ✅ 跳过已在白名单中处理的关键词
+            if keyword in ["混合国家", "双向号", "正常号"]:
+                # 这些关键词需要更精确的匹配，不能简单地因为包含就判断为协议号
                 continue
             # 检查 projectname
             if name and keyword in name:
@@ -2608,6 +2661,7 @@ class AgentBotCore:
         检测商品是否为协议号类商品（新版：用于双分类）
         
         检测规则：
+        0. [新增] 白名单排除：如果 leixing 以白名单模式开头，直接返回 False
         1. leixing 在别名列表中或等于主/老分类名 -> True
         2. projectname 或 leixing 包含协议号关键词 -> True
         3. projectname 包含年份范围模式 -> True
@@ -2620,6 +2674,13 @@ class AgentBotCore:
         Returns:
             True 如果商品应归入协议号分类（主或老），否则 False
         """
+        # ✅ 规则0（新增）: 白名单排除 - 这些分类不会被归入协议号
+        if leixing and isinstance(leixing, str):
+            for whitelist_pattern in self.config.AGENT_PROTOCOL_WHITELIST_PATTERNS:
+                if leixing.startswith(whitelist_pattern):
+                    logger.debug(f"⚪ 白名单排除: leixing='{leixing}' 匹配模式 '{whitelist_pattern}'，不归入协议号")
+                    return False
+        
         # 规则1: leixing 匹配协议号分类
         if leixing in self.config.AGENT_PROTOCOL_CATEGORY_ALIASES:
             return True
@@ -2631,8 +2692,15 @@ class AgentBotCore:
             return True
         
         # 规则2: 检查商品名称或分类名称是否包含协议号关键词
+        # ✅ 修改：只检查真正的协议号关键词，排除过于泛化的关键词
         for keyword in self.config.AGENT_PROTOCOL_CATEGORY_KEYWORDS:
             if not keyword:
+                continue
+            # ✅ 跳过过于泛化的关键词（如"号"单字），避免误判
+            if len(keyword) <= 1:
+                continue
+            # ✅ 跳过已在白名单中处理的关键词
+            if keyword in ["混合国家", "双向号", "正常号"]:
                 continue
             # 检查 projectname
             if name and keyword in name:
@@ -3747,10 +3815,25 @@ class AgentBotCore:
                             # 如果leixing在fenlei中，归入对应分类
                             category_products[leixing].add(nowuid)
                         elif leixing:
-                            # 如果leixing不在fenlei中，创建动态分类
-                            if leixing not in category_products:
-                                category_products[leixing] = set()
-                            category_products[leixing].add(nowuid)
+                            # 如果leixing不在fenlei中
+                            # ✅ 新增：尝试提取一级分类（处理"(二级未知)"的情况）
+                            primary_cat = self._extract_primary_category(leixing)
+                            
+                            if self.config.SHOW_RAW_CATEGORY:
+                                # 调试模式：显示原始分类
+                                if leixing not in category_products:
+                                    category_products[leixing] = set()
+                                category_products[leixing].add(nowuid)
+                                logger.debug(f"📊 [RAW_MODE] 商品 {nowuid} 使用原始分类: {leixing}")
+                            elif primary_cat and primary_cat in category_products:
+                                # 提取的一级分类存在于fenlei中，归入该分类
+                                category_products[primary_cat].add(nowuid)
+                                logger.debug(f"📊 商品 {nowuid} 从 '{leixing}' 回退到一级分类: {primary_cat}")
+                            else:
+                                # 创建动态分类
+                                if leixing not in category_products:
+                                    category_products[leixing] = set()
+                                category_products[leixing].add(nowuid)
                         else:
                             # 如果leixing为空，归入主协议号分类（兜底）
                             category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
