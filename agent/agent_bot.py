@@ -2661,8 +2661,13 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: leixing 为 None/空（未分类商品默认归入协议号）
+        # 规则4: leixing 为 None/空 且 projectname 也为空时，才归入协议号
+        # ✅ 修改：如果有有效的 projectname，则不自动归入协议号，而是作为独立分类显示
         if leixing is None or leixing == '':
+            # 如果 projectname 存在且有效，不归入协议号
+            if name and name.strip():
+                return False
+            # 如果 projectname 也为空，归入协议号
             return True
         
         return False
@@ -2726,8 +2731,13 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: leixing 为 None/空
+        # 规则4: leixing 为 None/空 且 projectname 也为空时，才归入协议号
+        # ✅ 修改：如果有有效的 projectname，则不自动归入协议号，而是作为独立分类显示
         if leixing is None or leixing == '':
+            # 如果 projectname 存在且有效，不归入协议号
+            if name and name.strip():
+                return False
+            # 如果 projectname 也为空，归入协议号
             return True
         
         return False
@@ -3846,8 +3856,15 @@ class AgentBotCore:
                                     category_products[leixing] = set()
                                 category_products[leixing].add(nowuid)
                         else:
-                            # 如果leixing为空，归入主协议号分类（兜底）
-                            category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
+                            # 如果leixing为空，使用projectname作为分类名称（与总部机器人保持一致）
+                            if projectname:
+                                if projectname not in category_products:
+                                    category_products[projectname] = set()
+                                category_products[projectname].add(nowuid)
+                                logger.debug(f"📊 商品 {nowuid} 使用projectname作为分类: {projectname}")
+                            else:
+                                # 如果projectname也为空，归入主协议号分类（兜底）
+                                category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
                     
                     # 步骤5：统计每个分类的库存
                     category_stock = {}
