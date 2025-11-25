@@ -3789,9 +3789,18 @@ class AgentBotCore:
                         logger.warning("⚠️ HQ fenlei表为空，回退到传统模式")
                         raise Exception("HQ fenlei empty, fallback")
                     
-                    # 步骤2：读取所有HQ商品的leixing和projectname，用于智能分类
-                    all_hq_products = list(self.config.ejfl.find({}, {'nowuid': 1, 'leixing': 1, 'projectname': 1}))
+                    # 步骤2：读取所有HQ商品的信息，用于智能分类
+                    # 增加 uid 字段用于回退查找分类
+                    all_hq_products = list(self.config.ejfl.find({}, {'nowuid': 1, 'leixing': 1, 'projectname': 1, 'uid': 1}))
                     hq_product_map = {p['nowuid']: p for p in all_hq_products if p.get('nowuid')}
+                    
+                    # 构建 uid -> fenlei projectname 的映射（用于回退查找分类）
+                    fenlei_uid_map = {}
+                    for doc in fenlei_docs:
+                        uid = doc.get('uid')
+                        pname = doc.get('projectname')
+                        if uid and pname:
+                            fenlei_uid_map[uid] = pname
                     
                     # 步骤3：读取代理端已激活的商品
                     agent_products = list(self.config.agent_product_prices.find({
@@ -3820,6 +3829,13 @@ class AgentBotCore:
                         
                         leixing = hq_prod.get('leixing')
                         projectname = hq_prod.get('projectname', '')
+                        
+                        # ✅ 如果 leixing 为空，尝试通过 uid 查找一级分类
+                        if not leixing:
+                            prod_uid = hq_prod.get('uid')
+                            if prod_uid and prod_uid in fenlei_uid_map:
+                                leixing = fenlei_uid_map[prod_uid]
+                                logger.debug(f"📊 商品 {nowuid} 通过 uid={prod_uid} 找到分类: {leixing}")
                         
                         # 使用新的协议号双分类逻辑
                         protocol_category = self._classify_protocol_subcategory(projectname, leixing)
