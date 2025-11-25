@@ -2725,9 +2725,8 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: leixing 为 None/空
-        if leixing is None or leixing == '':
-            return True
+        # 规则4: 已移除 - 不应仅凭leixing为空就判定为协议号
+        # 没有leixing的商品应该通过uid回退到其所属分类，而不是被归入协议号
         
         return False
     
@@ -3901,8 +3900,24 @@ class AgentBotCore:
                                     category_products[leixing] = set()
                                 category_products[leixing].add(nowuid)
                         else:
-                            # 如果leixing为空，归入主协议号分类（兜底）
-                            category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
+                            # 如果leixing为空且uid也没找到分类，尝试通过uid直接查找fenlei
+                            prod_uid = hq_prod.get('uid')
+                            if prod_uid:
+                                # 直接查询fenlei表找到对应分类
+                                fenlei_doc = self.config.fenlei.find_one({'uid': prod_uid})
+                                if fenlei_doc:
+                                    cat_name = fenlei_doc.get('projectname')
+                                    if cat_name and cat_name in category_products:
+                                        category_products[cat_name].add(nowuid)
+                                        logger.debug(f"📊 商品 {nowuid} 通过直接查询fenlei找到分类: {cat_name}")
+                                        continue
+                            
+                            # 如果还是找不到，创建"未分类"分类
+                            uncategorized_name = "未分类"
+                            if uncategorized_name not in category_products:
+                                category_products[uncategorized_name] = set()
+                            category_products[uncategorized_name].add(nowuid)
+                            logger.debug(f"📊 商品 {nowuid} 归入未分类")
                     
                     logger.info(f"📊 [DEBUG] 商品匹配结果: 匹配={matched_count}, 未匹配={unmatched_count}")
                     
@@ -6072,15 +6087,22 @@ Refresh Time: {refresh_time}
                             query_condition = {'leixing': category}
                         
                         candidate_products = list(self.core.config.ejfl.find(query_condition, {
-                            'nowuid': 1, 'projectname': 1, 'leixing': 1
+                            'nowuid': 1, 'projectname': 1, 'leixing': 1, 'uid': 1
                         }))
                         
                         # 过滤掉协议号类商品（它们应该在协议号分类中）
+                        # 但是：如果商品通过uid匹配到此分类，则保留（即使leixing为空）
                         non_protocol_nowuids = []
                         for p in candidate_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
-                            if not self.core._is_protocol_like(projectname, leixing):
+                            prod_uid = p.get('uid')
+                            
+                            # 如果通过uid匹配到此分类（leixing为空但uid匹配fenlei_uid），则保留
+                            if fenlei_uid and prod_uid == fenlei_uid and (not leixing or leixing == ''):
+                                non_protocol_nowuids.append(p['nowuid'])
+                            # 否则，只保留非协议号类商品
+                            elif not self.core._is_protocol_like(projectname, leixing):
                                 non_protocol_nowuids.append(p['nowuid'])
                         
                         ejfl_match = {'nowuid': {'$in': non_protocol_nowuids}}
