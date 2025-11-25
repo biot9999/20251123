@@ -2725,8 +2725,9 @@ class AgentBotCore:
             if re.search(year_range_pattern, name):
                 return True
         
-        # 规则4: 已移除 - 不应仅凭leixing为空就判定为协议号
-        # 没有leixing的商品应该通过uid回退到其所属分类，而不是被归入协议号
+        # 规则4: leixing 为 None/空
+        if leixing is None or leixing == '':
+            return True
         
         return False
     
@@ -6091,17 +6092,20 @@ Refresh Time: {refresh_time}
                         }))
                         
                         # 过滤掉协议号类商品（它们应该在协议号分类中）
-                        # 但是：如果商品通过uid匹配到此分类，则保留（即使leixing为空）
+                        # 但是：如果商品的leixing精确匹配当前分类，或通过uid匹配，则保留
                         non_protocol_nowuids = []
                         for p in candidate_products:
                             leixing = p.get('leixing')
                             projectname = p.get('projectname', '')
                             prod_uid = p.get('uid')
                             
-                            # 如果通过uid匹配到此分类（leixing为空但uid匹配fenlei_uid），则保留
-                            if fenlei_uid and prod_uid == fenlei_uid and (not leixing or leixing == ''):
+                            # 情况1: leixing精确匹配当前分类 - 直接保留（不检查是否协议号）
+                            if leixing == category:
                                 non_protocol_nowuids.append(p['nowuid'])
-                            # 否则，只保留非协议号类商品
+                            # 情况2: 通过uid匹配到此分类（leixing为空但uid匹配fenlei_uid）- 保留
+                            elif fenlei_uid and prod_uid == fenlei_uid and (not leixing or leixing == ''):
+                                non_protocol_nowuids.append(p['nowuid'])
+                            # 情况3: 其他情况，只保留非协议号类商品
                             elif not self.core._is_protocol_like(projectname, leixing):
                                 non_protocol_nowuids.append(p['nowuid'])
                         
