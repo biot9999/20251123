@@ -3835,8 +3835,8 @@ class AgentBotCore:
                     active_nowuids = [p['original_nowuid'] for p in agent_products if p.get('original_nowuid')]
                     
                     # 详细调试日志
-                    logger.info(f"📊 [DEBUG] HQ商品总数: {len(hq_product_map)}, 代理激活商品数: {len(active_nowuids)}")
-                    logger.info(f"📊 [DEBUG] fenlei分类数: {len(fenlei_categories)}, uid映射数: {len(fenlei_uid_map)}")
+                    logger.debug(f"📊 [DEBUG] HQ商品总数: {len(hq_product_map)}, 代理激活商品数: {len(active_nowuids)}")
+                    logger.debug(f"📊 [DEBUG] fenlei分类数: {len(fenlei_categories)}, uid映射数: {len(fenlei_uid_map)}")
                     
                     # 步骤4：根据智能检测，将每个商品归入对应分类
                     category_products = {}  # {category_name: set(nowuids)}
@@ -3850,7 +3850,7 @@ class AgentBotCore:
                     category_products[self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME] = set()
                     
                     # 将激活的商品按智能检测规则归入分类
-                    logger.info(f"📊 [DEBUG] 开始处理 {len(active_nowuids)} 个激活商品...")
+                    logger.debug(f"📊 [DEBUG] 开始处理 {len(active_nowuids)} 个激活商品...")
                     matched_count = 0
                     unmatched_count = 0
                     
