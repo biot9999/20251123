@@ -6926,15 +6926,15 @@ def del_ejfl_confirm(update: Update, context: CallbackContext):
         fl_list = fenlei.find_one({'uid': uid})
         fl_pro = fl_list['projectname'] if fl_list else '未知分类'
         
-        # 构建返回上级分类的键盘
+        # 构建返回上级分类的键盘 - 每个分类一行
         ej_list = list(ejfl.find({'uid': uid}, sort=[('row', 1)]))
-        keyboard = [[] for _ in range(100)]
+        keyboard = []
         
         for i in ej_list:
             ej_nowuid = i['nowuid']
             ej_name = i['projectname']
-            ej_row = i['row']
-            keyboard[ej_row - 1].append(InlineKeyboardButton(f'{ej_name}', callback_data=f'fejxxi {ej_nowuid}'))
+            # 每个分类单独一行
+            keyboard.append([InlineKeyboardButton(f'{ej_name}', callback_data=f'fejxxi {ej_nowuid}')])
         
         # 添加管理按钮
         keyboard.append([InlineKeyboardButton('修改分类名', callback_data=f'upspname {uid}'),
@@ -6942,9 +6942,6 @@ def del_ejfl_confirm(update: Update, context: CallbackContext):
         keyboard.append([InlineKeyboardButton('调整二级分类排序', callback_data=f'paixuejfl {uid}'),
                          InlineKeyboardButton('删除二级分类', callback_data=f'delejfl {uid}')])
         keyboard.append([InlineKeyboardButton('❌关闭', callback_data=f'close {user_id}')])
-        
-        # 过滤空行
-        keyboard = [row for row in keyboard if row]
         
         fstext = f'''
 ✅ <b>二级分类已删除</b>
