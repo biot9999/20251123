@@ -2344,8 +2344,9 @@ class AgentBotConfig:
         whitelist_str = os.getenv("AGENT_PROTOCOL_WHITELIST_PATTERNS", "")
         self.AGENT_PROTOCOL_WHITELIST_PATTERNS = [p.strip() for p in whitelist_str.split(",") if p.strip()]
         
-        # ✅ 协议号关键词跳过列表（这些关键词需要更精确的匹配，不会简单地因为包含就判断为协议号）
-        skip_keywords_str = os.getenv("AGENT_PROTOCOL_SKIP_KEYWORDS", "混合国家,双向号,正常号")
+        # ✅ 协议号关键词跳过列表（这些关键词不会简单地因为包含就判断为协议号）
+        # 默认为空，允许所有关键词参与匹配
+        skip_keywords_str = os.getenv("AGENT_PROTOCOL_SKIP_KEYWORDS", "")
         self.AGENT_PROTOCOL_SKIP_KEYWORDS = [kw.strip() for kw in skip_keywords_str.split(",") if kw.strip()]
         
         # ✅ 二级未知分类标识符（用于从分类名称中提取一级分类）
