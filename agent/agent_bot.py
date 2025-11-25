@@ -3834,6 +3834,10 @@ class AgentBotCore:
                     
                     active_nowuids = [p['original_nowuid'] for p in agent_products if p.get('original_nowuid')]
                     
+                    # 详细调试日志
+                    logger.info(f"📊 [DEBUG] HQ商品总数: {len(hq_product_map)}, 代理激活商品数: {len(active_nowuids)}")
+                    logger.info(f"📊 [DEBUG] fenlei分类数: {len(fenlei_categories)}, uid映射数: {len(fenlei_uid_map)}")
+                    
                     # 步骤4：根据智能检测，将每个商品归入对应分类
                     category_products = {}  # {category_name: set(nowuids)}
                     
@@ -3846,11 +3850,18 @@ class AgentBotCore:
                     category_products[self.config.HQ_PROTOCOL_OLD_CATEGORY_NAME] = set()
                     
                     # 将激活的商品按智能检测规则归入分类
+                    logger.info(f"📊 [DEBUG] 开始处理 {len(active_nowuids)} 个激活商品...")
+                    matched_count = 0
+                    unmatched_count = 0
+                    
                     for nowuid in active_nowuids:
                         hq_prod = hq_product_map.get(nowuid)
                         if not hq_prod:
+                            unmatched_count += 1
+                            logger.debug(f"⚠️ 商品 {nowuid} 在HQ中未找到")
                             continue
                         
+                        matched_count += 1
                         leixing = hq_prod.get('leixing')
                         projectname = hq_prod.get('projectname', '')
                         
@@ -3893,8 +3904,11 @@ class AgentBotCore:
                             # 如果leixing为空，归入主协议号分类（兜底）
                             category_products[self.config.HQ_PROTOCOL_MAIN_CATEGORY_NAME].add(nowuid)
                     
+                    logger.info(f"📊 [DEBUG] 商品匹配结果: 匹配={matched_count}, 未匹配={unmatched_count}")
+                    
                     # 步骤5：统计每个分类的库存
                     category_stock = {}
+                    total_stock = 0
                     for cat_name, nowuid_set in category_products.items():
                         if nowuid_set:
                             stock = self.config.hb.count_documents({
@@ -3902,8 +3916,13 @@ class AgentBotCore:
                                 'state': 0
                             })
                             category_stock[cat_name] = stock
+                            total_stock += stock
+                            if stock > 0:
+                                logger.debug(f"📊 分类 '{cat_name}': {len(nowuid_set)} 个商品, {stock} 库存")
                         else:
                             category_stock[cat_name] = 0
+                    
+                    logger.info(f"📊 [DEBUG] 总库存统计: {total_stock} 件")
                     
                     # 步骤6：按照HQ fenlei顺序构建结果，并在指定位置插入双协议号分类
                     result = []
