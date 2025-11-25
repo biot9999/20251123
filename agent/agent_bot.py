@@ -2340,8 +2340,16 @@ class AgentBotConfig:
         
         # ✅ 协议号分类排除白名单（这些分类不会被归入协议号，即使包含协议号关键词）
         # 解决"混合国家 正常号（二级未知）"等被误归入协议号的问题
-        whitelist_str = os.getenv("AGENT_PROTOCOL_WHITELIST_PATTERNS", "混合国家 正常号,混合国家 双向号码,混合国家正常号,混合国家双向号码")
+        whitelist_str = os.getenv("AGENT_PROTOCOL_WHITELIST_PATTERNS", "混合国家 正常号,混合国家 双向号码")
         self.AGENT_PROTOCOL_WHITELIST_PATTERNS = [p.strip() for p in whitelist_str.split(",") if p.strip()]
+        
+        # ✅ 协议号关键词跳过列表（这些关键词需要更精确的匹配，不会简单地因为包含就判断为协议号）
+        skip_keywords_str = os.getenv("AGENT_PROTOCOL_SKIP_KEYWORDS", "混合国家,双向号,正常号")
+        self.AGENT_PROTOCOL_SKIP_KEYWORDS = [kw.strip() for kw in skip_keywords_str.split(",") if kw.strip()]
+        
+        # ✅ 二级未知分类标识符（用于从分类名称中提取一级分类）
+        secondary_unknown_str = os.getenv("AGENT_SECONDARY_UNKNOWN_PATTERNS", "(二级未知),（二级未知）")
+        self.AGENT_SECONDARY_UNKNOWN_PATTERNS = [p.strip() for p in secondary_unknown_str.split(",") if p.strip()]
         
         # ✅ 显示原始分类模式（调试用）
         self.SHOW_RAW_CATEGORY = os.getenv("SHOW_RAW_CATEGORY", "0") in ("1", "true", "True")
@@ -2560,13 +2568,14 @@ class AgentBotCore:
         if not leixing or not isinstance(leixing, str):
             return None
         
-        # 检查是否包含"(二级未知)"或"（二级未知）"
-        if "(二级未知)" in leixing or "（二级未知）" in leixing:
-            # 移除"(二级未知)"或"（二级未知）"，取前面部分作为一级分类
-            primary = leixing.replace("（二级未知）", "").replace("(二级未知)", "").strip()
-            if primary:
-                logger.debug(f"✅ 提取一级分类: '{leixing}' -> '{primary}'")
-                return primary
+        # 检查是否包含二级未知标识符
+        for pattern in self.config.AGENT_SECONDARY_UNKNOWN_PATTERNS:
+            if pattern in leixing:
+                # 移除二级未知标识符，取前面部分作为一级分类
+                primary = leixing.replace(pattern, "").strip()
+                if primary:
+                    logger.debug(f"✅ 提取一级分类: '{leixing}' -> '{primary}'")
+                    return primary
         
         return None
     
@@ -2633,9 +2642,8 @@ class AgentBotCore:
             # ✅ 跳过过于泛化的关键词（如"号"单字），避免误判
             if len(keyword) <= 1:
                 continue
-            # ✅ 跳过已在白名单中处理的关键词
-            if keyword in ["混合国家", "双向号", "正常号"]:
-                # 这些关键词需要更精确的匹配，不能简单地因为包含就判断为协议号
+            # ✅ 跳过配置的跳过关键词（这些关键词需要更精确的匹配）
+            if keyword in self.config.AGENT_PROTOCOL_SKIP_KEYWORDS:
                 continue
             # 检查 projectname
             if name and keyword in name:
@@ -2699,8 +2707,8 @@ class AgentBotCore:
             # ✅ 跳过过于泛化的关键词（如"号"单字），避免误判
             if len(keyword) <= 1:
                 continue
-            # ✅ 跳过已在白名单中处理的关键词
-            if keyword in ["混合国家", "双向号", "正常号"]:
+            # ✅ 跳过配置的跳过关键词（这些关键词需要更精确的匹配）
+            if keyword in self.config.AGENT_PROTOCOL_SKIP_KEYWORDS:
                 continue
             # 检查 projectname
             if name and keyword in name:
