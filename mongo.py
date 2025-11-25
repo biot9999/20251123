@@ -1310,7 +1310,7 @@ def sync_new_product_to_all_agents(product_nowuid, product_name='', category='',
                         'agent_bot_id': agent_bot_id,
                         'original_nowuid': product_nowuid,
                         'agent_price': calculated_agent_price,
-                        'is_active': original_price > 0,
+                        'is_active': True,  # 默认激活，让商品在代理端可见
                         'agent_markup': agent_markup,
                         'product_name': product_name,
                         'category': category,
@@ -1417,7 +1417,7 @@ def sync_all_products_to_agent(agent_bot_id, default_markup=0.3):
                         'agent_bot_id': agent_bot_id,
                         'original_nowuid': nowuid,
                         'agent_price': agent_price,
-                        'is_active': original_price > 0,
+                        'is_active': True,  # 默认激活，让商品在代理端可见
                         'agent_markup': agent_markup,
                         'product_name': product_name,
                         'category': category,

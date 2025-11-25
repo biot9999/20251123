@@ -3320,8 +3320,8 @@ class AgentBotCore:
                     agent_markup = self.config.AGENT_DEFAULT_MARKUP
                     agent_price = round(original_price + agent_markup, 2)
                     
-                    # ✅ 即使总部价为0也创建记录，但标记为未激活
-                    is_active = original_price > 0
+                    # ✅ 所有商品默认激活，让商品在代理端可见
+                    # needs_price_set 用于标记需要设置价格的商品
                     needs_price_set = original_price <= 0
                     
                     self.config.agent_product_prices.insert_one({
@@ -3332,7 +3332,7 @@ class AgentBotCore:
                         'original_price_snapshot': original_price,
                         'product_name': p.get('projectname', ''),
                         'category': category,  # ✅ 使用检测后的分类
-                        'is_active': is_active,
+                        'is_active': True,  # 默认激活，让商品在代理端可见
                         'needs_price_set': needs_price_set,
                         'auto_created': True,
                         'sync_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -3363,12 +3363,15 @@ class AgentBotCore:
                     if abs(exists.get('agent_price', 0) - new_agent_price) > self.PRICE_COMPARISON_EPSILON:
                         updates['agent_price'] = new_agent_price
                     
-                    # ✅ 如果之前是待补价状态，现在总部价>0，自动激活
-                    if exists.get('needs_price_set') and original_price > 0:
+                    # ✅ 确保商品被激活（修复之前可能被错误设置为未激活的商品）
+                    if not exists.get('is_active'):
                         updates['is_active'] = True
-                        updates['needs_price_set'] = False
                         activated += 1
-                        logger.info(f"✅ 自动激活商品: {p.get('projectname')} (总部价已补: {original_price}U)")
+                        logger.info(f"✅ 激活商品: {p.get('projectname')} (nowuid: {nowuid})")
+                    
+                    # ✅ 如果之前是待补价状态，现在总部价>0，更新状态
+                    if exists.get('needs_price_set') and original_price > 0:
+                        updates['needs_price_set'] = False
                     
                     if updates:
                         updates['sync_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -3572,10 +3575,9 @@ class AgentBotCore:
                 now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 
                 if not exists:
-                    # 插入新商品
+                    # 插入新商品 - 默认激活，让商品在代理端可见
                     agent_markup = self.config.AGENT_DEFAULT_MARKUP
                     agent_price = round(original_price + agent_markup, 2)
-                    is_active = original_price > 0
                     
                     self.config.agent_product_prices.insert_one({
                         'agent_bot_id': self.config.AGENT_BOT_ID,
@@ -3585,7 +3587,7 @@ class AgentBotCore:
                         'original_price_snapshot': original_price,
                         'product_name': projectname,
                         'category': category,
-                        'is_active': is_active,
+                        'is_active': True,  # 默认激活，让商品在代理端可见
                         'needs_price_set': original_price <= 0,
                         'auto_created': False,  # 全量同步创建的标记为 False
                         'synced_at': now_time,
@@ -3612,9 +3614,12 @@ class AgentBotCore:
                         new_agent_price = round(original_price + agent_markup, 2)
                         updates['agent_price'] = new_agent_price
                     
-                    # 如果之前是待补价状态，现在总部价>0，自动激活
-                    if exists.get('needs_price_set') and original_price > 0:
+                    # ✅ 确保商品被激活（修复之前可能被错误设置为未激活的商品）
+                    if not exists.get('is_active'):
                         updates['is_active'] = True
+                    
+                    # 如果之前是待补价状态，现在总部价>0，更新状态
+                    if exists.get('needs_price_set') and original_price > 0:
                         updates['needs_price_set'] = False
                     
                     if updates:
