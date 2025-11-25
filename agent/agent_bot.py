@@ -2331,7 +2331,8 @@ class AgentBotConfig:
         self.HQ_PROTOCOL_OLD_CATEGORY_NAME = os.getenv("HQ_PROTOCOL_OLD_CATEGORY_NAME", "✈️【1-8年】协议老号（session+json）")
         
         # ✅ 协议号关键词列表（用于检测协议号类商品）
-        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】,混合国家,双向号,正常号")
+        # 注意：移除了"混合国家,双向号,正常号"，因为这些是独立的商品分类，不应归入协议号
+        keywords_str = os.getenv("AGENT_PROTOCOL_CATEGORY_KEYWORDS", "协议,协议号,年老号,老号,[1-8],[3-8],【1-8年】,【3-8年】")
         self.AGENT_PROTOCOL_CATEGORY_KEYWORDS = [kw.strip() for kw in keywords_str.split(",") if kw.strip()]
         
         # ✅ 老号协议关键词（用于识别老号协议）
