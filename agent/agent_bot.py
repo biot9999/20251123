@@ -3290,6 +3290,10 @@ class AgentBotCore:
                 logger.warning(f"[SYNC] ⚠️ 总部商品数({hq_count}) > 代理商品数({agent_count}) * {self.SYNC_THRESHOLD_MULTIPLIER}，建议执行全量同步")
                 logger.warning("[SYNC] 💡 使用 /resync_hq_products 命令执行全量同步")
             
+            # ✅ 构建 uid -> fenlei projectname 的映射（用于回退查找分类）
+            fenlei_docs = list(self.config.fenlei.find({}, {'uid': 1, 'projectname': 1}))
+            fenlei_uid_map = {doc.get('uid'): doc.get('projectname') for doc in fenlei_docs if doc.get('uid') and doc.get('projectname')}
+            
             all_products = list(self.config.ejfl.find({}))
             synced = 0
             updated = 0
@@ -3309,10 +3313,17 @@ class AgentBotCore:
                 # ✅ 安全获取总部价格（处理异常情况）
                 original_price = self._safe_price(p.get('money'))
                 
-                # 🔥 存储层保持原样：直接使用原始 leixing，不做转换
-                # 分类统一/映射在展示层（get_product_categories）处理
+                # 🔥 获取分类：优先使用 leixing，如果为空则通过 uid 查找
                 leixing = p.get('leixing')
                 projectname = p.get('projectname', '')
+                
+                # ✅ 如果 leixing 为空，尝试通过 uid 查找一级分类
+                if not leixing:
+                    prod_uid = p.get('uid')
+                    if prod_uid and prod_uid in fenlei_uid_map:
+                        leixing = fenlei_uid_map[prod_uid]
+                        logger.debug(f"📊 商品 {nowuid} 通过 uid={prod_uid} 找到分类: {leixing}")
+                
                 category = leixing
                 
                 if not exists:
@@ -3463,6 +3474,10 @@ class AgentBotCore:
             skipped_count = 0
             error_count = 0
             
+            # ✅ 构建 uid -> fenlei projectname 的映射（用于回退查找分类）
+            fenlei_docs = list(self.config.fenlei.find({}, {'uid': 1, 'projectname': 1}))
+            fenlei_uid_map = {doc.get('uid'): doc.get('projectname') for doc in fenlei_docs if doc.get('uid') and doc.get('projectname')}
+            
             # 1. 获取总部商品总数
             total_hq_products = self.config.ejfl.count_documents({})
             logger.info(f"[SYNC] 总部商品总数: {total_hq_products}")
@@ -3478,7 +3493,7 @@ class AgentBotCore:
                 
                 if len(batch) >= batch_size:
                     # 处理批次
-                    stats = self._process_sync_batch(batch)
+                    stats = self._process_sync_batch(batch, fenlei_uid_map)
                     inserted_count += stats['inserted']
                     updated_count += stats['updated']
                     skipped_count += stats['skipped']
@@ -3489,7 +3504,7 @@ class AgentBotCore:
             
             # 处理剩余批次
             if batch:
-                stats = self._process_sync_batch(batch)
+                stats = self._process_sync_batch(batch, fenlei_uid_map)
                 inserted_count += stats['inserted']
                 updated_count += stats['updated']
                 skipped_count += stats['skipped']
@@ -3535,12 +3550,13 @@ class AgentBotCore:
                 'error': str(e)
             }
     
-    def _process_sync_batch(self, batch: List[Dict]) -> Dict:
+    def _process_sync_batch(self, batch: List[Dict], fenlei_uid_map: Dict[str, str] = None) -> Dict:
         """
         处理一批商品的同步
         
         Args:
             batch: 商品列表
+            fenlei_uid_map: uid -> fenlei projectname 的映射（用于回退查找分类）
         
         Returns:
             Dict: 统计信息 {inserted, updated, skipped, errors}
@@ -3549,6 +3565,9 @@ class AgentBotCore:
         updated = 0
         skipped = 0
         errors = 0
+        
+        if fenlei_uid_map is None:
+            fenlei_uid_map = {}
         
         for product in batch:
             try:
@@ -3568,8 +3587,13 @@ class AgentBotCore:
                 projectname = product.get('projectname', '')
                 leixing = product.get('leixing')
                 
-                # 🔥 存储层保持原样：直接使用原始 leixing，不做转换
-                # 分类统一/映射在展示层（get_product_categories）处理
+                # ✅ 如果 leixing 为空，尝试通过 uid 查找一级分类
+                if not leixing:
+                    prod_uid = product.get('uid')
+                    if prod_uid and prod_uid in fenlei_uid_map:
+                        leixing = fenlei_uid_map[prod_uid]
+                        logger.debug(f"📊 商品 {nowuid} 通过 uid={prod_uid} 找到分类: {leixing}")
+                
                 category = leixing
                 
                 now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
