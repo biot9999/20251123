@@ -5575,6 +5575,7 @@ def fejxxi(update: Update, context: CallbackContext):
         [InlineKeyboardButton('修改二级分类名', callback_data=f'upejflname {nowuid}'),
          InlineKeyboardButton('修改价格', callback_data=f'upmoney {nowuid}')],
         [InlineKeyboardButton("📤 分享商品", switch_inline_query=f"share_{nowuid}")],
+        [InlineKeyboardButton('🗑️ 删除该分类', callback_data=f'del_ejfl_open:{nowuid}')],
         [InlineKeyboardButton('返回', callback_data=f'flxxi {uid}')]
     ]
 
@@ -6799,6 +6800,169 @@ def qrscejrow(update: Update, context: CallbackContext):
 分类: {fl_pro}
     '''
     context.bot.send_message(chat_id=user_id, text=fstext, reply_markup=InlineKeyboardMarkup(keyboard))
+
+
+def del_ejfl_open(update: Update, context: CallbackContext):
+    """打开删除二级分类确认提示"""
+    query = update.callback_query
+    user_id = query.from_user.id
+    
+    # 管理员权限检查
+    if not is_admin(user_id):
+        query.answer("❌ 您没有权限执行此操作", show_alert=True)
+        return
+    
+    query.answer()
+    
+    # 解析 nowuid
+    try:
+        nowuid = query.data.replace('del_ejfl_open:', '')
+        if not nowuid:
+            query.edit_message_text("❌ 参数错误")
+            return
+    except Exception as e:
+        logging.error(f"❌ 解析删除分类参数失败: {e}")
+        query.edit_message_text("❌ 参数错误")
+        return
+    
+    # 获取二级分类信息
+    ej_list = ejfl.find_one({'nowuid': nowuid})
+    if not ej_list:
+        query.edit_message_text("❌ 未找到该分类")
+        return
+    
+    ej_projectname = ej_list['projectname']
+    uid = ej_list['uid']
+    
+    # 获取一级分类信息
+    fl_list = fenlei.find_one({'uid': uid})
+    fl_pro = fl_list['projectname'] if fl_list else '未知分类'
+    
+    # 统计库存和已售数量
+    kc = hb.count_documents({'nowuid': nowuid, 'state': 0})
+    ys = hb.count_documents({'nowuid': nowuid, 'state': 1})
+    
+    # 显示确认提示
+    stock_warning = '\n⚠️ 该分类下仍有库存，删除后库存将被清空！' if kc > 0 else ''
+    fstext = f'''
+⚠️ <b>确认删除二级分类</b>
+
+主分类: {fl_pro}
+二级分类: <b>{ej_projectname}</b>
+
+📦 当前库存: {kc}
+📊 已售数量: {ys}
+
+<b>⚠️ 警告：删除后无法恢复！</b>{stock_warning}
+
+确定要删除该分类吗？
+    '''.strip()
+    
+    keyboard = [
+        [InlineKeyboardButton('✅ 确认删除', callback_data=f'del_ejfl_confirm:{nowuid}')],
+        [InlineKeyboardButton('❌ 取消', callback_data=f'fejxxi {nowuid}')]
+    ]
+    
+    query.edit_message_text(
+        text=fstext,
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+def del_ejfl_confirm(update: Update, context: CallbackContext):
+    """确认删除二级分类"""
+    query = update.callback_query
+    user_id = query.from_user.id
+    
+    # 管理员权限检查
+    if not is_admin(user_id):
+        query.answer("❌ 您没有权限执行此操作", show_alert=True)
+        return
+    
+    query.answer()
+    
+    # 解析 nowuid
+    try:
+        nowuid = query.data.replace('del_ejfl_confirm:', '')
+        if not nowuid:
+            query.edit_message_text("❌ 参数错误")
+            return
+    except Exception as e:
+        logging.error(f"❌ 解析删除确认参数失败: {e}")
+        query.edit_message_text("❌ 参数错误")
+        return
+    
+    # 获取二级分类信息
+    ej_list = ejfl.find_one({'nowuid': nowuid})
+    if not ej_list:
+        query.edit_message_text("❌ 未找到该分类，可能已被删除")
+        return
+    
+    ej_projectname = ej_list['projectname']
+    uid = ej_list['uid']
+    row = ej_list['row']
+    
+    try:
+        # 删除该分类下的所有库存 (hb表)
+        hb_delete_result = hb.delete_many({'nowuid': nowuid})
+        logging.info(f"✅ 删除库存: nowuid={nowuid}, 数量={hb_delete_result.deleted_count}")
+        
+        # 删除该分类下的协议号 (xyh表)
+        xyh_delete_result = xyh.delete_many({'nowuid': nowuid})
+        logging.info(f"✅ 删除协议号: nowuid={nowuid}, 数量={xyh_delete_result.deleted_count}")
+        
+        # 删除该二级分类本身
+        ejfl.delete_one({'nowuid': nowuid})
+        logging.info(f"✅ 删除二级分类: nowuid={nowuid}, 名称={ej_projectname}")
+        
+        # 调整同一级分类下的其他二级分类的排序
+        max_list = list(ejfl.find({'uid': uid, 'row': {"$gt": row}}))
+        for i in max_list:
+            max_row = i['row']
+            ejfl.update_many({'uid': uid, 'row': max_row}, {"$set": {"row": max_row - 1}})
+        
+        # 显示成功消息并返回上级分类页面
+        fl_list = fenlei.find_one({'uid': uid})
+        fl_pro = fl_list['projectname'] if fl_list else '未知分类'
+        
+        # 构建返回上级分类的键盘
+        ej_list = list(ejfl.find({'uid': uid}, sort=[('row', 1)]))
+        keyboard = [[] for _ in range(100)]
+        
+        for i in ej_list:
+            ej_nowuid = i['nowuid']
+            ej_name = i['projectname']
+            ej_row = i['row']
+            keyboard[ej_row - 1].append(InlineKeyboardButton(f'{ej_name}', callback_data=f'fejxxi {ej_nowuid}'))
+        
+        # 添加管理按钮
+        keyboard.append([InlineKeyboardButton('修改分类名', callback_data=f'upspname {uid}'),
+                         InlineKeyboardButton('新增二级分类', callback_data=f'newejfl {uid}')])
+        keyboard.append([InlineKeyboardButton('调整二级分类排序', callback_data=f'paixuejfl {uid}'),
+                         InlineKeyboardButton('删除二级分类', callback_data=f'delejfl {uid}')])
+        keyboard.append([InlineKeyboardButton('❌关闭', callback_data=f'close {user_id}')])
+        
+        # 过滤空行
+        keyboard = [row for row in keyboard if row]
+        
+        fstext = f'''
+✅ <b>二级分类已删除</b>
+
+已删除分类: <b>{ej_projectname}</b>
+
+分类: {fl_pro}
+        '''.strip()
+        
+        query.edit_message_text(
+            text=fstext,
+            parse_mode='HTML',
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+        
+    except Exception as e:
+        logging.error(f"❌ 删除二级分类失败: {e}")
+        query.edit_message_text(f"❌ 删除失败，请稍后重试\n错误: {str(e)}")
 
 
 def delfl(update: Update, context: CallbackContext):
@@ -14939,6 +15103,8 @@ def main():
     dispatcher.add_handler(CallbackQueryHandler(ejfpaixu, pattern='ejfpaixu '))
     dispatcher.add_handler(CallbackQueryHandler(delejfl, pattern='delejfl '))
     dispatcher.add_handler(CallbackQueryHandler(qrscejrow, pattern='qrscejrow '))
+    dispatcher.add_handler(CallbackQueryHandler(del_ejfl_open, pattern=r'^del_ejfl_open:'))
+    dispatcher.add_handler(CallbackQueryHandler(del_ejfl_confirm, pattern=r'^del_ejfl_confirm:'))
     dispatcher.add_handler(CallbackQueryHandler(update_hb, pattern='update_hb '))
     dispatcher.add_handler(CallbackQueryHandler(gmsp, pattern='gmsp '))
     dispatcher.add_handler(CallbackQueryHandler(upmoney, pattern='upmoney '))
