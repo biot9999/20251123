@@ -4677,7 +4677,8 @@ class AgentBotCore:
                             "amount_str": str(amount_str) if amount_str is not None else None,
                             "block_ts": it.get("block_timestamp"),
                             "transaction_id": it.get("transaction_id"),
-                            "tokenInfo": {"tokenDecimal": dec}
+                            "tokenInfo": {"tokenDecimal": dec},
+                            "type": it.get("type", "Transfer")  # 提取交易类型，默认为Transfer
                         })
                     return norm
                 except Exception as e:
@@ -4735,19 +4736,54 @@ class AgentBotCore:
                 return False, "未查询到转账记录"
 
             created_ts = order['created_time']
+            from_addr_expected = order.get('from_addr', '')  # 预期的发送地址（如有）
+            
             for it in transfers:
                 to_addr = (it.get('to_address') or it.get('to') or it.get('transferToAddress') or '').lower()
                 amt = self._parse_amount(it)
                 ts_ms = it.get('block_ts') or it.get('timestamp') or 0
                 tx_time = datetime.utcfromtimestamp(int(ts_ms) / 1000) if ts_ms else None
+                from_addr = (it.get('from_address') or it.get('from') or '').lower()
+                
+                # 获取交易类型 - 支持多种API返回格式
+                trigger_info = it.get('trigger_info', {})
+                trigger_method = trigger_info.get('method') if isinstance(trigger_info, dict) else None
+                tx_type = (
+                    it.get('type') or 
+                    trigger_method or
+                    it.get('contract_type') or 
+                    it.get('confirmed_type') or
+                    'Transfer'  # 默认为Transfer
+                )
+                tx_type_lower = str(tx_type).lower() if tx_type else 'transfer'
+                
+                # 1. 核对交易类型是否为 'transfer' - 排除授权操作
+                if 'approve' in tx_type_lower or 'approval' in tx_type_lower:
+                    logger.warning(f"检测到疑似假充值：地址 {from_addr}，交易类型 {tx_type}，订单ID {order.get('_id')}")
+                    continue  # 跳过授权交易，继续检查其他交易
+                
+                if 'transfer' not in tx_type_lower:
+                    logger.warning(f"检测到非转账交易：地址 {from_addr}，交易类型 {tx_type}，订单ID {order.get('_id')}")
+                    continue  # 跳过非转账交易
+                
                 if to_addr != address.lower():
                     continue
+                
+                # 2. 核对金额是否匹配
                 if amt is None or amt != expected:
-                    continue
+                    if amt is not None and amt < expected:
+                        logger.warning(f"充值金额不足：期望 {expected}，实际 {amt}，地址 {from_addr}，订单ID {order.get('_id')}")
+                    continue  # 金额必须精确匹配
+                
                 if not tx_time or tx_time < created_ts - timedelta(minutes=5):
                     continue
+                
+                # 3. 核对发送地址（如果订单中指定了预期地址）
+                if from_addr_expected and from_addr != from_addr_expected.lower():
+                    logger.warning(f"发送地址不匹配：期望 {from_addr_expected}，实际 {from_addr}，订单ID {order.get('_id')}")
+                    continue
+                
                 tx_id = it.get('transaction_id') or it.get('hash') or it.get('txHash') or ''
-                from_addr = it.get('from_address') or it.get('from') or ''
                 self._settle_recharge(order, tx_id, from_addr, tx_time)
                 return True, "充值成功自动入账"
             return False, "暂未匹配到您的转账"
