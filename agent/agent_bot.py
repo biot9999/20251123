@@ -4770,12 +4770,9 @@ class AgentBotCore:
                     continue
                 
                 # 2. 核对金额是否匹配
-                if amt is None:
-                    continue
-                if amt < expected:
-                    logger.warning(f"充值金额不足：期望 {expected}，实际 {amt}，地址 {from_addr}，订单ID {order.get('_id')}")
-                    continue
-                if amt != expected:
+                if amt is None or amt != expected:
+                    if amt is not None and amt < expected:
+                        logger.warning(f"充值金额不足：期望 {expected}，实际 {amt}，地址 {from_addr}，订单ID {order.get('_id')}")
                     continue  # 金额必须精确匹配
                 
                 if not tx_time or tx_time < created_ts - timedelta(minutes=5):
