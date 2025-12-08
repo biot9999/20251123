@@ -107,14 +107,34 @@ def callback(ch, method, properties, body) -> None:
                 if contract_type == "TriggerSmartContract":
                     contract_address = client.to_base58check_address(value["contract_address"])
                     data = value['data']
+                    # 🔒 Security: Verify this is genuine USDT contract (TRC20)
                     if contract_address == 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t':
+                        # 🔒 Security: Verify transfer method signature
                         if data[:8] == "a9059cbb":
                             from_address = client.to_base58check_address(value["owner_address"])
                             to_address = client.to_base58check_address('41' + (data[8:72])[-40:])
                             quant = int(data[-64:], 16)
+                            
+                            # 🔒 Security Check: Skip zero-value transactions
                             if quant == 0:
                                 continue
+                            
+                            # 🔒 Security Check: Skip negative values (should not happen but defensive)
+                            if quant < 0:
+                                logging.warning(f"⚠️ 检测到负值交易: txid={txid}, quant={quant}")
+                                continue
+                            
+                            # 🔒 Security Check: Validate addresses are not empty
+                            if not from_address or not to_address:
+                                logging.warning(f"⚠️ 交易地址异常: txid={txid}, from={from_address}, to={to_address}")
+                                continue
+                            
                             timestamp = trx.get("raw_data", {}).get("timestamp", int(round(time.time() * 1000)))
+                            
+                            # 🔒 Security Check: Validate timestamp
+                            if timestamp <= 0:
+                                logging.warning(f"⚠️ 交易时间戳异常: txid={txid}, timestamp={timestamp}")
+                                continue
 
                             message_data = {
                                 "txid": txid,
@@ -124,12 +144,21 @@ def callback(ch, method, properties, body) -> None:
                                 "quant": quant,
                                 "time": timestamp,
                                 "number": number,
-                                "state": 0
+                                "state": 0,
+                                # 🔒 Security: Add contract verification flag
+                                "contract_verified": True,
+                                "contract_address": contract_address
                             }
 
                             if message_data['to_address'] in address_list:
+                                # 🔒 Security: Check for duplicate TXID before inserting
+                                existing = qukuai.find_one({'txid': txid})
+                                if existing:
+                                    logging.warning(f"⚠️ 重复交易TXID，跳过: {txid}")
+                                    continue
+                                
                                 qukuai.insert_one(message_data)
-                                logging.info(f"✅ 成功入库 USDT 交易: {message_data}")
+                                logging.info(f"✅ 成功入库 USDT 交易: txid={txid}, amount={quant/1000000:.6f}, from={from_address[:10]}..., to={to_address[:10]}...")
 
     except (AMQPError, ChannelClosedByBroker) as e:
         logging.error(f"❌ MQ 接收失败: {e}")

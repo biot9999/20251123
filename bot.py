@@ -11444,8 +11444,44 @@ def jiexi(context: CallbackContext):
         txid = record['txid']
         quant_raw = record['quant']
         from_address = record['from_address']
+        to_address = record.get('to_address', '')
+        block_number = record.get('number', 0)
+        timestamp = record.get('time', 0)
 
         try:
+            # 🔒 Security Check 1: Validate TXID format
+            if not txid or len(txid) != 64:
+                logging.error(f"❌ 无效的TXID格式: txid={txid}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
+            # 🔒 Security Check 2: Validate addresses
+            if not from_address or not to_address:
+                logging.error(f"❌ 地址信息缺失: txid={txid}, from={from_address}, to={to_address}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
+            # 🔒 Security Check 3: Verify destination address matches configured address
+            if to_address != trc20:
+                logging.error(f"❌ 收款地址不匹配: txid={txid}, expected={trc20}, got={to_address}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
+            # 🔒 Security Check 4: Validate block number and timestamp
+            if block_number <= 0 or timestamp <= 0:
+                logging.error(f"❌ 区块信息异常: txid={txid}, block={block_number}, time={timestamp}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
+            # 🔒 Security Check 5: Check for timestamp anomalies (transaction from future or too old)
+            current_time = int(time.time() * 1000)
+            time_diff = abs(current_time - timestamp)
+            MAX_TIME_DIFF = 7 * 24 * 3600 * 1000  # 7 days in milliseconds
+            if time_diff > MAX_TIME_DIFF:
+                logging.error(f"❌ 交易时间异常: txid={txid}, tx_time={timestamp}, current={current_time}, diff={time_diff}ms")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
             # 🔒 Security Fix: Prevent duplicate transaction processing
             if topup.find_one({'txid': txid}):
                 logging.info(f"⏭ TXID 已处理过，跳过重复充值: {txid}")
@@ -11457,11 +11493,44 @@ def jiexi(context: CallbackContext):
             quant = float(quant_dec)          # 本次充值金额
             today_money = quant
             
-            # 🔒 Security Check: Validate transaction amount is positive
+            # 🔒 Security Check 6: Validate transaction amount is positive and reasonable
             if quant <= 0:
                 logging.warning(f"❌ 充值金额无效 (<=0): txid={txid}, amount={quant}")
                 qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
                 continue
+            
+            # 🔒 Security Check 7: Validate amount is not suspiciously large (>50,000 USDT single transaction)
+            MAX_SINGLE_RECHARGE = 50000.0
+            if quant > MAX_SINGLE_RECHARGE:
+                logging.error(f"🔒 充值金额异常过大: txid={txid}, amount={quant}, max={MAX_SINGLE_RECHARGE}")
+                # Alert admins about suspicious large transaction
+                admin_alert = f"⚠️ 安全警报：检测到异常大额充值\nTXID: {txid}\n金额: {quant} USDT\n发送方: {from_address}"
+                for admin_id in get_admin_ids():
+                    try:
+                        context.bot.send_message(chat_id=admin_id, text=admin_alert)
+                    except Exception as e:
+                        logging.warning(f"Failed to send alert to admin {admin_id}: {e}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
+            
+            # 🔒 Security Check 8: Check for duplicate transactions from same address with same amount (potential replay attack)
+            recent_time = current_time - (3600 * 1000)  # Last 1 hour
+            duplicate_check = qukuai.find_one({
+                'txid': {'$ne': txid},
+                'from_address': from_address,
+                'quant': quant_raw,
+                'time': {'$gte': recent_time},
+                'state': 1  # Already processed
+            })
+            if duplicate_check:
+                logging.warning(f"⚠️ 检测到疑似重复交易: txid={txid}, from={from_address}, amount={quant}, previous_txid={duplicate_check['txid']}")
+                # Don't auto-reject, but flag for manual review
+                admin_alert = f"⚠️ 检测到疑似重复交易\nTXID: {txid}\n金额: {quant} USDT\n发送方: {from_address}\n上次交易: {duplicate_check['txid']}"
+                for admin_id in get_admin_ids():
+                    try:
+                        context.bot.send_message(chat_id=admin_id, text=admin_alert)
+                    except Exception as e:
+                        logging.warning(f"Failed to send alert to admin {admin_id}: {e}")
 
             # 查找是否有相同金额的订单（带浮点误差容差 ±0.001），且状态为 pending
             dj_list = topup.find_one({
