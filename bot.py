@@ -421,6 +421,9 @@ def beijing_now_str(fmt='%Y-%m-%d %H:%M:%S'):
 WAITING_TXHASH = {}  # 用于跟踪等待输入交易哈希的用户
 WAITING_USER_TXID = {}  # 用于跟踪用户提现申请
 
+# 🔒 Security Configuration
+MAX_USER_BALANCE = 100000.0  # Maximum balance per user (100,000 USDT)
+
 # ✅ 管理员验证辅助函数
 def is_admin(user_id: int) -> bool:
     """检查用户是否为管理员"""
@@ -1139,11 +1142,22 @@ def shokuan(update: Update, context: CallbackContext):
         user.update_one({'user_id': user_id}, {'$set': {'fullname': fullname}})
 
     user_list = user.find_one({"user_id": user_id})
-    USDT = user_list['USDT']
+    USDT = user_list.get('USDT', 0)
 
-    # 🔒 Security Fix: Atomic receiver balance addition
+    # 🔒 Security Fix: Atomic receiver balance addition with max balance check
     now_money = standard_num(USDT + fb_money)
     now_money = float(now_money) if str((now_money)).count('.') > 0 else int(standard_num(now_money))
+    
+    # Check max balance
+    if now_money > MAX_USER_BALANCE:
+        # Refund sender - transfer failed due to receiver balance limit
+        user.update_one({'user_id': fb_id}, {"$set": {'USDT': standard_num(yh_usdt)}})
+        zhuanz.update_one({'uid': uid}, {"$set": {"state": 0}})  # Mark as unclaimed
+        fstext = f'❌ 转账失败：接收方余额将超限'
+        query.answer(fstext, show_alert=bool("true"))
+        logging.warning(f"🔒 转账失败-接收方余额超限: from={fb_id}, to={user_id}, amount={fb_money}")
+        return
+    
     user.update_one({'user_id': user_id}, {"$set": {'USDT': now_money}})
     fstext = f'''
 <a href="tg://user?id={user_id}">{fullname}</a> 已领取 <b>{fb_money}</b> USDT
@@ -1209,8 +1223,20 @@ def lqhb(update: Update, context: CallbackContext):
     qb_list = list(qb.find({'uid': uid}, sort=[('money', -1)]))
 
     syhb = hbsl - len(qb_list)
+    # 🔒 Security Check: Validate remaining red packets
+    if syhb <= 0:
+        query.answer('红包已抢完', show_alert=bool("true"))
+        return
+        
     # 以下是随机分配金额的代码
     remaining_money = hbmoney - sum(q['money'] for q in qb_list)  # 计算剩余红包总额
+    
+    # 🔒 Security Check: Validate remaining money is positive
+    if remaining_money <= 0:
+        query.answer('❌ 红包金额错误', show_alert=bool("true"))
+        logging.error(f"🔒 红包剩余金额异常: uid={uid}, remaining={remaining_money}, total={hbmoney}")
+        return
+    
     if syhb > 1:
         # 多于一个红包剩余时，使用正态分布随机生成金额
         mean_money = remaining_money / syhb  # 计算每个红包的平均金额
@@ -1222,11 +1248,19 @@ def lqhb(update: Update, context: CallbackContext):
         money = round(remaining_money, 2)  # 将剩余金额保留两位小数
         money = float(money) if str(money).count('.') > 0 else int(money)
 
-    # 将金额保存到数据库
-    # 🔒 Security Check: Validate red packet amount is positive
-    if money <= 0:
+    # 🔒 Security Check: Final validation of calculated amount
+    if money <= 0 or money > remaining_money:
         query.answer('❌ 红包金额无效', show_alert=bool("true"))
-        logging.warning(f"🔒 红包金额异常: uid={uid}, user_id={user_id}, money={money}")
+        logging.warning(f"🔒 红包金额异常: uid={uid}, user_id={user_id}, money={money}, remaining={remaining_money}")
+        return
+    
+    # 🔒 Security Check: Validate max balance before accepting red packet
+    user_money = standard_num(USDT + money)
+    user_money = float(user_money) if str(user_money).count('.') > 0 else int(user_money)
+    
+    if user_money > MAX_USER_BALANCE:
+        query.answer(f'❌ 领取失败：余额将超限(最大{MAX_USER_BALANCE}U)', show_alert=bool("true"))
+        logging.warning(f"🔒 红包领取失败-余额超限: user_id={user_id}, current={USDT}, add={money}")
         return
     
     qb.insert_one({
@@ -1238,8 +1272,6 @@ def lqhb(update: Update, context: CallbackContext):
     })
 
     # 🔒 Security Fix: Atomic balance addition for red packet
-    user_money = standard_num(USDT + money)
-    user_money = float(user_money) if str(user_money).count('.') > 0 else int(user_money)
     user.update_one({'user_id': user_id}, {"$set": {'USDT': user_money}})
 
     query.answer(f'领取红包成功，金额:{money}', show_alert=bool("true"))
@@ -11461,19 +11493,18 @@ def jiexi(context: CallbackContext):
                 fullname = user_list.get('fullname', '无').replace('<', '').replace('>', '')
                 old_usdt = float(user_list.get('USDT', 0))
                 
-                # 🔒 Security Check: Maximum balance limit (100,000 USDT)
-                MAX_BALANCE = 100000.0
+                # 🔒 Security Check: Maximum balance limit
                 new_balance = standard_num(old_usdt + quant)
-                if new_balance > MAX_BALANCE:
-                    logging.error(f"🔒 充值失败-超出最大余额限制: user_id={user_id}, current={old_usdt}, add={quant}, would_be={new_balance}, max={MAX_BALANCE}")
+                if new_balance > MAX_USER_BALANCE:
+                    logging.error(f"🔒 充值失败-超出最大余额限制: user_id={user_id}, current={old_usdt}, add={quant}, would_be={new_balance}, max={MAX_USER_BALANCE}")
                     qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
                     # Notify admin about suspicious activity
-                    admin_alert = f"⚠️ 安全警报：用户 {user_id} 充值 {quant} USDT 将超出最大余额限制 ({MAX_BALANCE} USDT)"
+                    admin_alert = f"⚠️ 安全警报：用户 {user_id} 充值 {quant} USDT 将超出最大余额限制 ({MAX_USER_BALANCE} USDT)"
                     for admin_id in get_admin_ids():
                         try:
                             context.bot.send_message(chat_id=admin_id, text=admin_alert)
-                        except:
-                            pass
+                        except Exception as e:
+                            logging.warning(f"Failed to send security alert to admin {admin_id}: {e}")
                     continue
 
                 # 🔒 Security Fix: Use atomic operation to update balance and prevent race conditions
@@ -11489,7 +11520,7 @@ def jiexi(context: CallbackContext):
                     old_usdt = float(user_list.get('USDT', 0))
                     new_balance = standard_num(old_usdt + quant)
                     # Re-check max balance
-                    if new_balance > MAX_BALANCE:
+                    if new_balance > MAX_USER_BALANCE:
                         logging.error(f"🔒 充值失败-超出最大余额限制(retry): user_id={user_id}, balance={new_balance}")
                         qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
                         continue
