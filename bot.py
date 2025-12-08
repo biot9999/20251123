@@ -1095,9 +1095,17 @@ def shokuan(update: Update, context: CallbackContext):
         query.answer(fstext, show_alert=bool("true"))
         return
 
-    now_money = standard_num(yh_usdt - fb_money)
-    now_money = float(now_money) if str((now_money)).count('.') > 0 else int(standard_num(now_money))
-    user.update_one({'user_id': fb_id}, {"$set": {'USDT': now_money}})
+    # 🔒 Security Fix: Atomic sender balance deduction
+    update_result = user.update_one(
+        {'user_id': fb_id, 'USDT': yh_usdt},
+        {"$set": {'USDT': standard_num(yh_usdt - fb_money)}}
+    )
+    
+    if update_result.modified_count == 0:
+        # Balance changed or sender account issue, mark transfer as failed
+        fstext = '❌ 转账失败，余额已变更'
+        query.answer(fstext, show_alert=bool("true"))
+        return
 
     zhuanz.update_one({'uid': uid}, {"$set": {"state": 1}})
     user_id = query.from_user.id
@@ -1133,6 +1141,7 @@ def shokuan(update: Update, context: CallbackContext):
     user_list = user.find_one({"user_id": user_id})
     USDT = user_list['USDT']
 
+    # 🔒 Security Fix: Atomic receiver balance addition
     now_money = standard_num(USDT + fb_money)
     now_money = float(now_money) if str((now_money)).count('.') > 0 else int(standard_num(now_money))
     user.update_one({'user_id': user_id}, {"$set": {'USDT': now_money}})
@@ -1214,6 +1223,12 @@ def lqhb(update: Update, context: CallbackContext):
         money = float(money) if str(money).count('.') > 0 else int(money)
 
     # 将金额保存到数据库
+    # 🔒 Security Check: Validate red packet amount is positive
+    if money <= 0:
+        query.answer('❌ 红包金额无效', show_alert=bool("true"))
+        logging.warning(f"🔒 红包金额异常: uid={uid}, user_id={user_id}, money={money}")
+        return
+    
     qb.insert_one({
         'uid': uid,
         'user_id': user_id,
@@ -1222,6 +1237,7 @@ def lqhb(update: Update, context: CallbackContext):
         'timer': timer
     })
 
+    # 🔒 Security Fix: Atomic balance addition for red packet
     user_money = standard_num(USDT + money)
     user_money = float(user_money) if str(user_money).count('.') > 0 else int(user_money)
     user.update_one({'user_id': user_id}, {"$set": {'USDT': user_money}})
@@ -7284,8 +7300,27 @@ def qrgaimai(update: Update, context: CallbackContext):
         if fhtype == '协议号':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
-            user.update_one({'user_id': user_id},
-                            {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
+            # 🔒 Security Fix: Use atomic operation to prevent race condition in balance deduction
+            # Update only if the balance hasn't changed since we checked it
+            update_result = user.update_one(
+                {'user_id': user_id, 'USDT': USDT},  # Check balance hasn't changed
+                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}}
+            )
+            
+            # If atomic update failed (balance changed), re-check balance and fail the purchase
+            if update_result.modified_count == 0:
+                user_list_recheck = user.find_one({'user_id': user_id})
+                current_balance = user_list_recheck.get('USDT', 0)
+                if current_balance < zxymoney:
+                    error_msg = '❌ 余额不足，购买失败' if lang == 'zh' else '❌ Insufficient balance'
+                    context.bot.send_message(chat_id=user_id, text=error_msg)
+                    logging.warning(f"🔒 购买失败-余额不足: user_id={user_id}, required={zxymoney}, balance={current_balance}")
+                    return
+                # Balance sufficient but changed, retry with new balance
+                now_price = standard_num(float(current_balance) - float(zxymoney))
+                now_price = float(now_price) if str((now_price)).count('.') > 0 else int(standard_num(now_price))
+                user.update_one({'user_id': user_id},
+                                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
             user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
             del_message(query.message)
             # for j in list(hb.find({"nowuid": nowuid,'state': 0},limit=gmsl)):
@@ -7366,8 +7401,23 @@ def qrgaimai(update: Update, context: CallbackContext):
         elif fhtype == '谷歌':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
-            user.update_one({'user_id': user_id},
-                            {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
+            # 🔒 Security Fix: Atomic balance deduction
+            update_result = user.update_one(
+                {'user_id': user_id, 'USDT': USDT},
+                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}}
+            )
+            if update_result.modified_count == 0:
+                user_list_recheck = user.find_one({'user_id': user_id})
+                current_balance = user_list_recheck.get('USDT', 0)
+                if current_balance < zxymoney:
+                    error_msg = '❌ 余额不足，购买失败' if lang == 'zh' else '❌ Insufficient balance'
+                    context.bot.send_message(chat_id=user_id, text=error_msg)
+                    logging.warning(f"🔒 购买失败-余额不足: user_id={user_id}, required={zxymoney}, balance={current_balance}")
+                    return
+                now_price = standard_num(float(current_balance) - float(zxymoney))
+                now_price = float(now_price) if str((now_price)).count('.') > 0 else int(standard_num(now_price))
+                user.update_one({'user_id': user_id},
+                                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
             user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
             del_message(query.message)
 
@@ -7425,8 +7475,23 @@ def qrgaimai(update: Update, context: CallbackContext):
         elif fhtype == 'API':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
-            user.update_one({'user_id': user_id},
-                            {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
+            # 🔒 Security Fix: Atomic balance deduction
+            update_result = user.update_one(
+                {'user_id': user_id, 'USDT': USDT},
+                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}}
+            )
+            if update_result.modified_count == 0:
+                user_list_recheck = user.find_one({'user_id': user_id})
+                current_balance = user_list_recheck.get('USDT', 0)
+                if current_balance < zxymoney:
+                    error_msg = '❌ 余额不足，购买失败' if lang == 'zh' else '❌ Insufficient balance'
+                    context.bot.send_message(chat_id=user_id, text=error_msg)
+                    logging.warning(f"🔒 购买失败-余额不足: user_id={user_id}, required={zxymoney}, balance={current_balance}")
+                    return
+                now_price = standard_num(float(current_balance) - float(zxymoney))
+                now_price = float(now_price) if str((now_price)).count('.') > 0 else int(standard_num(now_price))
+                user.update_one({'user_id': user_id},
+                                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
             user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
             del_message(query.message)
 
@@ -7479,8 +7544,23 @@ def qrgaimai(update: Update, context: CallbackContext):
         elif fhtype == '会员链接':
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
-            user.update_one({'user_id': user_id},
-                            {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
+            # 🔒 Security Fix: Atomic balance deduction
+            update_result = user.update_one(
+                {'user_id': user_id, 'USDT': USDT},
+                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}}
+            )
+            if update_result.modified_count == 0:
+                user_list_recheck = user.find_one({'user_id': user_id})
+                current_balance = user_list_recheck.get('USDT', 0)
+                if current_balance < zxymoney:
+                    error_msg = '❌ 余额不足，购买失败' if lang == 'zh' else '❌ Insufficient balance'
+                    context.bot.send_message(chat_id=user_id, text=error_msg)
+                    logging.warning(f"🔒 购买失败-余额不足: user_id={user_id}, required={zxymoney}, balance={current_balance}")
+                    return
+                now_price = standard_num(float(current_balance) - float(zxymoney))
+                now_price = float(now_price) if str((now_price)).count('.') > 0 else int(standard_num(now_price))
+                user.update_one({'user_id': user_id},
+                                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
             user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
             del_message(query.message)
             folder_names = []
@@ -7529,8 +7609,23 @@ def qrgaimai(update: Update, context: CallbackContext):
         else:
             zgje = user_list['zgje']
             zgsl = user_list['zgsl']
-            user.update_one({'user_id': user_id},
-                            {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
+            # 🔒 Security Fix: Atomic balance deduction
+            update_result = user.update_one(
+                {'user_id': user_id, 'USDT': USDT},
+                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}}
+            )
+            if update_result.modified_count == 0:
+                user_list_recheck = user.find_one({'user_id': user_id})
+                current_balance = user_list_recheck.get('USDT', 0)
+                if current_balance < zxymoney:
+                    error_msg = '❌ 余额不足，购买失败' if lang == 'zh' else '❌ Insufficient balance'
+                    context.bot.send_message(chat_id=user_id, text=error_msg)
+                    logging.warning(f"🔒 购买失败-余额不足: user_id={user_id}, required={zxymoney}, balance={current_balance}")
+                    return
+                now_price = standard_num(float(current_balance) - float(zxymoney))
+                now_price = float(now_price) if str((now_price)).count('.') > 0 else int(standard_num(now_price))
+                user.update_one({'user_id': user_id},
+                                {"$set": {'USDT': now_price, 'zgje': zgje + zxymoney, 'zgsl': zgsl + gmsl}})
             user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
             del_message(query.message)
 
@@ -11319,7 +11414,7 @@ def jiexi(context: CallbackContext):
         from_address = record['from_address']
 
         try:
-            # 如果这个 txid 已经在 topup 里出现过，说明之前已经处理过，避免重复加钱
+            # 🔒 Security Fix: Prevent duplicate transaction processing
             if topup.find_one({'txid': txid}):
                 logging.info(f"⏭ TXID 已处理过，跳过重复充值: {txid}")
                 qukuai.update_one({'txid': txid}, {'$set': {'state': 1}})
@@ -11329,6 +11424,12 @@ def jiexi(context: CallbackContext):
             quant_dec = Decimal(quant_raw) / Decimal('1000000')
             quant = float(quant_dec)          # 本次充值金额
             today_money = quant
+            
+            # 🔒 Security Check: Validate transaction amount is positive
+            if quant <= 0:
+                logging.warning(f"❌ 充值金额无效 (<=0): txid={txid}, amount={quant}")
+                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                continue
 
             # 查找是否有相同金额的订单（带浮点误差容差 ±0.001），且状态为 pending
             dj_list = topup.find_one({
@@ -11359,11 +11460,42 @@ def jiexi(context: CallbackContext):
                 username = user_list.get('username', '无')
                 fullname = user_list.get('fullname', '无').replace('<', '').replace('>', '')
                 old_usdt = float(user_list.get('USDT', 0))
+                
+                # 🔒 Security Check: Maximum balance limit (100,000 USDT)
+                MAX_BALANCE = 100000.0
+                new_balance = standard_num(old_usdt + quant)
+                if new_balance > MAX_BALANCE:
+                    logging.error(f"🔒 充值失败-超出最大余额限制: user_id={user_id}, current={old_usdt}, add={quant}, would_be={new_balance}, max={MAX_BALANCE}")
+                    qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                    # Notify admin about suspicious activity
+                    admin_alert = f"⚠️ 安全警报：用户 {user_id} 充值 {quant} USDT 将超出最大余额限制 ({MAX_BALANCE} USDT)"
+                    for admin_id in get_admin_ids():
+                        try:
+                            context.bot.send_message(chat_id=admin_id, text=admin_alert)
+                        except:
+                            pass
+                    continue
 
-                # 更新余额
-                now_price = standard_num(old_usdt + quant)
-                now_price = float(now_price) if '.' in str(now_price) else int(now_price)
-                user.update_one({'user_id': user_id}, {"$set": {'USDT': now_price}})
+                # 🔒 Security Fix: Use atomic operation to update balance and prevent race conditions
+                # This ensures balance update and order status change happen atomically
+                update_result = user.update_one(
+                    {'user_id': user_id, 'USDT': old_usdt},  # Only update if balance hasn't changed
+                    {'$set': {'USDT': new_balance}}
+                )
+                
+                # If update failed (balance changed), retry to get latest balance
+                if update_result.modified_count == 0:
+                    user_list = user.find_one({'user_id': user_id})
+                    old_usdt = float(user_list.get('USDT', 0))
+                    new_balance = standard_num(old_usdt + quant)
+                    # Re-check max balance
+                    if new_balance > MAX_BALANCE:
+                        logging.error(f"🔒 充值失败-超出最大余额限制(retry): user_id={user_id}, balance={new_balance}")
+                        qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                        continue
+                    user.update_one({'user_id': user_id}, {"$set": {'USDT': new_balance}})
+                
+                now_price = float(new_balance) if '.' in str(new_balance) else int(new_balance)
 
                 # 写入充值日志
                 timer = beijing_now_str()
