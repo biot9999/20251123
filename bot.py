@@ -48,7 +48,8 @@ from mongo import (
     get_agent_bot_user_collection, get_agent_bot_user, update_agent_bot_user_balance,
     get_agent_product_price, get_real_time_stock, generate_agent_bot_id, get_agent_stats,
     get_agent_bot_topup_collection, get_agent_bot_gmjlu_collection,
-    normalize_agent_bot_id, ensure_agent_user_exists, _get_agent_id_suffix
+    normalize_agent_bot_id, ensure_agent_user_exists, _get_agent_id_suffix,
+    sync_new_product_to_all_agents, sync_all_products_to_agent, sync_product_price_change_to_agents
 )
 # ✅ 先定义变量（在文件顶部）
 NOTIFY_CHANNEL_ID = os.getenv("NOTIFY_CHANNEL_ID")
@@ -131,12 +132,19 @@ class MultiBotDistributionSystem:
                 # 使用固定利润加价而不是百分比
                 suggested_price = round(original_price + profit_margin, 2)
                 
+                # 获取商品分类信息
+                product_name = product.get('projectname', '')
+                category = product.get('leixing', '')
+                
                 success = create_agent_product_price_data(
                     agent_bot_id=agent_bot_id,
                     original_nowuid=product['nowuid'],
                     agent_price=suggested_price,
                     is_active=True,
-                    agent_markup=profit_margin  # ✅ 传递利润加价参数
+                    agent_markup=profit_margin,
+                    product_name=product_name,
+                    category=category,
+                    original_price_snapshot=original_price
                 )
                 
                 if success:
@@ -5530,14 +5538,40 @@ def flxxi(update: Update, context: CallbackContext):
 
 
 def create_product(ejfl, projectname, price, uid):
+    """创建商品并同步到所有代理机器人"""
     nowuid = str(uuid.uuid4())  # 生成唯一ID
+    
+    # 获取一级分类信息作为商品分类
+    category = ''
+    try:
+        parent_category = fenlei.find_one({'uid': uid})
+        if parent_category:
+            category = parent_category.get('projectname', '')
+    except Exception as e:
+        logging.warning(f"⚠️ 获取父分类失败: {e}")
+    
     product = {
         "projectname": projectname,
         "money": price,
         "uid": uid,
-        "nowuid": nowuid
+        "nowuid": nowuid,
+        "leixing": category  # 添加分类字段
     }
     ejfl.insert_one(product)
+    
+    # 同步新商品到所有代理机器人
+    try:
+        sync_result = sync_new_product_to_all_agents(
+            product_nowuid=nowuid,
+            product_name=projectname,
+            category=category,
+            original_price=float(price) if price else 0.0,
+            default_markup=0.3
+        )
+        logging.info(f"🔄 新商品已同步到 {sync_result.get('success_count', 0)} 个代理: {projectname}")
+    except Exception as sync_err:
+        logging.warning(f"⚠️ 同步新商品到代理失败: {projectname} - {sync_err}")
+    
     return nowuid
 
 
@@ -8203,6 +8237,21 @@ def textkeyboard(update: Update, context: CallbackContext):
                         money = float(text) if text.count('.') > 0 else int(text)
                         ejfl.update_one({"nowuid": nowuid}, {"$set": {"money": money}})
                         user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
+                        
+                        # 同步价格变动到所有代理
+                        try:
+                            ej_product = ejfl.find_one({'nowuid': nowuid})
+                            product_name = ej_product.get('projectname', '') if ej_product else ''
+                            category = ej_product.get('leixing', '') if ej_product else ''
+                            sync_result = sync_product_price_change_to_agents(
+                                product_nowuid=nowuid,
+                                new_price=money,
+                                product_name=product_name,
+                                category=category
+                            )
+                            logging.info(f"🔄 价格变动已同步到 {sync_result.get('updated_count', 0)} 个代理: {product_name} -> {money}U")
+                        except Exception as sync_err:
+                            logging.warning(f"⚠️ 同步价格变动到代理失败: nowuid={nowuid} - {sync_err}")
 
                         ej_list = ejfl.find_one({'nowuid': nowuid})
                         uid = ej_list['uid']
@@ -8242,6 +8291,23 @@ def textkeyboard(update: Update, context: CallbackContext):
                     nowuid = sign.replace('upejflname ', '')
                     ejfl.update_one({"nowuid": nowuid}, {"$set": {"projectname": text}})
                     user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
+                    
+                    # 同步商品名称变动到所有代理
+                    try:
+                        ej_product = ejfl.find_one({'nowuid': nowuid})
+                        if ej_product:
+                            current_price = float(ej_product.get('money', 0))
+                            category = ej_product.get('leixing', '')
+                            sync_result = sync_product_price_change_to_agents(
+                                product_nowuid=nowuid,
+                                new_price=current_price,
+                                product_name=text,
+                                category=category
+                            )
+                            logging.info(f"🔄 商品名称变动已同步到 {sync_result.get('updated_count', 0)} 个代理: {text}")
+                    except Exception as sync_err:
+                        logging.warning(f"⚠️ 同步商品名称变动到代理失败: {text} - {sync_err}")
+                    
                     uid = ejfl.find_one({'nowuid': nowuid})['uid']
                     fl_pro = fenlei.find_one({'uid': uid})['projectname']
                     keyboard = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
