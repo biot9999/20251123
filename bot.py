@@ -7248,12 +7248,23 @@ def qrgaimai(update: Update, context: CallbackContext):
     user_list = user.find_one({'user_id': user_id})
     USDT = user_list['USDT']
     lang = user_list['lang']
+    
+    # ✅ 安全检查：防止负数或零数量购买（防御性编程）
+    if gmsl <= 0:
+        error_msg = '❌ 购买数量无效' if lang == 'zh' else '❌ Invalid quantity'
+        context.bot.send_message(chat_id=user_id, text=error_msg)
+        return
+    
+    # ✅ 安全检查：防止负数金额购买
+    if zxymoney <= 0:
+        error_msg = '❌ 购买金额无效' if lang == 'zh' else '❌ Invalid amount'
+        context.bot.send_message(chat_id=user_id, text=error_msg)
+        return
+    
     kc = len(list(hb.find({'nowuid': nowuid, 'state': 0})))
     if kc < gmsl:
         kcbz = '当前库存不足' if lang == 'zh' else get_fy('当前库存不足')
         context.bot.send_message(chat_id=user_id, text=kcbz)
-        return
-    if zxymoney == 0:
         return
     keyboard = [[InlineKeyboardButton('✅已读（点击销毁此消息）', callback_data=f'close {user_id}')]]
     if USDT >= zxymoney:
@@ -8163,6 +8174,19 @@ def textkeyboard(update: Update, context: CallbackContext):
                     kc = len(list(hb.find({'nowuid': nowuid, 'state': 0})))
                     if is_number(text):
                         gmsl = int(text)
+                        
+                        # ✅ 安全检查：拒绝负数和零数量的购买
+                        if gmsl <= 0:
+                            if lang == 'zh':
+                                keyboard = [[InlineKeyboardButton('❌取消购买', callback_data=f'close {user_id}')]]
+                                context.bot.send_message(chat_id=user_id, text='❌ 购买数量必须大于0，请重新输入',
+                                                         reply_markup=InlineKeyboardMarkup(keyboard))
+                            else:
+                                keyboard = [[InlineKeyboardButton('❌Cancel purchase', callback_data=f'close {user_id}')]]
+                                context.bot.send_message(chat_id=user_id, text='❌ Quantity must be greater than 0, please re-enter',
+                                                         reply_markup=InlineKeyboardMarkup(keyboard))
+                            return
+                        
                         zxymoney = standard_num(gmsl * money)
                         zxymoney = float(zxymoney) if str((zxymoney)).count('.') > 0 else int(standard_num(zxymoney))
                         if kc < gmsl:
