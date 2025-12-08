@@ -119,11 +119,6 @@ def callback(ch, method, properties, body) -> None:
                             if quant == 0:
                                 continue
                             
-                            # 🔒 Security Check: Skip negative values (should not happen but defensive)
-                            if quant < 0:
-                                logging.warning(f"⚠️ 检测到负值交易: txid={txid}, quant={quant}")
-                                continue
-                            
                             # 🔒 Security Check: Validate addresses are not empty
                             if not from_address or not to_address:
                                 logging.warning(f"⚠️ 交易地址异常: txid={txid}, from={from_address}, to={to_address}")

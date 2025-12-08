@@ -429,6 +429,17 @@ def is_admin(user_id: int) -> bool:
     """检查用户是否为管理员"""
     return user_id in ADMIN_IDS
 
+def send_security_alert(context: CallbackContext, message: str):
+    """
+    发送安全警报给所有管理员
+    用于统一处理安全相关的管理员通知
+    """
+    for admin_id in get_admin_ids():
+        try:
+            context.bot.send_message(chat_id=admin_id, text=message)
+        except Exception as e:
+            logging.warning(f"Failed to send security alert to admin {admin_id}: {e}")
+
 def get_admin_ids() -> list:
     """获取管理员 ID 列表"""
     return ADMIN_IDS.copy()
@@ -11452,7 +11463,9 @@ def jiexi(context: CallbackContext):
             # 🔒 Security Check 1: Validate TXID format
             if not txid or len(txid) != 64:
                 logging.error(f"❌ 无效的TXID格式: txid={txid}")
-                qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
+                # Only update if we have a valid record ID
+                if '_id' in record:
+                    qukuai.update_one({'_id': record['_id']}, {"$set": {"state": 2}})
                 continue
             
             # 🔒 Security Check 2: Validate addresses
@@ -11505,11 +11518,7 @@ def jiexi(context: CallbackContext):
                 logging.error(f"🔒 充值金额异常过大: txid={txid}, amount={quant}, max={MAX_SINGLE_RECHARGE}")
                 # Alert admins about suspicious large transaction
                 admin_alert = f"⚠️ 安全警报：检测到异常大额充值\nTXID: {txid}\n金额: {quant} USDT\n发送方: {from_address}"
-                for admin_id in get_admin_ids():
-                    try:
-                        context.bot.send_message(chat_id=admin_id, text=admin_alert)
-                    except Exception as e:
-                        logging.warning(f"Failed to send alert to admin {admin_id}: {e}")
+                send_security_alert(context, admin_alert)
                 qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
                 continue
             
@@ -11526,11 +11535,7 @@ def jiexi(context: CallbackContext):
                 logging.warning(f"⚠️ 检测到疑似重复交易: txid={txid}, from={from_address}, amount={quant}, previous_txid={duplicate_check['txid']}")
                 # Don't auto-reject, but flag for manual review
                 admin_alert = f"⚠️ 检测到疑似重复交易\nTXID: {txid}\n金额: {quant} USDT\n发送方: {from_address}\n上次交易: {duplicate_check['txid']}"
-                for admin_id in get_admin_ids():
-                    try:
-                        context.bot.send_message(chat_id=admin_id, text=admin_alert)
-                    except Exception as e:
-                        logging.warning(f"Failed to send alert to admin {admin_id}: {e}")
+                send_security_alert(context, admin_alert)
 
             # 查找是否有相同金额的订单（带浮点误差容差 ±0.001），且状态为 pending
             dj_list = topup.find_one({
@@ -11569,11 +11574,7 @@ def jiexi(context: CallbackContext):
                     qukuai.update_one({'txid': txid}, {"$set": {"state": 2}})
                     # Notify admin about suspicious activity
                     admin_alert = f"⚠️ 安全警报：用户 {user_id} 充值 {quant} USDT 将超出最大余额限制 ({MAX_USER_BALANCE} USDT)"
-                    for admin_id in get_admin_ids():
-                        try:
-                            context.bot.send_message(chat_id=admin_id, text=admin_alert)
-                        except Exception as e:
-                            logging.warning(f"Failed to send security alert to admin {admin_id}: {e}")
+                    send_security_alert(context, admin_alert)
                     continue
 
                 # 🔒 Security Fix: Use atomic operation to update balance and prevent race conditions
