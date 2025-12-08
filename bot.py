@@ -7249,13 +7249,13 @@ def qrgaimai(update: Update, context: CallbackContext):
     USDT = user_list['USDT']
     lang = user_list['lang']
     
-    # ✅ 安全检查：防止负数或零数量购买（防御性编程）
+    # Security check: Prevent negative or zero quantity purchases (defense in depth)
     if gmsl <= 0:
         error_msg = '❌ 购买数量无效' if lang == 'zh' else '❌ Invalid quantity'
         context.bot.send_message(chat_id=user_id, text=error_msg)
         return
     
-    # ✅ 安全检查：防止负数金额购买
+    # Security check: Prevent negative or zero amount purchases
     if zxymoney <= 0:
         error_msg = '❌ 购买金额无效' if lang == 'zh' else '❌ Invalid amount'
         context.bot.send_message(chat_id=user_id, text=error_msg)
@@ -8175,15 +8175,15 @@ def textkeyboard(update: Update, context: CallbackContext):
                     if is_number(text):
                         gmsl = int(text)
                         
-                        # ✅ 安全检查：拒绝负数和零数量的购买
+                        # Security check: Reject negative or zero quantity purchases
                         if gmsl <= 0:
                             if lang == 'zh':
-                                keyboard = [[InlineKeyboardButton('❌取消购买', callback_data=f'close {user_id}')]]
-                                context.bot.send_message(chat_id=user_id, text='❌ 购买数量必须大于0，请重新输入',
+                                keyboard = [[InlineKeyboardButton('🔙 返回商品列表', callback_data='show_product_list')]]
+                                context.bot.send_message(chat_id=user_id, text='❌ 购买数量必须大于0\n\n请返回商品列表重新购买',
                                                          reply_markup=InlineKeyboardMarkup(keyboard))
                             else:
-                                keyboard = [[InlineKeyboardButton('❌Cancel purchase', callback_data=f'close {user_id}')]]
-                                context.bot.send_message(chat_id=user_id, text='❌ Quantity must be greater than 0, please re-enter',
+                                keyboard = [[InlineKeyboardButton('🔙 Back to Products', callback_data='show_product_list')]]
+                                context.bot.send_message(chat_id=user_id, text='❌ Quantity must be greater than 0\n\nPlease return to product list to purchase again',
                                                          reply_markup=InlineKeyboardMarkup(keyboard))
                             return
                         
