@@ -8541,6 +8541,11 @@ def textkeyboard(update: Update, context: CallbackContext):
                         return
 
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
+                    
+                    # ✅ 启动批量上传模式
+                    from mongo import stock_manager
+                    stock_manager.start_batch_upload()
+                    
                     count = 0
                     timer = beijing_now_str()
                     total = len(lines)
@@ -8565,7 +8570,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                         if link.startswith('http'):
                             if hb.find_one({'nowuid': nowuid, 'projectname': line}) is None:
                                 hbid = generate_24bit_uid()
-                                shangchuanhaobao('会员链接', uid, nowuid, hbid, line, timer, remark=remark)
+                                shangchuanhaobao('会员链接', uid, nowuid, hbid, line, timer, remark=remark, batch_mode=True)
                                 count += 1
 
                         # 📊 进度反馈（每10%更新一次）
@@ -8579,6 +8584,9 @@ def textkeyboard(update: Update, context: CallbackContext):
                                 )
                             except:
                                 pass
+                    
+                    # ✅ 结束批量上传模式并立即发送通知
+                    stock_manager.end_batch_upload(force_send=True)
 
                     context.bot.send_message(chat_id=user_id, text=f'✅ 本次上传了 {count} 个链接')
                     user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
@@ -8630,6 +8638,10 @@ def textkeyboard(update: Update, context: CallbackContext):
                     new_file.download(new_file_path)
 
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
+                    
+                    # ✅ 启动批量上传模式
+                    from mongo import stock_manager
+                    stock_manager.start_batch_upload()
 
                     count = 0
                     timer = beijing_now_str()
@@ -8644,7 +8656,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                                 folder_name = match.group(1)
                                 if hb.find_one({'nowuid': nowuid, 'projectname': folder_name}) is None:
                                     hbid = generate_24bit_uid()
-                                    shangchuanhaobao('直登号', uid, nowuid, hbid, folder_name, timer)
+                                    shangchuanhaobao('直登号', uid, nowuid, hbid, folder_name, timer, batch_mode=True)
                                     count += 1
 
                             zip_ref.extract(file_info, f'号包/{nowuid}')
@@ -8660,6 +8672,9 @@ def textkeyboard(update: Update, context: CallbackContext):
                                     )
                                 except:
                                     pass
+                    
+                    # ✅ 结束批量上传模式并立即发送通知
+                    stock_manager.end_batch_upload(force_send=True)
 
                     update.message.reply_text(f'🎉 解压并处理完成！本次上传了 {count} 个号包')
                     user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
@@ -8716,6 +8731,10 @@ def textkeyboard(update: Update, context: CallbackContext):
 
                     # 初始进度提示
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
+                    
+                    # ✅ 启动批量上传模式
+                    from mongo import stock_manager
+                    stock_manager.start_batch_upload()
 
                     with open(new_file_path, 'r', encoding='utf-8') as file:
                         link_list = file.read()
@@ -8738,7 +8757,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                         jihe12 = {'账户': login, '密码': password, '子邮件': submail}
                         if hb.find_one({'nowuid': nowuid, 'projectname': login}) is None:
                             hbid = generate_24bit_uid()
-                            shangchuanhaobao('谷歌', uid, nowuid, hbid, login, timer)
+                            shangchuanhaobao('谷歌', uid, nowuid, hbid, login, timer, batch_mode=True)
                             hb.update_one({'hbid': hbid}, {"$set": {"leixing": '谷歌', 'data': jihe12}})
                             count += 1
 
@@ -8753,6 +8772,9 @@ def textkeyboard(update: Update, context: CallbackContext):
                                 )
                             except:
                                 pass
+                    
+                    # ✅ 结束批量上传模式并立即发送通知
+                    stock_manager.end_batch_upload(force_send=True)
 
                     update.message.reply_text(f'处理完成！本次上传了{count}个谷歌号')
                     user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
@@ -8806,6 +8828,10 @@ def textkeyboard(update: Update, context: CallbackContext):
 
                     # 初始进度提示
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
+                    
+                    # ✅ 启动批量上传模式
+                    from mongo import stock_manager
+                    stock_manager.start_batch_upload()
 
                     link_list = []
                     with open(new_file_path, 'r', encoding='utf-8') as file:
@@ -8822,7 +8848,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                     for idx, i in enumerate(link_list, 1):
                         if hb.find_one({'nowuid': nowuid, 'projectname': i}) is None:
                             hbid = generate_24bit_uid()
-                            shangchuanhaobao('API', uid, nowuid, hbid, i, timer)
+                            shangchuanhaobao('API', uid, nowuid, hbid, i, timer, batch_mode=True)
                             count += 1
 
                         # 每10%更新一次进度提示
@@ -8836,6 +8862,9 @@ def textkeyboard(update: Update, context: CallbackContext):
                                 )
                             except:
                                 pass
+                    
+                    # ✅ 结束批量上传模式并立即发送通知
+                    stock_manager.end_batch_upload(force_send=True)
 
                     update.message.reply_text(f'处理完成！本次上传了{count}个api链接')
                     user.update_one({'user_id': user_id}, {"$set": {'sign': 0}})
@@ -8887,6 +8916,11 @@ def textkeyboard(update: Update, context: CallbackContext):
                     new_file.download(new_file_path)
 
                     context.bot.send_message(chat_id=user_id, text='上传中，请勿重复操作')
+                    
+                    # ✅ 启动批量上传模式
+                    from mongo import stock_manager
+                    stock_manager.start_batch_upload()
+                    
                     # 解压缩文件
                     count = 0
                     tj_dict = {}
@@ -8902,7 +8936,7 @@ def textkeyboard(update: Update, context: CallbackContext):
                                     hbid = generate_24bit_uid()
                                     if hb.find_one({'nowuid': nowuid, 'projectname': fli1}) is None:
                                         tj_dict[fli1] = 1
-                                        shangchuanhaobao('协议号', uid, nowuid, hbid, fli1, timer)
+                                        shangchuanhaobao('协议号', uid, nowuid, hbid, fli1, timer, batch_mode=True)
 
                                 zip_ref.extract(member=file_info, path=f'协议号/{nowuid}')
                                 pass
@@ -8910,6 +8944,9 @@ def textkeyboard(update: Update, context: CallbackContext):
                                 pass
                     for i in tj_dict:
                         count += 1
+                    
+                    # ✅ 结束批量上传模式并立即发送通知
+                    stock_manager.end_batch_upload(force_send=True)
 
                     update.message.reply_text(f'解压并处理完成！本次上传了{count}个协议号')
 

@@ -152,6 +152,7 @@ class StockNotificationManager:
         self.notification_lock = threading.Lock()
         self.bot_instance = None
         self.notification_timer = None  # Single timer for batched notifications
+        self.batch_upload_active = False  # 标记是否在批量上传中
     
     def get_bot(self):
         """获取或创建 Bot 实例"""
@@ -247,9 +248,18 @@ class StockNotificationManager:
         
         logging.info(f"📢 批量库存通知完成，共发送 {len(notifications_to_send)} 个通知")
     
-    def schedule_notification(self, nowuid: str, projectname: str):
-        """安排延迟通知 - 使用单一计时器防止重复通知"""
+    def schedule_notification(self, nowuid: str, projectname: str, delay_override: int = None):
+        """安排延迟通知 - 使用单一计时器防止重复通知
+        
+        Args:
+            nowuid: 商品唯一ID
+            projectname: 商品名称
+            delay_override: 可选的延迟时间（秒），如果提供则使用此值，否则使用默认的STOCK_NOTIFICATION_DELAY
+        """
         self.add_stock_notification(nowuid, projectname)
+        
+        # 如果正在批量上传中，延长等待时间
+        actual_delay = delay_override if delay_override is not None else STOCK_NOTIFICATION_DELAY
         
         with self.notification_lock:
             # 取消现有的计时器（如果存在）
@@ -258,13 +268,39 @@ class StockNotificationManager:
             
             # 创建新的计时器
             self.notification_timer = threading.Timer(
-                STOCK_NOTIFICATION_DELAY,
+                actual_delay,
                 self._execute_batched_notifications
             )
             self.notification_timer.daemon = True
             self.notification_timer.start()
         
-        logging.info(f"🔔 已安排批量库存通知延迟任务：{projectname} (nowuid={nowuid})")
+        logging.info(f"🔔 已安排批量库存通知延迟任务：{projectname} (nowuid={nowuid}, delay={actual_delay}s)")
+    
+    def start_batch_upload(self):
+        """标记批量上传开始"""
+        with self.notification_lock:
+            self.batch_upload_active = True
+            logging.info("📦 批量上传模式已启动")
+    
+    def end_batch_upload(self, force_send: bool = True):
+        """标记批量上传结束
+        
+        Args:
+            force_send: 是否立即发送累积的通知，默认为True
+        """
+        with self.notification_lock:
+            self.batch_upload_active = False
+            logging.info("📦 批量上传模式已结束")
+        
+        if force_send:
+            # 取消现有的计时器
+            with self.notification_lock:
+                if self.notification_timer is not None:
+                    self.notification_timer.cancel()
+                    self.notification_timer = None
+            
+            # 立即发送通知
+            self.send_batched_notifications()
     
     def _execute_batched_notifications(self):
         """执行批量通知（私有方法）"""
@@ -367,8 +403,12 @@ def xieyihaobaocun(uid, nowuid, hbid, projectname, timer):
         logging.error(f"❌ 保存协议号失败：{projectname} - {e}")
 
 
-def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark=''):
-    """优化的商品上架函数"""
+def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark='', batch_mode=False):
+    """优化的商品上架函数
+    
+    Args:
+        batch_mode: 如果为True，则只累积通知不立即发送
+    """
     try:
         # 插入商品数据
         hb.insert_one({
@@ -384,7 +424,12 @@ def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark=''):
         logging.info(f"✅ 上架商品成功：{projectname} (nowuid={nowuid})")
 
         # ✅ 使用优化的库存通知管理器
-        stock_manager.schedule_notification(nowuid, projectname)
+        if batch_mode:
+            # 批量模式：只累积，不启动计时器
+            stock_manager.add_stock_notification(nowuid, projectname)
+        else:
+            # 正常模式：累积并启动计时器
+            stock_manager.schedule_notification(nowuid, projectname)
 
     except Exception as e:
         logging.error(f"❌ 上架商品失败：{projectname} - {e}")
