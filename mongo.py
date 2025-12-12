@@ -151,6 +151,7 @@ class StockNotificationManager:
         self.last_notify_time = {}
         self.notification_lock = threading.Lock()
         self.bot_instance = None
+        self.notification_timer = None  # Single timer for batched notifications
     
     def get_bot(self):
         """获取或创建 Bot 实例"""
@@ -244,18 +245,33 @@ class StockNotificationManager:
         logging.info(f"📢 批量库存通知完成，共发送 {len(notifications_to_send)} 个通知")
     
     def schedule_notification(self, nowuid: str, projectname: str):
-        """安排延迟通知"""
+        """安排延迟通知 - 使用单一计时器防止重复通知"""
         self.add_stock_notification(nowuid, projectname)
         
-        def delayed_notify():
-            time.sleep(STOCK_NOTIFICATION_DELAY)
-            try:
-                self.send_batched_notifications()
-            except Exception as e:
-                logging.error(f"❌ 延迟通知失败：{e}")
+        with self.notification_lock:
+            # 取消现有的计时器（如果存在）
+            if self.notification_timer is not None:
+                self.notification_timer.cancel()
+            
+            # 创建新的计时器
+            self.notification_timer = threading.Timer(
+                STOCK_NOTIFICATION_DELAY,
+                self._execute_batched_notifications
+            )
+            self.notification_timer.daemon = True
+            self.notification_timer.start()
         
-        threading.Thread(target=delayed_notify, daemon=True).start()
-        logging.info(f"🔔 已启动库存通知延迟任务：{projectname} (nowuid={nowuid})")
+        logging.info(f"🔔 已安排批量库存通知延迟任务：{projectname} (nowuid={nowuid})")
+    
+    def _execute_batched_notifications(self):
+        """执行批量通知（私有方法）"""
+        try:
+            self.send_batched_notifications()
+        except Exception as e:
+            logging.error(f"❌ 延迟通知失败：{e}")
+        finally:
+            with self.notification_lock:
+                self.notification_timer = None
 
 # 初始化库存通知管理器
 stock_manager = StockNotificationManager()
