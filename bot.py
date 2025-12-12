@@ -49,7 +49,8 @@ from mongo import (
     get_agent_product_price, get_real_time_stock, generate_agent_bot_id, get_agent_stats,
     get_agent_bot_topup_collection, get_agent_bot_gmjlu_collection,
     normalize_agent_bot_id, ensure_agent_user_exists, _get_agent_id_suffix,
-    sync_new_product_to_all_agents, sync_all_products_to_agent, sync_product_price_change_to_agents
+    sync_new_product_to_all_agents, sync_all_products_to_agent, sync_product_price_change_to_agents,
+    stock_manager
 )
 # ✅ 先定义变量（在文件顶部）
 NOTIFY_CHANNEL_ID = os.getenv("NOTIFY_CHANNEL_ID")
@@ -8543,7 +8544,6 @@ def textkeyboard(update: Update, context: CallbackContext):
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
                     
                     # ✅ 启动批量上传模式
-                    from mongo import stock_manager
                     stock_manager.start_batch_upload()
                     
                     count = 0
@@ -8640,7 +8640,6 @@ def textkeyboard(update: Update, context: CallbackContext):
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
                     
                     # ✅ 启动批量上传模式
-                    from mongo import stock_manager
                     stock_manager.start_batch_upload()
 
                     count = 0
@@ -8733,7 +8732,6 @@ def textkeyboard(update: Update, context: CallbackContext):
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
                     
                     # ✅ 启动批量上传模式
-                    from mongo import stock_manager
                     stock_manager.start_batch_upload()
 
                     with open(new_file_path, 'r', encoding='utf-8') as file:
@@ -8830,7 +8828,6 @@ def textkeyboard(update: Update, context: CallbackContext):
                     progress_msg = context.bot.send_message(chat_id=user_id, text='📤 上传中，请勿重复操作...')
                     
                     # ✅ 启动批量上传模式
-                    from mongo import stock_manager
                     stock_manager.start_batch_upload()
 
                     link_list = []
@@ -8918,7 +8915,6 @@ def textkeyboard(update: Update, context: CallbackContext):
                     context.bot.send_message(chat_id=user_id, text='上传中，请勿重复操作')
                     
                     # ✅ 启动批量上传模式
-                    from mongo import stock_manager
                     stock_manager.start_batch_upload()
                     
                     # 解压缩文件
