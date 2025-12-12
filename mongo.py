@@ -274,25 +274,26 @@ class StockNotificationManager:
                 return
             
             # 构建合并通知消息
-            text = f"<b>💭💭 库存更新💭💭</b>\n\n"
-            text += f"<b>🆕 本次新增库存总数：{total_count} 个</b>\n\n"
-            text += f"<b>📦 涉及商品数量：{len(product_details)} 个</b>\n\n"
-            text += "━━━━━━━━━━━━━━━━━━━━\n\n"
+            text_parts = [
+                f"<b>💭💭 库存更新💭💭</b>\n\n",
+                f"<b>🆕 本次新增库存总数：{total_count} 个</b>\n\n",
+                f"<b>📦 涉及商品数量：{len(product_details)} 个</b>\n\n",
+                "━━━━━━━━━━━━━━━━━━━━\n\n"
+            ]
             
             # 按照新增数量排序，优先显示新增最多的
             product_details.sort(key=lambda x: x['count'], reverse=True)
             
             for idx, detail in enumerate(product_details, 1):
-                text += f"<b>{idx}. {detail['name']}</b>\n"
-                text += f"   💰 价格：{detail['price']:.2f} U\n"
-                text += f"   🆕 新增：{detail['count']} 个\n"
-                text += f"   📊 库存：{detail['stock']} 个\n\n"
+                text_parts.append(f"<b>{idx}. {detail['name']}</b>\n")
+                text_parts.append(f"   💰 价格：{detail['price']:.2f} U\n")
+                text_parts.append(f"   🆕 新增：{detail['count']} 个\n")
+                text_parts.append(f"   📊 库存：{detail['stock']} 个\n\n")
             
-            text += "━━━━━━━━━━━━━━━━━━━━\n\n"
-            text += "<b>🛒 点击下方按钮查看商品列表</b>"
+            text_parts.append("━━━━━━━━━━━━━━━━━━━━\n\n")
+            text_parts.append("<b>🛒 点击下方按钮查看商品列表</b>")
             
-            # 使用第一个商品的购买链接（或者可以链接到商品列表）
-            first_nowuid = product_details[0]['nowuid']
+            text = ''.join(text_parts)
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("🛒 查看商品列表", url=f"https://t.me/{BOT_USERNAME}")]
             ])
