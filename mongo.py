@@ -151,6 +151,8 @@ class StockNotificationManager:
         self.last_notify_time = {}
         self.notification_lock = threading.Lock()
         self.bot_instance = None
+        self.notification_timer = None  # Single timer for batched notifications
+        self.batch_upload_active = False  # 标记是否在批量上传中
     
     def get_bot(self):
         """获取或创建 Bot 实例"""
@@ -210,7 +212,7 @@ class StockNotificationManager:
             logging.error(f"❌ 推送失败：{e}")
     
     def send_batched_notifications(self):
-        """发送批量库存通知"""
+        """发送批量库存通知 - 每个商品发送一条单独消息"""
         with self.notification_lock:
             if not self.notify_cache:
                 return
@@ -218,6 +220,7 @@ class StockNotificationManager:
             notifications_to_send = self.notify_cache.copy()
             self.notify_cache.clear()
         
+        # 为每个商品发送单独的通知消息
         for nowuid, info in notifications_to_send.items():
             try:
                 # 获取二级分类信息
@@ -236,6 +239,8 @@ class StockNotificationManager:
                 
                 price = float(product.get('money', 0))
                 stock = hb.count_documents({'nowuid': nowuid, 'state': 0})
+                
+                # 发送单独的通知消息
                 self.send_notification(nowuid, product_name, price, stock, info['count'])
                 
             except Exception as e:
@@ -243,19 +248,69 @@ class StockNotificationManager:
         
         logging.info(f"📢 批量库存通知完成，共发送 {len(notifications_to_send)} 个通知")
     
-    def schedule_notification(self, nowuid: str, projectname: str):
-        """安排延迟通知"""
+    def schedule_notification(self, nowuid: str, projectname: str, delay_override: int = None):
+        """安排延迟通知 - 使用单一计时器防止重复通知
+        
+        Args:
+            nowuid: 商品唯一ID
+            projectname: 商品名称
+            delay_override: 可选的延迟时间（秒），如果提供则使用此值，否则使用默认的STOCK_NOTIFICATION_DELAY
+        """
         self.add_stock_notification(nowuid, projectname)
         
-        def delayed_notify():
-            time.sleep(STOCK_NOTIFICATION_DELAY)
-            try:
-                self.send_batched_notifications()
-            except Exception as e:
-                logging.error(f"❌ 延迟通知失败：{e}")
+        # 如果正在批量上传中，延长等待时间
+        actual_delay = delay_override if delay_override is not None else STOCK_NOTIFICATION_DELAY
         
-        threading.Thread(target=delayed_notify, daemon=True).start()
-        logging.info(f"🔔 已启动库存通知延迟任务：{projectname} (nowuid={nowuid})")
+        with self.notification_lock:
+            # 取消现有的计时器（如果存在）
+            if self.notification_timer is not None:
+                self.notification_timer.cancel()
+            
+            # 创建新的计时器
+            self.notification_timer = threading.Timer(
+                actual_delay,
+                self._execute_batched_notifications
+            )
+            self.notification_timer.daemon = True
+            self.notification_timer.start()
+        
+        logging.info(f"🔔 已安排批量库存通知延迟任务：{projectname} (nowuid={nowuid}, delay={actual_delay}s)")
+    
+    def start_batch_upload(self):
+        """标记批量上传开始"""
+        with self.notification_lock:
+            self.batch_upload_active = True
+            logging.info("📦 批量上传模式已启动")
+    
+    def end_batch_upload(self, force_send: bool = True):
+        """标记批量上传结束
+        
+        Args:
+            force_send: 是否立即发送累积的通知，默认为True
+        """
+        with self.notification_lock:
+            self.batch_upload_active = False
+            logging.info("📦 批量上传模式已结束")
+        
+        if force_send:
+            # 取消现有的计时器
+            with self.notification_lock:
+                if self.notification_timer is not None:
+                    self.notification_timer.cancel()
+                    self.notification_timer = None
+            
+            # 立即发送通知
+            self.send_batched_notifications()
+    
+    def _execute_batched_notifications(self):
+        """执行批量通知（私有方法）"""
+        try:
+            self.send_batched_notifications()
+        except Exception as e:
+            logging.error(f"❌ 延迟通知失败：{e}")
+        finally:
+            with self.notification_lock:
+                self.notification_timer = None
 
 # 初始化库存通知管理器
 stock_manager = StockNotificationManager()
@@ -348,8 +403,12 @@ def xieyihaobaocun(uid, nowuid, hbid, projectname, timer):
         logging.error(f"❌ 保存协议号失败：{projectname} - {e}")
 
 
-def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark=''):
-    """优化的商品上架函数"""
+def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark='', batch_mode=False):
+    """优化的商品上架函数
+    
+    Args:
+        batch_mode: 如果为True，则只累积通知不立即发送
+    """
     try:
         # 插入商品数据
         hb.insert_one({
@@ -365,7 +424,12 @@ def shangchuanhaobao(leixing, uid, nowuid, hbid, projectname, timer, remark=''):
         logging.info(f"✅ 上架商品成功：{projectname} (nowuid={nowuid})")
 
         # ✅ 使用优化的库存通知管理器
-        stock_manager.schedule_notification(nowuid, projectname)
+        if batch_mode:
+            # 批量模式：只累积，不启动计时器
+            stock_manager.add_stock_notification(nowuid, projectname)
+        else:
+            # 正常模式：累积并启动计时器
+            stock_manager.schedule_notification(nowuid, projectname)
 
     except Exception as e:
         logging.error(f"❌ 上架商品失败：{projectname} - {e}")
@@ -1206,6 +1270,223 @@ def init_multi_bot_distribution_system():
 init_multi_bot_distribution_system()
 
 print("🤖 多机器人分销系统数据表加载完成")
+
+# ================================ 商品同步函数 ================================
+
+def sync_new_product_to_all_agents(product_nowuid, product_name, category, original_price, default_markup=0.3):
+    """将新商品同步到所有代理机器人
+    
+    Args:
+        product_nowuid: 商品唯一ID
+        product_name: 商品名称
+        category: 商品分类
+        original_price: 原始价格
+        default_markup: 默认加价率（默认30%）
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取所有活跃的代理机器人
+        active_agents = list(agent_bots.find({"status": "active"}))
+        success_count = 0
+        failed_count = 0
+        
+        for agent in active_agents:
+            try:
+                agent_bot_id = agent.get("agent_bot_id")
+                commission_rate = agent.get("commission_rate", default_markup)
+                
+                # 计算代理价格（原价 + 佣金）
+                agent_price = original_price * (1 + commission_rate)
+                
+                # 检查是否已存在
+                existing = agent_product_prices.find_one({
+                    "agent_bot_id": agent_bot_id,
+                    "original_nowuid": product_nowuid
+                })
+                
+                if not existing:
+                    # 创建新的代理商品价格记录
+                    agent_product_prices.insert_one({
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": product_nowuid,
+                        "product_name": product_name,
+                        "category": category,
+                        "original_price": original_price,
+                        "agent_price": agent_price,
+                        "commission_rate": commission_rate,
+                        "is_active": True,
+                        "creation_time": datetime.now()
+                    })
+                    success_count += 1
+                else:
+                    logging.debug(f"商品已存在于代理 {agent_bot_id}: {product_nowuid}")
+                    
+            except Exception as e:
+                logging.error(f"同步商品到代理失败 {agent.get('agent_bot_id')}: {e}")
+                failed_count += 1
+        
+        return {
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "total_agents": len(active_agents)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步新商品到所有代理失败: {e}")
+        return {
+            "success_count": 0,
+            "failed_count": 0,
+            "total_agents": 0,
+            "error": str(e)
+        }
+
+def sync_all_products_to_agent(agent_bot_id):
+    """将所有商品同步到指定代理机器人
+    
+    Args:
+        agent_bot_id: 代理机器人ID
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取代理信息
+        agent = agent_bots.find_one({"agent_bot_id": agent_bot_id})
+        if not agent:
+            return {
+                "success_count": 0,
+                "failed_count": 0,
+                "error": "代理不存在"
+            }
+        
+        commission_rate = agent.get("commission_rate", 0.3)
+        
+        # 获取所有商品
+        all_products = list(ejfl.find({}))
+        success_count = 0
+        failed_count = 0
+        
+        for product in all_products:
+            try:
+                nowuid = product.get("nowuid")
+                product_name = product.get("projectname", "")
+                category = product.get("leixing", "")
+                original_price = float(product.get("money", 0))
+                
+                # 检查是否已存在
+                existing = agent_product_prices.find_one({
+                    "agent_bot_id": agent_bot_id,
+                    "original_nowuid": nowuid
+                })
+                
+                if not existing:
+                    agent_price = original_price * (1 + commission_rate)
+                    
+                    agent_product_prices.insert_one({
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": nowuid,
+                        "product_name": product_name,
+                        "category": category,
+                        "original_price": original_price,
+                        "agent_price": agent_price,
+                        "commission_rate": commission_rate,
+                        "is_active": True,
+                        "creation_time": datetime.now()
+                    })
+                    success_count += 1
+                    
+            except Exception as e:
+                logging.error(f"同步商品失败 {nowuid}: {e}")
+                failed_count += 1
+        
+        return {
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "total_products": len(all_products)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步所有商品到代理失败: {e}")
+        return {
+            "success_count": 0,
+            "failed_count": 0,
+            "total_products": 0,
+            "error": str(e)
+        }
+
+def sync_product_price_change_to_agents(product_nowuid, new_price, product_name="", category=""):
+    """将商品价格变动同步到所有代理
+    
+    Args:
+        product_nowuid: 商品唯一ID
+        new_price: 新价格
+        product_name: 商品名称（可选）
+        category: 商品分类（可选）
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取所有使用该商品的代理价格记录
+        agent_prices = list(agent_product_prices.find({
+            "original_nowuid": product_nowuid,
+            "is_active": True
+        }))
+        
+        updated_count = 0
+        failed_count = 0
+        
+        for agent_price_record in agent_prices:
+            try:
+                agent_bot_id = agent_price_record.get("agent_bot_id")
+                commission_rate = agent_price_record.get("commission_rate", 0.3)
+                
+                # 计算新的代理价格
+                new_agent_price = new_price * (1 + commission_rate)
+                
+                # 更新代理价格
+                update_data = {
+                    "original_price": new_price,
+                    "agent_price": new_agent_price,
+                    "last_updated": datetime.now()
+                }
+                
+                # 如果提供了商品名称和分类，也更新它们
+                if product_name:
+                    update_data["product_name"] = product_name
+                if category:
+                    update_data["category"] = category
+                
+                agent_product_prices.update_one(
+                    {
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": product_nowuid
+                    },
+                    {"$set": update_data}
+                )
+                updated_count += 1
+                
+            except Exception as e:
+                logging.error(f"更新代理价格失败 {agent_bot_id}: {e}")
+                failed_count += 1
+        
+        return {
+            "updated_count": updated_count,
+            "failed_count": failed_count,
+            "total_agents": len(agent_prices)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步价格变动到代理失败: {e}")
+        return {
+            "updated_count": 0,
+            "failed_count": 0,
+            "total_agents": 0,
+            "error": str(e)
+        }
+
 if __name__ == '__main__':
       pass
     
