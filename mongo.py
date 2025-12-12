@@ -211,7 +211,7 @@ class StockNotificationManager:
             logging.error(f"❌ 推送失败：{e}")
     
     def send_batched_notifications(self):
-        """发送批量库存通知 - 合并为一条消息"""
+        """发送批量库存通知 - 每个商品发送一条单独消息"""
         with self.notification_lock:
             if not self.notify_cache:
                 return
@@ -219,99 +219,33 @@ class StockNotificationManager:
             notifications_to_send = self.notify_cache.copy()
             self.notify_cache.clear()
         
-        # 如果只有一个商品，使用原来的单条通知格式
-        if len(notifications_to_send) == 1:
-            nowuid, info = list(notifications_to_send.items())[0]
+        # 为每个商品发送单独的通知消息
+        for nowuid, info in notifications_to_send.items():
             try:
+                # 获取二级分类信息
                 product = ejfl.find_one({'nowuid': nowuid})
                 if not product:
                     logging.warning(f"❌ 未找到商品信息：nowuid={nowuid}")
-                    return
+                    continue
                 
+                # 获取一级分类信息
                 uid = product.get('uid')
                 parent_category = fenlei.find_one({'uid': uid})
                 parent_name = parent_category['projectname'] if parent_category else "未知分类"
+                
+                # 构建完整的商品名称：一级分类/二级分类
                 product_name = f"{parent_name}/{product['projectname']}"
+                
                 price = float(product.get('money', 0))
                 stock = hb.count_documents({'nowuid': nowuid, 'state': 0})
                 
+                # 发送单独的通知消息
                 self.send_notification(nowuid, product_name, price, stock, info['count'])
-                logging.info(f"📢 发送单商品通知：{product_name} (新增{info['count']}个)")
+                
             except Exception as e:
                 logging.error(f"❌ 发送库存通知失败：nowuid={nowuid}, error={e}")
-            return
         
-        # 多个商品：合并为一条总通知
-        try:
-            total_count = sum(info['count'] for info in notifications_to_send.values())
-            product_details = []
-            
-            for nowuid, info in notifications_to_send.items():
-                try:
-                    product = ejfl.find_one({'nowuid': nowuid})
-                    if not product:
-                        continue
-                    
-                    uid = product.get('uid')
-                    parent_category = fenlei.find_one({'uid': uid})
-                    parent_name = parent_category['projectname'] if parent_category else "未知分类"
-                    product_name = f"{parent_name}/{product['projectname']}"
-                    price = float(product.get('money', 0))
-                    stock = hb.count_documents({'nowuid': nowuid, 'state': 0})
-                    
-                    product_details.append({
-                        'nowuid': nowuid,
-                        'name': product_name,
-                        'price': price,
-                        'count': info['count'],
-                        'stock': stock
-                    })
-                except Exception as e:
-                    logging.error(f"❌ 处理商品信息失败：nowuid={nowuid}, error={e}")
-            
-            if not product_details:
-                logging.warning("⚠️ 没有有效的商品信息，跳过通知")
-                return
-            
-            # 构建合并通知消息
-            text_parts = [
-                f"<b>💭💭 库存更新💭💭</b>\n\n",
-                f"<b>🆕 本次新增库存总数：{total_count} 个</b>\n\n",
-                f"<b>📦 涉及商品数量：{len(product_details)} 个</b>\n\n",
-                "━━━━━━━━━━━━━━━━━━━━\n\n"
-            ]
-            
-            # 按照新增数量排序，优先显示新增最多的
-            product_details.sort(key=lambda x: x['count'], reverse=True)
-            
-            for idx, detail in enumerate(product_details, 1):
-                text_parts.append(f"<b>{idx}. {detail['name']}</b>\n")
-                text_parts.append(f"   💰 价格：{detail['price']:.2f} U\n")
-                text_parts.append(f"   🆕 新增：{detail['count']} 个\n")
-                text_parts.append(f"   📊 库存：{detail['stock']} 个\n\n")
-            
-            text_parts.append("━━━━━━━━━━━━━━━━━━━━\n\n")
-            text_parts.append("<b>🛒 点击下方按钮查看商品列表</b>")
-            
-            text = ''.join(text_parts)
-            keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🛒 查看商品列表", url=f"https://t.me/{BOT_USERNAME}")]
-            ])
-            
-            bot = self.get_bot()
-            bot.send_message(
-                chat_id=NOTIFY_CHANNEL_ID,
-                text=text,
-                parse_mode='HTML',
-                reply_markup=keyboard
-            )
-            
-            logging.info(f"✅ 批量库存通知已发送：总计{total_count}个商品，涉及{len(product_details)}个商品类别")
-            
-        except Exception as e:
-            logging.error(f"❌ 发送批量通知失败：{e}")
-            import traceback
-            traceback.print_exc()
+        logging.info(f"📢 批量库存通知完成，共发送 {len(notifications_to_send)} 个通知")
     
     def schedule_notification(self, nowuid: str, projectname: str):
         """安排延迟通知 - 使用单一计时器防止重复通知"""
