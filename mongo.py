@@ -1270,6 +1270,223 @@ def init_multi_bot_distribution_system():
 init_multi_bot_distribution_system()
 
 print("🤖 多机器人分销系统数据表加载完成")
+
+# ================================ 商品同步函数 ================================
+
+def sync_new_product_to_all_agents(product_nowuid, product_name, category, original_price, default_markup=0.3):
+    """将新商品同步到所有代理机器人
+    
+    Args:
+        product_nowuid: 商品唯一ID
+        product_name: 商品名称
+        category: 商品分类
+        original_price: 原始价格
+        default_markup: 默认加价率（默认30%）
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取所有活跃的代理机器人
+        active_agents = list(agent_bots.find({"status": "active"}))
+        success_count = 0
+        failed_count = 0
+        
+        for agent in active_agents:
+            try:
+                agent_bot_id = agent.get("agent_bot_id")
+                commission_rate = agent.get("commission_rate", default_markup)
+                
+                # 计算代理价格（原价 + 佣金）
+                agent_price = original_price * (1 + commission_rate)
+                
+                # 检查是否已存在
+                existing = agent_product_prices.find_one({
+                    "agent_bot_id": agent_bot_id,
+                    "original_nowuid": product_nowuid
+                })
+                
+                if not existing:
+                    # 创建新的代理商品价格记录
+                    agent_product_prices.insert_one({
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": product_nowuid,
+                        "product_name": product_name,
+                        "category": category,
+                        "original_price": original_price,
+                        "agent_price": agent_price,
+                        "commission_rate": commission_rate,
+                        "is_active": True,
+                        "creation_time": datetime.now()
+                    })
+                    success_count += 1
+                else:
+                    logging.debug(f"商品已存在于代理 {agent_bot_id}: {product_nowuid}")
+                    
+            except Exception as e:
+                logging.error(f"同步商品到代理失败 {agent.get('agent_bot_id')}: {e}")
+                failed_count += 1
+        
+        return {
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "total_agents": len(active_agents)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步新商品到所有代理失败: {e}")
+        return {
+            "success_count": 0,
+            "failed_count": 0,
+            "total_agents": 0,
+            "error": str(e)
+        }
+
+def sync_all_products_to_agent(agent_bot_id):
+    """将所有商品同步到指定代理机器人
+    
+    Args:
+        agent_bot_id: 代理机器人ID
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取代理信息
+        agent = agent_bots.find_one({"agent_bot_id": agent_bot_id})
+        if not agent:
+            return {
+                "success_count": 0,
+                "failed_count": 0,
+                "error": "代理不存在"
+            }
+        
+        commission_rate = agent.get("commission_rate", 0.3)
+        
+        # 获取所有商品
+        all_products = list(ejfl.find({}))
+        success_count = 0
+        failed_count = 0
+        
+        for product in all_products:
+            try:
+                nowuid = product.get("nowuid")
+                product_name = product.get("projectname", "")
+                category = product.get("leixing", "")
+                original_price = float(product.get("money", 0))
+                
+                # 检查是否已存在
+                existing = agent_product_prices.find_one({
+                    "agent_bot_id": agent_bot_id,
+                    "original_nowuid": nowuid
+                })
+                
+                if not existing:
+                    agent_price = original_price * (1 + commission_rate)
+                    
+                    agent_product_prices.insert_one({
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": nowuid,
+                        "product_name": product_name,
+                        "category": category,
+                        "original_price": original_price,
+                        "agent_price": agent_price,
+                        "commission_rate": commission_rate,
+                        "is_active": True,
+                        "creation_time": datetime.now()
+                    })
+                    success_count += 1
+                    
+            except Exception as e:
+                logging.error(f"同步商品失败 {nowuid}: {e}")
+                failed_count += 1
+        
+        return {
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "total_products": len(all_products)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步所有商品到代理失败: {e}")
+        return {
+            "success_count": 0,
+            "failed_count": 0,
+            "total_products": 0,
+            "error": str(e)
+        }
+
+def sync_product_price_change_to_agents(product_nowuid, new_price, product_name="", category=""):
+    """将商品价格变动同步到所有代理
+    
+    Args:
+        product_nowuid: 商品唯一ID
+        new_price: 新价格
+        product_name: 商品名称（可选）
+        category: 商品分类（可选）
+    
+    Returns:
+        dict: 同步结果统计
+    """
+    try:
+        # 获取所有使用该商品的代理价格记录
+        agent_prices = list(agent_product_prices.find({
+            "original_nowuid": product_nowuid,
+            "is_active": True
+        }))
+        
+        updated_count = 0
+        failed_count = 0
+        
+        for agent_price_record in agent_prices:
+            try:
+                agent_bot_id = agent_price_record.get("agent_bot_id")
+                commission_rate = agent_price_record.get("commission_rate", 0.3)
+                
+                # 计算新的代理价格
+                new_agent_price = new_price * (1 + commission_rate)
+                
+                # 更新代理价格
+                update_data = {
+                    "original_price": new_price,
+                    "agent_price": new_agent_price,
+                    "last_updated": datetime.now()
+                }
+                
+                # 如果提供了商品名称和分类，也更新它们
+                if product_name:
+                    update_data["product_name"] = product_name
+                if category:
+                    update_data["category"] = category
+                
+                agent_product_prices.update_one(
+                    {
+                        "agent_bot_id": agent_bot_id,
+                        "original_nowuid": product_nowuid
+                    },
+                    {"$set": update_data}
+                )
+                updated_count += 1
+                
+            except Exception as e:
+                logging.error(f"更新代理价格失败 {agent_bot_id}: {e}")
+                failed_count += 1
+        
+        return {
+            "updated_count": updated_count,
+            "failed_count": failed_count,
+            "total_agents": len(agent_prices)
+        }
+        
+    except Exception as e:
+        logging.error(f"同步价格变动到代理失败: {e}")
+        return {
+            "updated_count": 0,
+            "failed_count": 0,
+            "total_agents": 0,
+            "error": str(e)
+        }
+
 if __name__ == '__main__':
       pass
     
